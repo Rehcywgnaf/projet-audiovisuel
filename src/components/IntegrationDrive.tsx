@@ -10,7 +10,6 @@ const IntegrationDrive = () => {
 
   const gererChangementPermissions = async (docId, nouveauRole) => {
     try {
-      // Appel API pour la gestion des permissions
       console.log(`Permission mise à jour pour ${docId}: ${nouveauRole}`);
     } catch (err) {
       setErreur('Erreur de modification des permissions');
