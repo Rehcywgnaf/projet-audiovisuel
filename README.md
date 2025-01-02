@@ -1,106 +1,165 @@
-# SAPAV (Soutien Appel à Projet AudioVisuel)
+# SAAOP - Système d'Accompagnement des Appels d'Offres et Projets Audiovisuels
 
-## Description du Projet
-SAPAV est une plateforme intégrée dédiée au soutien et à l'accompagnement des projets audiovisuels. Elle combine veille active, gestion documentaire et suivi des candidatures pour optimiser la recherche de financements.
+## Vue d'ensemble
+SAAOP est une plateforme intégrée dédiée au support et à l'accompagnement des projets audiovisuels, spécialisée dans deux axes majeurs :
+- Appels à Projets (AAP)
+- Appels d'Offres (AO)
 
-## État du Projet
-- **État actuel**: Sprint 2 - Documents & Drive
-- **Prochaine étape**: Sprint 3 - Intégration (Février 2024)
-- **Version**: Beta 0.2
+### Caractéristiques principales
+- Veille automatisée des opportunités (AAP/AO)
+- Gestion documentaire avancée avec versioning
+- Suivi des deadlines et des soumissions
+- Intégration Google Workspace
+- Support multi-équipes
 
-## Architecture Technique
+## Types d'Appels et Gestion
 
-### Composants Principaux
-1. **Frontend**
-   - Dashboard Principal (`/components/Dashboard`)
-   - Système de Veille (`/components/RSS`)
-   - Intégration Google Drive (`/components/Drive`)
-   - Suivi des Équipes (`/components/TeamTracking`)
-   - Liste des Projets (`/components/Projects`)
+### Appels d'Offres (AO)
+- **Caractéristiques**
+  - Marchés publics
+  - Procédures formalisées
+  - Délais stricts
+  - Documentation technique/administrative/commerciale
 
-2. **Services**
-   - emailService (`/services/email`)
-   - rssService (`/services/rss`)
-   - driveService (`/services/drive`)
+- **Processus**
+  1. Veille des plateformes de marchés publics
+  2. Analyse des cahiers des charges
+  3. Constitution des dossiers administratifs
+  4. Réponses techniques et commerciales
+  5. Suivi des soumissions
 
-3. **Modules Drive**
-   - DeadlineManager (`/components/Drive/Deadline`)
-   - DrivePermissions (`/components/Drive/Permissions`)
-   - DriveSync (`/components/Drive/Sync`)
-   - ErrorHandling (`/components/Drive/Error`)
+### Appels à Projets (AAP)
+- **Caractéristiques**
+  - Financement culturel/créatif
+  - Processus créatif
+  - Focus artistique
+  - Documentation narrative/budgétaire
 
-## Installation
+- **Processus**
+  1. Veille des opportunités culturelles
+  2. Analyse de l'éligibilité
+  3. Développement du projet artistique
+  4. Montage financier
+  5. Présentation et pitching
 
+### Différenciation dans le Système
+- **Interface distincte** pour chaque type
+- **Templates spécifiques** par catégorie
+- **Workflows adaptés** aux exigences
+- **Alertes personnalisées** selon le type
+- **Tableaux de bord** séparés
+
+## Structure du Projet
+
+### Composants Frontend
+```
+/components/
+├── dashboard/        # Tableau de bord principal
+├── drive/           # Intégration Google Drive
+├── team/            # Suivi des équipes
+└── project-submission/
+    ├── AOComponent  # Gestion des appels d'offres
+    └── AAPComponent # Gestion des appels à projets
+```
+
+### Services
+```
+/services/
+├── email/          # Notifications et alertes
+├── rss/            # Veille et agrégation
+├── drive/          # Synchronisation Google Drive
+└── ao/             # Service Appels d'Offres
+    ├── types.ts
+    ├── aoService.ts
+    └── templates/
+```
+
+## État du Développement
+
+### Sprint Actuel (Sprint 2 - Documents & Drive)
+- Templates documents (AAP/AO)
+- Système de versioning
+- Gestion des deadlines
+
+### Prochaines Étapes
+- Intégration des modules existants
+- Tests et validation
+- Déploiement beta
+
+## Installation et Configuration
+
+### Prérequis
+- Node.js >= 16.x
+- Accès Google Workspace
+- Permissions API nécessaires
+
+### Installation
 ```bash
 npm install
+npm run setup
+```
+
+### Configuration
+1. Configurer les variables d'environnement (.env)
+2. Initialiser l'authentification Google
+3. Vérifier les permissions Drive
+
+## Utilisation
+
+### Développement
+```bash
 npm run dev
 ```
 
-### Prérequis
-- Node.js >= 18.0.0
-- Google Workspace API credentials
-- RSS Feed API key
+### Tests
+```bash
+npm test
+```
 
-## Configuration
+### Build
+```bash
+npm run build
+```
 
-1. Créer un fichier `.env` basé sur `.env.example`
-2. Configurer les variables d'environnement :
-   ```
-   GOOGLE_CLIENT_ID=your_client_id
-   GOOGLE_CLIENT_SECRET=your_client_secret
-   RSS_API_KEY=your_api_key
-   ```
+## Architecture Technique
 
-## Structure des Composants
+### Stack Technique
+- Frontend: React avec TypeScript
+- UI: Tailwind CSS + shadcn/ui
+- Stockage: Google Drive API
+- Authentification: Google OAuth 2.0
 
-### TeamTracking
-- Gestion des équipes et disponibilités
-- Interface de suivi des projets
-- Statut: Fonctionnel
+### Intégrations
+- Google Workspace
+- API Marchés Publics
+- RSS Feeds
+- Systèmes de notification
 
-### RSS & Alertes
-- Agrégation des flux RSS
-- Système de notification
-- Statut: En production
+## Guidelines de Contribution
 
-### Drive Integration
-- Synchronisation Google Drive
-- Gestion des permissions
-- Statut: En test
+### Branches
+- `main`: production
+- `develop`: développement
+- Feature branches: `feature/nom-feature`
 
-## Roadmap
+### Commits
+Format: `type(scope): description`
+Exemple: `feat(ao): ajout du service de validation AO`
 
-### Sprint 1 (Complété)
-- [x] Packages optimisés
-- [x] Économies durée
-- [x] Alertes disponibilité
+### Code Style
+- ESLint configuration
+- Prettier pour le formatage
+- TypeScript strict mode
 
-### Sprint 2 (En cours)
-- [ ] Templates documents
-- [ ] Système versioning
-- [ ] Gestion deadlines
+## Support et Contact
 
-### Sprint 3 & 4 (À venir)
-- [ ] Intégration modules
-- [ ] Tests système
-- [ ] Déploiement beta
+### Équipe Technique
+- Support: support@saaop.com
+- Documentation: docs/
+- Wiki: wiki/
 
-## Contribution
-- Suivre les conventions de code
-- Créer une branche par feature
-- Tests requis pour toute PR
-
-## Documentation
-- [Guide Utilisateur](docs/user-guide.md)
-- [Documentation API](docs/api.md)
-- [Guide Déploiement](docs/deployment.md)
-
-## Contact
-Support Technique : support@sapav.com
-Équipe Dev : dev@sapav.com
-
-## License
+## Licence
 Propriétaire - Tous droits réservés
 
 ---
-*Dernière mise à jour: Janvier 2024*
+Dernière mise à jour: 2 janvier 2024
