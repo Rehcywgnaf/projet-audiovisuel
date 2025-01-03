@@ -1,18 +1,25 @@
 # SAPAV - Soutien Appel à Projet AudioVisuel
 
-## Note importante pour les développeurs
+SAPAV est une plateforme innovante dédiée au soutien et à l'accompagnement des projets audiovisuels dans leur recherche de financements et réponses aux appels à projets.
 
-### Gestion de l'erreur MCP 32603
-Lors des opérations de push, il est fréquent de rencontrer l'erreur 32603. Important :
-- Cette erreur n'empêche pas toujours le push d'être effectif
-- Il est nécessaire de vérifier systématiquement la présence ET l'intégrité des fichiers après chaque push
-- En cas de fichier incomplet, un nouveau push doit être effectué
+## Vision Globale
+La plateforme accompagne les entreprises audiovisuelles à travers trois axes majeurs :
+1. Identification et analyse des opportunités via une veille active
+2. Accompagnement dans la soumission des projets
+3. Support pendant la réalisation des projets
 
-## Vue d'ensemble du projet
-SAPAV est une plateforme innovante dédiée au soutien et à l'accompagnement des projets audiovisuels dans leur recherche de financements et réponses aux appels à projets. Le système intègre :
-- Veille active des opportunités
-- Gestion documentaire avancée
-- Suivi optimisé des candidatures
-- Intégration Google Drive
-- Système de versioning intelligent
-- Gestion des deadlines
+## Fonctionnalités Principales
+- Veille active et analyse des appels à projets
+- Gestion documentaire avancée avec versioning
+- Suivi optimisé des candidatures et deadlines
+- Tableaux de bord en temps réel
+- Intégration complète avec Google Drive
+- Système de notification intelligent
+- Gestion des équipes et des ressources
+
+## Architecture Technique
+- Interface web responsive
+- Intégration Google Workspace
+- Base de données sécurisée
+- API REST
+- Système de backup automatisé
