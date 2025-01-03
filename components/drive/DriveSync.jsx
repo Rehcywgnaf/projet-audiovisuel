@@ -36,7 +36,6 @@ const DriveSync = () => {
 
   return (
     <div className="max-w-4xl mx-auto p-6 space-y-6">
-      {/* En-tête */}
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-semibold">Synchronisation Drive</h2>
         <div className="flex items-center space-x-2">
@@ -47,7 +46,6 @@ const DriveSync = () => {
         </div>
       </div>
 
-      {/* Statut */}
       <Alert>
         <Activity className="w-4 h-4" />
         <AlertTitle>Synchronisation {syncStatus.status === 'active' ? 'active' : 'inactive'}</AlertTitle>
@@ -56,7 +54,6 @@ const DriveSync = () => {
         </AlertDescription>
       </Alert>
 
-      {/* Paramètres de synchronisation */}
       <div className="bg-white rounded-lg shadow p-6">
         <h3 className="text-lg font-medium mb-4">Paramètres</h3>
         <div className="space-y-4">
@@ -94,7 +91,6 @@ const DriveSync = () => {
         </div>
       </div>
 
-      {/* Logs de synchronisation */}
       <div className="bg-white rounded-lg shadow">
         <div className="p-4 border-b">
           <h3 className="text-lg font-medium">Historique</h3>
@@ -102,10 +98,7 @@ const DriveSync = () => {
         <div className="divide-y">
           {syncStatus.logs.map((log, index) => (
             <div key={index} className="p-4 flex items-center">
-              <div className={`w-2 h-2 rounded-full mr-3 ${
-                log.type === 'success' ? 'bg-green-500' :
-                log.type === 'warning' ? 'bg-yellow-500' : 'bg-red-500'
-              }`} />
+              <div className={`w-2 h-2 rounded-full mr-3 ${log.type === 'success' ? 'bg-green-500' : log.type === 'warning' ? 'bg-yellow-500' : 'bg-red-500'}`} />
               <div className="flex-1">
                 <p className="text-sm font-medium">{log.message}</p>
                 <p className="text-xs text-gray-500">{log.timestamp}</p>
@@ -115,7 +108,6 @@ const DriveSync = () => {
         </div>
       </div>
 
-      {/* Actions */}
       <div className="flex justify-between items-center">
         <button className="px-4 py-2 border border-gray-300 rounded hover:bg-gray-50 flex items-center space-x-2">
           <Calendar className="w-4 h-4" />
