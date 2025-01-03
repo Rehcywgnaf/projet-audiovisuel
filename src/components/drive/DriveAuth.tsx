@@ -1,67 +1,67 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { driveAuthService } from '../../services/drive/auth';
+import { Loader2 } from 'lucide-react';
+import { useDriveAuth } from './DriveAuthProvider';
 
 export default function DriveAuth() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const { isAuthenticated, isInitializing, error, login, logout } = useDriveAuth();
 
-  useEffect(() => {
-    // Vérifier si l'utilisateur est déjà authentifié
-    const checkAuth = () => {
-      try {
-        const isAuth = driveAuthService.isAuthenticated();
-        setIsAuthenticated(isAuth);
-      } catch (err) {
-        setError('Erreur lors de la vérification de l\'authentification');
-      }
-    };
-
-    checkAuth();
-  }, []);
-
-  const handleLogin = async () => {
-    try {
-      const authUrl = driveAuthService.getAuthUrl();
-      // Ouvrir la fenêtre d'authentification Google
-      window.location.href = authUrl;
-    } catch (err) {
-      setError('Erreur lors de l\'authentification Google Drive');
-    }
-  };
-
-  const handleLogout = () => {
-    // Implémenter la déconnexion
-    setIsAuthenticated(false);
-  };
+  if (isInitializing) {
+    return (
+      <Card className="w-full max-w-md mx-auto">
+        <CardContent className="pt-6">
+          <div className="flex items-center justify-center space-x-2">
+            <Loader2 className="h-6 w-6 animate-spin text-primary" />
+            <p>Initialisation de Google Drive...</p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card className="w-full max-w-md mx-auto">
       <CardHeader>
-        <CardTitle>Google Drive Integration</CardTitle>
+        <CardTitle>Google Drive</CardTitle>
       </CardHeader>
-      <CardContent>
+      <CardContent className="space-y-4">
         {error && (
-          <Alert variant="destructive" className="mb-4">
+          <Alert variant="destructive">
             <AlertDescription>{error}</AlertDescription>
           </Alert>
         )}
 
         {isAuthenticated ? (
           <div className="space-y-4">
-            <p className="text-green-600">✓ Connecté à Google Drive</p>
+            <div className="flex items-center space-x-2 text-green-600">
+              <svg
+                className="h-5 w-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M5 13l4 4L19 7"
+                />
+              </svg>
+              <span>Connecté à Google Drive</span>
+            </div>
             <Button 
-              onClick={handleLogout}
+              onClick={logout}
               variant="outline"
+              className="w-full"
             >
               Se déconnecter
             </Button>
           </div>
         ) : (
           <Button 
-            onClick={handleLogin}
+            onClick={login}
             className="w-full"
           >
             Se connecter à Google Drive
