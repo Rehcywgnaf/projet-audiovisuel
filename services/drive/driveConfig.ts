@@ -1,5 +1,6 @@
 import { google } from 'googleapis';
 import { OAuth2Client } from 'google-auth-library';
+import { TokenStorage } from './tokenStorage';
 
 export class DriveConfig {
   private static instance: DriveConfig;
@@ -26,11 +27,15 @@ export class DriveConfig {
         credentials.clientSecret,
         credentials.redirectUri
       );
-
+      
       const token = await this.getStoredToken();
       if (token) {
-        this.oAuth2Client.setCredentials(token);
-        this.initializeDriveAPI();
+        if (TokenStorage.isTokenExpired(token)) {
+          await this.refreshTokenIfNeeded();
+        } else {
+          this.oAuth2Client.setCredentials(token);
+          this.initializeDriveAPI();
+        }
       }
     } catch (error) {
       console.error('Erreur lors de l\'initialisation de Drive:', error);
@@ -42,7 +47,6 @@ export class DriveConfig {
     if (!this.oAuth2Client) {
       throw new Error('OAuth2Client non initialisé');
     }
-
     try {
       const { tokens } = await this.oAuth2Client.getToken(authCode);
       this.oAuth2Client.setCredentials(tokens);
@@ -65,13 +69,13 @@ export class DriveConfig {
     if (!this.oAuth2Client) {
       throw new Error('OAuth2Client non initialisé');
     }
-
     return this.oAuth2Client.generateAuthUrl({
       access_type: 'offline',
       scope: [
         'https://www.googleapis.com/auth/drive.file',
         'https://www.googleapis.com/auth/drive.metadata'
-      ]
+      ],
+      prompt: 'consent'
     });
   }
 
@@ -79,7 +83,6 @@ export class DriveConfig {
     if (!this.oAuth2Client) {
       throw new Error('OAuth2Client non initialisé');
     }
-
     this.drive = google.drive({
       version: 'v3',
       auth: this.oAuth2Client
@@ -88,7 +91,7 @@ export class DriveConfig {
 
   private async getStoredToken(): Promise<any> {
     try {
-      return null;
+      return TokenStorage.getStoredToken();
     } catch (error) {
       console.warn('Pas de token stocké trouvé');
       return null;
@@ -97,7 +100,7 @@ export class DriveConfig {
 
   private async storeToken(tokens: any): Promise<void> {
     try {
-      // TODO: Implémenter le stockage sécurisé du token
+      TokenStorage.storeToken(tokens);
     } catch (error) {
       console.error('Erreur lors du stockage du token:', error);
       throw error;
@@ -108,19 +111,27 @@ export class DriveConfig {
     if (!this.oAuth2Client) {
       throw new Error('OAuth2Client non initialisé');
     }
-
     const credentials = this.oAuth2Client.credentials;
-    if (!credentials.expiry_date || credentials.expiry_date < Date.now() + 5 * 60 * 1000) {
-      try {
-        const { credentials: newCredentials } = await this.oAuth2Client.refreshToken(
-          credentials.refresh_token as string
-        );
-        this.oAuth2Client.setCredentials(newCredentials);
-        await this.storeToken(newCredentials);
-      } catch (error) {
-        console.error('Erreur lors du rafraîchissement du token:', error);
-        throw error;
-      }
+    
+    if (!credentials.refresh_token) {
+      throw new Error('Refresh token non disponible');
     }
+
+    try {
+      const { credentials: newCredentials } = await this.oAuth2Client.refreshToken(
+        credentials.refresh_token as string
+      );
+      this.oAuth2Client.setCredentials(newCredentials);
+      await this.storeToken(newCredentials);
+    } catch (error) {
+      console.error('Erreur lors du rafraîchissement du token:', error);
+      throw error;
+    }
+  }
+
+  logout(): void {
+    TokenStorage.removeToken();
+    this.oAuth2Client = null;
+    this.drive = null;
   }
 }
