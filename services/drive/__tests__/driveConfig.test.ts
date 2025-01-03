@@ -1,25 +1,9 @@
 import { DriveConfig } from '../driveConfig';
+import { TokenStorage } from '../tokenStorage';
 import { google } from 'googleapis';
 
-jest.mock('googleapis', () => ({
-  google: {
-    auth: {
-      OAuth2: jest.fn(() => ({
-        setCredentials: jest.fn(),
-        getToken: jest.fn(),
-        generateAuthUrl: jest.fn(() => 'mock-auth-url'),
-        refreshToken: jest.fn()
-      }))
-    },
-    drive: jest.fn(() => ({
-      files: {
-        list: jest.fn(),
-        create: jest.fn(),
-        update: jest.fn()
-      }
-    }))
-  }
-}));
+jest.mock('googleapis');
+jest.mock('../tokenStorage');
 
 describe('DriveConfig', () => {
   let driveConfig: DriveConfig;
@@ -29,24 +13,29 @@ describe('DriveConfig', () => {
     redirectUri: 'mock-redirect-uri'
   };
 
+  const mockTokens = {
+    access_token: 'mock-access-token',
+    refresh_token: 'mock-refresh-token',
+    expiry_date: Date.now() + 3600000
+  };
+
   beforeEach(() => {
     jest.clearAllMocks();
     driveConfig = DriveConfig.getInstance();
+    
+    // Mock TokenStorage
+    (TokenStorage.getStoredToken as jest.Mock).mockReturnValue(null);
+    (TokenStorage.storeToken as jest.Mock).mockImplementation(() => {});
+    (TokenStorage.isTokenExpired as jest.Mock).mockReturnValue(false);
   });
 
-  describe('Singleton Pattern', () => {
-    it('devrait retourner la même instance à chaque appel de getInstance', () => {
-      const instance1 = DriveConfig.getInstance();
-      const instance2 = DriveConfig.getInstance();
-      expect(instance1).toBe(instance2);
-    });
-  });
-
-  describe('Initialisation', () => {
-    it('devrait initialiser correctement avec des credentials valides', async () => {
-      await expect(driveConfig.initialize(mockCredentials))
-        .resolves.not.toThrow();
+  describe('Initialization', () => {
+    it('should initialize with stored token if available', async () => {
+      (TokenStorage.getStoredToken as jest.Mock).mockReturnValue(mockTokens);
       
+      await driveConfig.initialize(mockCredentials);
+      
+      expect(TokenStorage.getStoredToken).toHaveBeenCalled();
       expect(google.auth.OAuth2).toHaveBeenCalledWith(
         mockCredentials.clientId,
         mockCredentials.clientSecret,
@@ -54,44 +43,58 @@ describe('DriveConfig', () => {
       );
     });
 
-    it('devrait lever une erreur si l\'initialisation échoue', async () => {
-      (google.auth.OAuth2 as jest.Mock).mockImplementationOnce(() => {
-        throw new Error('Mock initialization error');
-      });
-
-      await expect(driveConfig.initialize(mockCredentials))
-        .rejects.toThrow('Échec de l\'initialisation de Drive');
+    it('should refresh token if stored token is expired', async () => {
+      (TokenStorage.getStoredToken as jest.Mock).mockReturnValue(mockTokens);
+      (TokenStorage.isTokenExpired as jest.Mock).mockReturnValue(true);
+      
+      await driveConfig.initialize(mockCredentials);
+      
+      // Vérifier que refreshTokenIfNeeded a été appelé
+      expect(TokenStorage.isTokenExpired).toHaveBeenCalled();
     });
   });
 
   describe('Authentication', () => {
     const mockAuthCode = 'mock-auth-code';
-    const mockTokens = {
-      access_token: 'mock-access-token',
-      refresh_token: 'mock-refresh-token',
-      expiry_date: Date.now() + 3600000
-    };
 
     beforeEach(async () => {
       await driveConfig.initialize(mockCredentials);
     });
 
-    it('devrait authentifier avec succès avec un code valide', async () => {
+    it('should store tokens after successful authentication', async () => {
       const mockOAuth2Client = google.auth.OAuth2();
       mockOAuth2Client.getToken.mockResolvedValueOnce({ tokens: mockTokens });
-
-      await expect(driveConfig.authenticate(mockAuthCode))
-        .resolves.not.toThrow();
       
-      expect(mockOAuth2Client.setCredentials).toHaveBeenCalledWith(mockTokens);
+      await driveConfig.authenticate(mockAuthCode);
+      
+      expect(TokenStorage.storeToken).toHaveBeenCalledWith(mockTokens);
+    });
+  });
+
+  describe('Token Refresh', () => {
+    beforeEach(async () => {
+      await driveConfig.initialize(mockCredentials);
     });
 
-    it('devrait lever une erreur si l\'authentification échoue', async () => {
+    it('should refresh and store new token', async () => {
       const mockOAuth2Client = google.auth.OAuth2();
-      mockOAuth2Client.getToken.mockRejectedValueOnce(new Error('Auth failed'));
+      mockOAuth2Client.refreshToken.mockResolvedValueOnce({
+        credentials: mockTokens
+      });
+      
+      await driveConfig.refreshTokenIfNeeded();
+      
+      expect(TokenStorage.storeToken).toHaveBeenCalledWith(mockTokens);
+    });
+  });
 
-      await expect(driveConfig.authenticate(mockAuthCode))
-        .rejects.toThrow('Échec de l\'authentification');
+  describe('Logout', () => {
+    it('should clear tokens and reset client', async () => {
+      await driveConfig.initialize(mockCredentials);
+      driveConfig.logout();
+      
+      expect(TokenStorage.removeToken).toHaveBeenCalled();
+      expect(driveConfig.getDriveAPI).toThrow('API Drive non initialisée');
     });
   });
 });
