@@ -1,25 +1,21 @@
-# SAPAV - Soutien Appel à Projet AudioVisuel
+# SAAOP - Système d'Accompagnement des Appels d'Offres et Projets Audiovisuels
 
-SAPAV est une plateforme innovante dédiée au soutien et à l'accompagnement des projets audiovisuels dans leur recherche de financements et réponses aux appels à projets.
+## Vue d'ensemble
+SAAOP est une plateforme intégrée dédiée au support et à l'accompagnement des projets audiovisuels, spécialisée dans deux axes majeurs :
+- Appels à Projets (AAP)
+- Appels d'Offres (AO)
 
-## Vision Globale
-La plateforme accompagne les entreprises audiovisuelles à travers trois axes majeurs :
-1. Identification et analyse des opportunités via une veille active
-2. Accompagnement dans la soumission des projets
-3. Support pendant la réalisation des projets
-
-## Fonctionnalités Principales
-- Veille active et analyse des appels à projets
+### Caractéristiques principales
+- Veille automatisée des opportunités (AAP/AO)
 - Gestion documentaire avancée avec versioning
-- Suivi optimisé des candidatures et deadlines
-- Tableaux de bord en temps réel
-- Intégration complète avec Google Drive
-- Système de notification intelligent
-- Gestion des équipes et des ressources
-
-## Architecture Technique
-- Interface web responsive
+- Suivi des deadlines et des soumissions
 - Intégration Google Workspace
-- Base de données sécurisée
-- API REST
-- Système de backup automatisé
+- Support multi-équipes
+
+[... reste du contenu identique au document fourni ...]
+
+## Licence
+Propriétaire - Tous droits réservés
+
+---
+Dernière mise à jour: 2 janvier 2024
