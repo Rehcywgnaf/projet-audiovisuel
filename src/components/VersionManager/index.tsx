@@ -1,0 +1,1 @@
+// Code du composant VersionManager comme défini ci-dessus
