@@ -1,16 +1,20 @@
 # Changelog
 
-## [Non Publié]
+## [Non publié]
 
 ### Ajouté
-- Composants de templates de formulaires
-  - Template pour Appels à Projets (AAP)
-  - Template pour Appels d'Offres (AO)
-  - Documentation d'utilisation dans `/components/templates/README.md`
-  - Validation des champs et gestion des erreurs
-  - Design cohérent avec shadcn/ui
+- Composant VersionManager pour la gestion des versions de documents
+  - Interface utilisateur pour visualiser l'historique des versions
+  - Fonctionnalité de restauration des versions précédentes
+  - Création de nouvelles versions
+  - Indicateurs de statut de synchronisation avec Google Drive
+  - Gestion des erreurs et notifications utilisateur
 
-## [0.1.0] - 2024-01-16
-### Ajouté
-- Structure initiale du projet
-- Configuration de base
+### Modifié
+- Intégration de la synchronisation Google Drive directement dans le composant VersionManager
+- Amélioration de l'interface utilisateur avec des indicateurs visuels d'état
+
+### Technique
+- Utilisation des composants shadcn/ui pour l'interface
+- Simulation des appels API Google Drive pour les tests
+- Gestion d'état avec React hooks
