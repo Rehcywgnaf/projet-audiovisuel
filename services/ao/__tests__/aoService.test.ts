@@ -3,7 +3,6 @@ import { aoDrivePersistence } from '../persistence/drivePersistence';
 import { AO, AOStatus } from '../types';
 import { v4 as uuidv4 } from 'uuid';
 
-// Mock du service de persistance
 jest.mock('../persistence/drivePersistence', () => ({
   aoDrivePersistence: {
     saveAO: jest.fn(),
@@ -117,7 +116,6 @@ describe('AOService', () => {
         tags: []
       };
 
-      // Simuler un AO existant
       await service.create(mockAO);
 
       const updates = {
