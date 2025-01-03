@@ -1,1 +1,1 @@
-// Code du composant VersionManager comme défini ci-dessus
+// Code mis à jour du composant VersionManager
