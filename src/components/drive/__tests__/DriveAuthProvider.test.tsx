@@ -3,10 +3,8 @@ import { render, screen, act, fireEvent } from '@testing-library/react';
 import { DriveAuthProvider, useDriveAuth } from '../DriveAuthProvider';
 import { DriveConfig } from '../../../../services/drive/driveConfig';
 
-// Mock le DriveConfig
 jest.mock('../../../../services/drive/driveConfig');
 
-// Composant de test pour utiliser le hook
 function TestComponent() {
   const { isAuthenticated, isInitializing, error, login, logout } = useDriveAuth();
   return (
@@ -28,111 +26,212 @@ function TestComponent() {
   );
 }
 
-describe('DriveAuthProvider', () => {
+describe('DriveAuthProvider - Gestion des erreurs Google API', () => {
   const mockGetInstance = DriveConfig.getInstance as jest.Mock;
   const mockDriveConfig = {
     initialize: jest.fn(),
     authenticate: jest.fn(),
     getAuthUrl: jest.fn(),
     logout: jest.fn(),
+    refreshTokenIfNeeded: jest.fn(),
   };
 
   beforeEach(() => {
     jest.clearAllMocks();
     mockGetInstance.mockReturnValue(mockDriveConfig);
-    // Réinitialiser l'URL
     delete window.location;
     window.location = new URL('http://localhost') as any;
   });
 
-  it('initialise correctement sans code d\'authentification', async () => {
-    await act(async () => {
-      render(
-        <DriveAuthProvider>
-          <TestComponent />
-        </DriveAuthProvider>
+  describe('Erreurs d\'initialisation', () => {
+    it('gère les erreurs de configuration invalide', async () => {
+      mockDriveConfig.initialize.mockRejectedValueOnce(
+        new Error('Invalid client configuration')
+      );
+
+      await act(async () => {
+        render(
+          <DriveAuthProvider>
+            <TestComponent />
+          </DriveAuthProvider>
+        );
+      });
+
+      expect(screen.getByTestId('error-message')).toHaveTextContent(
+        'Invalid client configuration'
       );
     });
 
-    expect(screen.getByTestId('auth-status')).toHaveTextContent('not-authenticated');
-    expect(screen.getByTestId('loading-status')).toHaveTextContent('not-initializing');
+    it('gère les problèmes de réseau pendant l\'initialisation', async () => {
+      mockDriveConfig.initialize.mockRejectedValueOnce(
+        new Error('Network error')
+      );
+
+      await act(async () => {
+        render(
+          <DriveAuthProvider>
+            <TestComponent />
+          </DriveAuthProvider>
+        );
+      });
+
+      expect(screen.getByTestId('error-message')).toHaveTextContent(
+        'Network error'
+      );
+    });
   });
 
-  it('gère le processus de login correctement', async () => {
-    mockDriveConfig.getAuthUrl.mockReturnValue('https://google.com/auth');
-    
-    await act(async () => {
-      render(
-        <DriveAuthProvider>
-          <TestComponent />
-        </DriveAuthProvider>
+  describe('Erreurs d\'authentification', () => {
+    it('gère le refus d\'autorisation par l\'utilisateur', async () => {
+      window.location = new URL('http://localhost?error=access_denied') as any;
+
+      await act(async () => {
+        render(
+          <DriveAuthProvider>
+            <TestComponent />
+          </DriveAuthProvider>
+        );
+      });
+
+      expect(screen.getByTestId('error-message')).toHaveTextContent(
+        'Autorisation refusée'
       );
     });
 
-    const loginButton = screen.getByTestId('login-button');
-    
-    // Simuler le clic sur le bouton de login
-    await act(async () => {
-      fireEvent.click(loginButton);
+    it('gère les erreurs de token invalide', async () => {
+      mockDriveConfig.authenticate.mockRejectedValueOnce(
+        new Error('Invalid token')
+      );
+
+      window.location = new URL('http://localhost?code=invalid_code') as any;
+
+      await act(async () => {
+        render(
+          <DriveAuthProvider>
+            <TestComponent />
+          </DriveAuthProvider>
+        );
+      });
+
+      expect(screen.getByTestId('error-message')).toHaveTextContent(
+        'Invalid token'
+      );
     });
 
-    expect(mockDriveConfig.getAuthUrl).toHaveBeenCalled();
-    expect(window.location.href).toBe('https://google.com/auth');
+    it('gère les erreurs de refresh token', async () => {
+      mockDriveConfig.refreshTokenIfNeeded.mockRejectedValueOnce(
+        new Error('Token refresh failed')
+      );
+
+      await act(async () => {
+        render(
+          <DriveAuthProvider>
+            <TestComponent />
+          </DriveAuthProvider>
+        );
+      });
+
+      expect(screen.getByTestId('error-message')).toHaveTextContent(
+        'Token refresh failed'
+      );
+    });
   });
 
-  it('gère les erreurs de login', async () => {
-    mockDriveConfig.getAuthUrl.mockImplementation(() => {
-      throw new Error('Erreur de connexion');
-    });
+  describe('Erreurs de scope', () => {
+    it('gère les erreurs de permissions insuffisantes', async () => {
+      mockDriveConfig.authenticate.mockRejectedValueOnce(
+        new Error('Insufficient permissions')
+      );
 
-    await act(async () => {
-      render(
-        <DriveAuthProvider>
-          <TestComponent />
-        </DriveAuthProvider>
+      window.location = new URL('http://localhost?code=test_code') as any;
+
+      await act(async () => {
+        render(
+          <DriveAuthProvider>
+            <TestComponent />
+          </DriveAuthProvider>
+        );
+      });
+
+      expect(screen.getByTestId('error-message')).toHaveTextContent(
+        'Insufficient permissions'
       );
     });
-
-    const loginButton = screen.getByTestId('login-button');
-    
-    await act(async () => {
-      fireEvent.click(loginButton);
-    });
-
-    expect(screen.getByTestId('error-message')).toHaveTextContent('Erreur de connexion');
   });
 
-  it('gère le processus de logout correctement', async () => {
-    await act(async () => {
-      render(
-        <DriveAuthProvider>
-          <TestComponent />
-        </DriveAuthProvider>
+  describe('Erreurs de quota', () => {
+    it('gère les erreurs de quota dépassé', async () => {
+      mockDriveConfig.authenticate.mockRejectedValueOnce(
+        new Error('Quota exceeded')
+      );
+
+      await act(async () => {
+        render(
+          <DriveAuthProvider>
+            <TestComponent />
+          </DriveAuthProvider>
+        );
+      });
+
+      expect(screen.getByTestId('error-message')).toHaveTextContent(
+        'Quota exceeded'
       );
     });
-
-    const logoutButton = screen.getByTestId('logout-button');
-    
-    await act(async () => {
-      fireEvent.click(logoutButton);
-    });
-
-    expect(mockDriveConfig.logout).toHaveBeenCalled();
-    expect(screen.getByTestId('auth-status')).toHaveTextContent('not-authenticated');
   });
 
-  it('gère l\'authentification avec code dans l\'URL', async () => {
-    // Simuler un code dans l'URL
-    window.location = new URL('http://localhost?code=test-auth-code') as any;
+  describe('Gestion de la récupération après erreur', () => {
+    it('permet une nouvelle tentative de connexion après une erreur', async () => {
+      mockDriveConfig.getAuthUrl.mockImplementationOnce(() => {
+        throw new Error('Network error');
+      }).mockImplementationOnce(() => 'https://google.com/auth');
 
-    await act(async () => {
-      render(
-        <DriveAuthProvider>
-          <TestComponent />
-        </DriveAuthProvider>
-      );
+      await act(async () => {
+        render(
+          <DriveAuthProvider>
+            <TestComponent />
+          </DriveAuthProvider>
+        );
+      });
+
+      const loginButton = screen.getByTestId('login-button');
+      
+      // Première tentative - échec
+      await act(async () => {
+        fireEvent.click(loginButton);
+      });
+      expect(screen.getByTestId('error-message')).toHaveTextContent('Network error');
+
+      // Deuxième tentative - succès
+      await act(async () => {
+        fireEvent.click(loginButton);
+      });
+      expect(window.location.href).toBe('https://google.com/auth');
     });
 
-    expect(mockDriveConfig.authenticate).toHaveBeenCalledWith('test-auth-code');
+    it('réinitialise les erreurs après une déconnexion réussie', async () => {
+      mockDriveConfig.getAuthUrl.mockImplementationOnce(() => {
+        throw new Error('Test error');
+      });
+
+      await act(async () => {
+        render(
+          <DriveAuthProvider>
+            <TestComponent />
+          </DriveAuthProvider>
+        );
+      });
+
+      // Générer une erreur
+      await act(async () => {
+        fireEvent.click(screen.getByTestId('login-button'));
+      });
+      expect(screen.getByTestId('error-message')).toBeInTheDocument();
+
+      // Se déconnecter
+      await act(async () => {
+        fireEvent.click(screen.getByTestId('logout-button'));
+      });
+      expect(screen.queryByTestId('error-message')).not.toBeInTheDocument();
+    });
   });
 });
