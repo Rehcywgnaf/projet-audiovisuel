@@ -1,2 +1,1 @@
-import React, { useState, useEffect } from 'react';
-// ... [contenu du composant IntegratedWorkflow] ...
+{"encoding": "base64", "content": "Ly8gSW50ZWdyYXRlZFdvcmtmbG93LnRzeAppbXBvcnQgUmVhY3QsIHsgdXNlU3RhdGUsIHVzZUVmZmVjdCB9IGZyb20gJ3JlYWN0JzsKaW1wb3J0IHsgQ2FyZCwgQ2FyZEhlYWRlciwgQ2FyZFRpdGxlLCBDYXJkQ29udGVudCB9IGZyb20gJ0AvY29tcG9uZW50cy91aS9jYXJkJzsKaW1wb3J0IHsgQWxlcnRDaXJjbGUsIENoZWNrQ2lyY2xlLCBSZWZyZXNoQ3csIEJyYWluLCBGaWxlVGV4dCwgQ2hlY2tTcXVhcmUsIEFycm93UmlnaHQgfSBmcm9tICdsdWNpZGUtcmVhY3QnOwoKW3Jlc3RlIGR1IGNvbXBvc2FudCBjb21tZSBkYW5zIGwnYXJ0aWZhY3Rd"}
