@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.0] - 2024-01-04
+### Ajouté
+- Interface utilisateur pour la visualisation des résumés
+- Vue de configuration personnalisée
+- Système de feedback utilisateur intégré
+- Filtrage par type de projet et secteur d'activité
+
 ## [1.2.0] - 2024-01-04
 ### Ajouté
 - Intégration du générateur de résumés automatiques en Phase 1
