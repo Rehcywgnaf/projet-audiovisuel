@@ -1,1 +1,1 @@
-[Le contenu du composant IntegrationDrive]
+[Contenu du composant IntegrationDrive]
