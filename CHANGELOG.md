@@ -15,3 +15,20 @@
 
 ### Modifié
 - Réorganisation des phases d'IA pour prioriser les résumés automatiques
+
+## [1.1.0] - 2024-01-03
+### Ajouté
+- Système de veille RSS
+- Intégration Google Drive
+- Templates de base pour AAP et AO
+
+### Modifié
+- Optimisation des calculateurs
+- Amélioration de la gestion des deadlines
+
+## [1.0.0] - 2024-01-02
+### Ajouté
+- Structure initiale du projet
+- Configuration de base
+- Authentification Google
+- Premier dashboard
