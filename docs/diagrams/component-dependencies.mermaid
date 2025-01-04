@@ -1,0 +1,39 @@
+graph TD
+    %% Composants principaux
+    IntegrationDrive[IntegrationDrive<br>1.9KB - En cours]
+    TeamTracking[TeamTracking<br>222o - Base]
+    TemplateManager[TemplateManager<br>2.8KB - En cours]
+    FeedbackSystem[FeedbackSystem<br>250o - Base]
+    Dashboard[Dashboard Principal<br>À développer]
+
+    %% Style des composants selon leur état
+    classDef base fill:#FFE4E1,stroke:#FF6B6B
+    classDef inProgress fill:#E6F3FF,stroke:#3498DB
+    classDef blocked fill:#FFE4B5,stroke:#FFA500
+    
+    %% Définition des dépendances
+    IntegrationDrive --> TemplateManager
+    IntegrationDrive --> TeamTracking
+    TemplateManager --> Dashboard
+    TeamTracking --> Dashboard
+    FeedbackSystem --> Dashboard
+
+    %% Annotations des dépendances critiques
+    IntegrationDrive -.->|Critique| TemplateManager
+    TemplateManager -.->|Impacte| Dashboard
+
+    %% Application des styles
+    class IntegrationDrive,TemplateManager inProgress
+    class TeamTracking,FeedbackSystem base
+    class Dashboard blocked
+
+    %% Légende
+    subgraph Légende
+        InProgress[En cours]
+        Base[État initial]
+        Blocked[Dépend d'autres composants]
+    end
+    
+    class InProgress inProgress
+    class Base base
+    class Blocked blocked
