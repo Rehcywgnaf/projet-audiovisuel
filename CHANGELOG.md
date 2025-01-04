@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.4.0] - 2024-01-04
+### Ajouté
+- Vue détaillée des résumés avec expansion/réduction
+- Affichage des points clés et critères d'évaluation
+- Suggestions IA personnalisées
+- Interface utilisateur améliorée pour la visualisation
+
+### À Venir
+- Fonctionnalité d'export des résumés (PDF, Document)
+- Personnalisation des modèles d'export
+- Partage facilité avec les équipes
+
 ## [1.3.0] - 2024-01-04
 ### Ajouté
 - Interface utilisateur pour la visualisation des résumés
