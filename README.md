@@ -1,52 +1,142 @@
-# SAAOP - Système d'Accompagnement des Appels d'Offres et Projets Audiovisuels
+# SAPAV (Soutien Appel à Projet AudioVisuel)
 
-## Vue d'ensemble
-SAAOP est une plateforme intégrée dédiée au support et à l'accompagnement des projets audiovisuels, spécialisée dans deux axes majeurs :
-- Appels à Projets (AAP)
-- Appels d'Offres (AO)
+## 📋 Vue d'ensemble
 
-### Caractéristiques principales
-- Analyse IA des opportunités
-- Suggestion intelligente de templates
-- Veille automatisée des opportunités (AAP/AO)
-- Gestion documentaire avancée avec versioning
-- Suivi des deadlines et des soumissions
-- Intégration Google Workspace
-- Support multi-équipes
+SAPAV est une plateforme innovante dédiée au soutien et à l'accompagnement des projets audiovisuels dans leur recherche de financements. La solution intègre :
+- Veille automatisée des opportunités de financement
+- Gestion documentaire avancée
+- Suivi intelligent des candidatures
+- Accompagnement personnalisé des projets
 
-## Fonctionnalités IA
+## 🚀 Fonctionnalités principales
 
-### Analyse Intelligente
-- **Analyse automatique des contenus**
-  - Évaluation de la pertinence
-  - Extraction des mots-clés
-  - Catégorisation automatique
-  - Suggestions d'actions
+### 1. Système de Veille
+- Surveillance automatique des appels à projets et appels d'offres
+- Agrégation multi-sources (CNC, régions, plateformes...)
+- Système de notification personnalisé
+- Analyse de pertinence intégrée
 
-### Système de Templates Intelligent
-- **Matching automatique**
-  - Score de correspondance
-  - Suggestions contextuelles
-  - Adaptation aux spécificités du projet
-- **Templates optimisés**
-  - Sections pré-remplies
-  - Suggestions de contenu
-  - Validation intelligente
+### 2. Gestion Documentaire
+- Intégration Google Drive native
+- Système de versioning intelligent
+- Templates automatisés
+- Gestion avancée des deadlines
 
-[Reste du contenu précédent inchangé]
+### 3. Suivi des Candidatures
+- Dashboard temps réel
+- Monitoring des deadlines
+- Alertes automatiques
+- Statistiques et reporting
 
-## Structure du Projet
+### 4. Accompagnement Projet
+- Suivi personnalisé
+- Support administratif
+- Formation intégrée
+- Documentation exhaustive
 
-### Composants Frontend
+## 🛠 Architecture Technique
+
+### Frontend
+- Dashboard principal (React/Tailwind)
+- Modules RSS & Alertes
+- Interface Google Drive
+- Système de suivi des équipes
+
+### Backend
+- Services Email et RSS
+- API Google Drive
+- Système de notification
+- Gestion des authentifications
+
+### Composants Drive
+- DeadlineManager
+- DrivePermissions
+- DriveSync
+- ErrorHandling
+
+## 📦 Installation
+
+### Prérequis
+```bash
+- Node.js (v16+)
+- npm ou yarn
+- Compte Google Workspace
+- Droits d'administration
 ```
-/components/
-├── dashboard/        # Tableau de bord principal
-├── drive/           # Intégration Google Drive
-├── team/            # Suivi des équipes
-├── IntegratedWorkflow/  # Nouveau composant d'analyse IA
-└── project-submission/
-    ├── AOComponent  # Gestion des appels d'offres
-    └── AAPComponent # Gestion des appels à projets
+
+### Configuration
+1. Cloner le repository
+```bash
+git clone [URL_REPO_PRIVÉ]
+cd sapav
 ```
 
-[Reste du contenu précédent]
+2. Installer les dépendances
+```bash
+npm install
+```
+
+3. Configurer les variables d'environnement
+```bash
+cp .env.example .env
+# Éditer .env avec vos paramètres
+```
+
+4. Lancer l'application
+```bash
+npm run dev
+```
+
+## 🔧 Guide d'utilisation
+
+### Configuration initiale
+1. Connexion avec compte Google Workspace
+2. Configuration des sources de veille
+3. Paramétrage des notifications
+4. Personnalisation des templates
+
+### Utilisation quotidienne
+1. Dashboard de suivi
+2. Gestion des documents
+3. Suivi des deadlines
+4. Reporting et statistiques
+
+## 🤝 Contribution
+
+### Pour les développeurs
+1. Fork du projet
+2. Création de branche
+```bash
+git checkout -b feature/nouvelle-fonctionnalite
+```
+3. Commit et push
+4. Création de Pull Request
+
+### Points d'attention
+- Vérification après chaque push
+- Maintien de la cohérence documentaire
+- Respect des standards de code
+- Tests unitaires obligatoires
+
+## 📞 Support
+
+### Support technique
+- Email : support@sapav.com
+- Documentation : /docs
+- Wiki : [URL_WIKI]
+
+### Ressources
+- Guide utilisateur : /docs/user-guide
+- Documentation API : /docs/api
+- Tutoriels vidéo : /docs/tutorials
+
+## 📄 Licence
+
+Projet privé - Tous droits réservés
+
+## 🔄 Mises à jour
+
+Consultez le [CHANGELOG.md](./CHANGELOG.md) pour l'historique des modifications.
+
+---
+*Note: Ce README est maintenu à jour via le repository GitHub. Pour plus de détails techniques, consultez la documentation dans le dossier `/docs`.*
