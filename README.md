@@ -4,7 +4,7 @@
 
 SAPAV est une plateforme innovante dédiée au soutien et à l'accompagnement des projets audiovisuels dans leur recherche de financements. La solution intègre :
 - Veille automatisée des opportunités de financement
-- Gestion documentaire avancée
+- Gestion documentaire avancée avec génération IA
 - Suivi intelligent des candidatures
 - Accompagnement personnalisé des projets
 
@@ -17,12 +17,13 @@ SAPAV est une plateforme innovante dédiée au soutien et à l'accompagnement de
 - Analyse de pertinence intégrée
 
 ### 2. Gestion Documentaire
-- Intégration Google Drive native avec versioning intelligent
-- Templates intelligents par type de projet (Documentaire, Fiction, Web-série)
-- Analyse contextuelle des appels (AAP/AO)
-- Suggestions basées sur l'historique et le profil entreprise
-- Validation automatisée des documents
-- Gestion avancée des deadlines avec alertes intelligentes
+- Génération IA de documents basée sur l'analyse des AAP/AO
+- Suggestions contextuelles intelligentes
+- Templates spécialisés par type de projet
+- Intégration Google Drive native avec versioning
+- Personnalisation avancée des documents
+- Système de feedback et révision
+- Gestion avancée des deadlines
 
 ### 3. Suivi des Candidatures
 - Dashboard temps réel
@@ -43,12 +44,14 @@ SAPAV est une plateforme innovante dédiée au soutien et à l'accompagnement de
 - Modules RSS & Alertes
 - Interface Google Drive
 - Système de suivi des équipes
+- Générateur de documents IA
 
 ### Backend
 - Services Email et RSS
 - API Google Drive
 - Système de notification
 - Gestion des authentifications
+- Moteur d'analyse IA
 
 ### Composants Drive
 - DeadlineManager avec intégration IA
@@ -101,7 +104,7 @@ npm run dev
 
 ### Utilisation quotidienne
 1. Dashboard de suivi
-2. Gestion des documents
+2. Génération et édition des documents
 3. Suivi des deadlines
 4. Reporting et statistiques
 
