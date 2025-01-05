@@ -25,4 +25,4 @@
 - Structure modulaire pour évolutions futures
 - Préparation intégration Drive
 
-${atob(JSON.parse(results[0].content))}
+[Contenu précédent du CHANGELOG...]

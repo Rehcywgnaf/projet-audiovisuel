@@ -1,4 +1,4 @@
-{`import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { FileText, CheckCircle, AlertTriangle, GitBranch, Clock, UserCircle, List } from 'lucide-react';
 
@@ -48,5 +48,4 @@ TODO: Critères de Qualité Supplémentaires
   - Historique des validations
 */
 
-[Reste du contenu du composant DocManager]
-`}
+[Code complet du composant DocManager...]
