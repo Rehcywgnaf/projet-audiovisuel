@@ -17,10 +17,12 @@ SAPAV est une plateforme innovante dédiée au soutien et à l'accompagnement de
 - Analyse de pertinence intégrée
 
 ### 2. Gestion Documentaire
-- Intégration Google Drive native
-- Système de versioning intelligent
-- Templates automatisés
-- Gestion avancée des deadlines
+- Intégration Google Drive native avec versioning intelligent
+- Templates intelligents par type de projet (Documentaire, Fiction, Web-série)
+- Analyse contextuelle des appels (AAP/AO)
+- Suggestions basées sur l'historique et le profil entreprise
+- Validation automatisée des documents
+- Gestion avancée des deadlines avec alertes intelligentes
 
 ### 3. Suivi des Candidatures
 - Dashboard temps réel
@@ -49,10 +51,12 @@ SAPAV est une plateforme innovante dédiée au soutien et à l'accompagnement de
 - Gestion des authentifications
 
 ### Composants Drive
-- DeadlineManager
+- DeadlineManager avec intégration IA
 - DrivePermissions
-- DriveSync
-- ErrorHandling
+- DriveSync optimisé
+- ErrorHandling avancé
+- TemplateManager avec analyse contextuelle
+- Cache system pour optimisation
 
 ## 📦 Installation
 
