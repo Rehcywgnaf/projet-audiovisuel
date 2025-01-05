@@ -2,7 +2,7 @@
 
 ## [0.4.9] - 2025-01-05
 ### Added
-- DocManager: Implémentation du système de validation double
+- document-generator/DocumentVersionManager: Nouveau composant pour la gestion des versions
   - Validation automatique
     - Vérification orthographique et grammaticale
     - Contrôle des documents requis
@@ -21,8 +21,32 @@
   - Système de règles personnalisables
 
 ### Technical
-- Nouveau composant DocManager.tsx
+- Ajout dans le dossier document-generator
 - Structure modulaire pour évolutions futures
 - Préparation intégration Drive
 
-[Contenu précédent du CHANGELOG...]
+## [0.4.8] - 2025-01-05
+### Added
+- DocumentGenerator: Nouveau système de génération IA
+  - Analyse intelligente des AAP/AO
+  - Génération contextuelle de contenu
+  - Interface d'édition avec suggestions IA
+  - Prévisualisation en temps réel
+- DocumentManager: Interface unifiée
+  - Navigation par onglets (Génération, Personnalisation, Aperçu, Feedback, Export)
+  - Gestion complète du cycle de vie des documents
+  - Intégration avec système de templates
+
+### Changed
+- Architecture: Amélioration du système de composants
+  - Séparation claire des responsabilités
+  - Meilleure gestion des états
+  - Optimisation des performances
+
+### Technical
+- Nouveaux composants React
+  - AIEnhancedEditor
+  - DocumentManager
+- Tests unitaires pour les nouveaux composants
+
+[Reste du contenu existant du CHANGELOG]
