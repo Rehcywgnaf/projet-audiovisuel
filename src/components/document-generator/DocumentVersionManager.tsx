@@ -48,7 +48,7 @@ TODO: Critères de Qualité Supplémentaires
   - Historique des validations
 */
 
-const DocManager = () => {
+const DocumentVersionManager = () => {
   const [activeDocument, setActiveDocument] = useState({
     id: 'doc-1',
     title: 'Appel à Projet - Production Documentaire',
@@ -275,4 +275,4 @@ const DocManager = () => {
   );
 };
 
-export default DocManager;
+export default DocumentVersionManager;
