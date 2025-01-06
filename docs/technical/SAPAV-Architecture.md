@@ -1,0 +1,1 @@
+# Documentation Technique - Architecture SAPAV [contenu de l'artifact updated-doc-technical]
