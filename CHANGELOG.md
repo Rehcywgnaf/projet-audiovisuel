@@ -7,6 +7,10 @@
   - Détail du système RSS-IA et son rôle dans l'analyse des AAP/AO
   - Clarification des responsabilités de l'AIEnhancedEditor
   - Précision sur les interactions entre composants
+  - Points d'héritage du TemplateManager
+
+ 
+
 
 ### Updated
 - Mise à jour de la documentation sur l'architecture globale
