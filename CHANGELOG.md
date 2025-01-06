@@ -1,5 +1,22 @@
 # Changelog
 
+## [1.2.1] - 2025-01-06
+
+### Added
+- Documentation technique : Distinction TemplateManager/DocumentManager
+  - Clarification des rôles et responsabilités
+  - Description des workflows et intégrations
+  - Spécification des points d'interaction
+
+- Documentation technique : Architecture DocumentManager
+  - Détail des composants principaux
+  - État d'avancement actuel
+  - Planning des développements futurs
+
+### Updated
+- Précision sur l'intégration Preview System avec Version Management
+- Clarification de la structure modulaire du DocumentManager
+
 ## [0.5.1] - 2025-01-06
 ### Added
 - CommentManager: Nouveau composant pour la gestion des commentaires
