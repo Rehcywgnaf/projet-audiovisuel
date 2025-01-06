@@ -55,6 +55,20 @@ Rôle : Gestion du cycle de vie des documents
    - Validation des formats
    - Gestion des métadonnées
 
+### Points d'Héritage du TemplateManager
+
+#### Template Catalog
+- Maintien de la bibliothèque de modèles existants
+- Classification par type de projet (documentaire, fiction, web-série)
+- Gestion avancée des métadonnées pour l'enrichissement IA
+- Catégorisation adaptative des templates
+
+#### Règles de Validation
+- Validation structurelle héritée
+- Conformité aux standards AAP/AO
+- Intégration avec le système de suggestions IA
+- Contrôles de qualité automatisés
+
 ## Flux de Travail
 
 1. Détection et Analyse
