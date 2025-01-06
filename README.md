@@ -2,6 +2,25 @@
 
 ## 📋 Vue d'ensemble
 
+### Composants Principaux
+1. **Système RSS-IA**
+   - Veille automatisée des opportunités
+   - Analyse intelligente des AAP/AO
+   - Extraction de données structurées
+   - Enrichissement contextuel
+
+2. **AIEnhancedEditor**
+   - Génération assistée de contenu
+   - Suggestions contextuelles
+   - Interface d'édition augmentée
+   - Validation intelligente
+
+3. **DocumentManager**
+   - Gestion des versions
+   - Système de commentaires
+   - Import/Export multi-formats
+   - Collaboration en temps réel
+
 SAPAV est une plateforme innovante dédiée au soutien et à l'accompagnement des projets audiovisuels dans leur recherche de financements. La solution intègre :
 - Veille automatisée des opportunités de financement
 - Gestion documentaire avancée avec génération IA
