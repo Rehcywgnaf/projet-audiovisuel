@@ -28,6 +28,12 @@ SAPAV est une plateforme innovante dédiée au soutien et à l'accompagnement de
    - Import/Export multi-formats
    - Collaboration en temps réel
 
+## Documentation Technique
+Pour plus de détails, consultez :
+- `/docs/technical/SAPAV-Architecture.md` : Architecture globale
+- `/docs/technical/RSS-IA-Integration.md` : Système RSS-IA
+- `/docs/technical/AIEnhancedEditor.md` : Éditeur augmenté
+  
 ## 🚀 Fonctionnalités principales
 
 ### 1. Système de Veille
@@ -80,13 +86,10 @@ SAPAV est une plateforme innovante dédiée au soutien et à l'accompagnement de
 - Moteur d'analyse IA
 
 ### Composants Drive
-- DeadlineManager avec intégration IA
+- DeadlineManager
 - DrivePermissions
-- DriveSync optimisé
-- ErrorHandling avancé
-- TemplateManager avec analyse contextuelle
-- CommentManager avec support temps réel
-- Cache system pour optimisation
+- DriveSync
+- ErrorHandling
 
 ## 📦 Installation
 
@@ -134,23 +137,6 @@ npm run dev
 2. Génération et édition des documents
 3. Suivi des deadlines
 4. Reporting et statistiques
-
-## 🤝 Contribution
-
-### Pour les développeurs
-1. Fork du projet
-2. Création de branche
-```bash
-git checkout -b feature/nouvelle-fonctionnalite
-```
-3. Commit et push
-4. Création de Pull Request
-
-### Points d'attention
-- Vérification après chaque push
-- Maintien de la cohérence documentaire
-- Respect des standards de code
-- Tests unitaires obligatoires
 
 ## 📞 Support
 
