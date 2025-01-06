@@ -119,7 +119,6 @@ export class FormatManager {
   }
 
   static async directConversion(document, sourceFormat, targetFormat) {
-    // Conversion directe entre formats compatibles
     const converted = {
       content: document.content,
       metadata: {
@@ -135,8 +134,6 @@ export class FormatManager {
   }
 
   static async apiConversion(document, sourceFormat, targetFormat) {
-    // Conversion via API externe (ex: Google Docs API)
-    // Simulation de l'appel API
     const converted = {
       content: document.content,
       metadata: {
@@ -153,7 +150,6 @@ export class FormatManager {
   }
 
   static async parsingConversion(document, sourceFormat, targetFormat) {
-    // Conversion avec parsing du contenu
     const parsed = await this.parseContent(document.content, sourceFormat);
     const converted = {
       content: parsed,
@@ -170,24 +166,7 @@ export class FormatManager {
     return await this.postProcessConversion(converted, targetFormat);
   }
 
-  static async parseContent(content, sourceFormat) {
-    // Logique de parsing selon le format source
-    switch (sourceFormat) {
-      case 'html':
-        return this.parseHtml(content);
-      default:
-        return content;
-    }
-  }
-
-  static async parseHtml(content) {
-    // Parser le HTML en structure de document
-    // Simulation basique
-    return content.replace(/<[^>]*>/g, '');
-  }
-
   static async postProcessConversion(document, targetFormat) {
-    // Post-traitement selon le format cible
     switch (targetFormat) {
       case 'pdf':
         return this.postProcessPdf(document);
