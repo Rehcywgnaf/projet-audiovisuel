@@ -36,4 +36,5 @@
 - Optimisation des performances de rendu en temps réel
 - Documentation: Mise à jour pour inclure PreviewManager
 
-[Le reste du CHANGELOG tel qu'il était avant...]
+## [0.4.9] - 2025-01-05
+[Le reste du contenu précédent du CHANGELOG]
