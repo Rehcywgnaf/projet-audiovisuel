@@ -2,6 +2,13 @@
 
 ## 📋 Vue d'ensemble
 
+SAPAV est une plateforme innovante dédiée au soutien et à l'accompagnement des projets audiovisuels dans leur recherche de financements. La solution intègre :
+- Veille automatisée des opportunités de financement
+- Gestion documentaire avancée avec génération IA
+- Suivi intelligent des candidatures
+- Accompagnement personnalisé des projets
+- Système de commentaires collaboratifs en temps réel
+
 ### Composants Principaux
 1. **Système RSS-IA**
    - Veille automatisée des opportunités
@@ -20,13 +27,6 @@
    - Système de commentaires
    - Import/Export multi-formats
    - Collaboration en temps réel
-
-SAPAV est une plateforme innovante dédiée au soutien et à l'accompagnement des projets audiovisuels dans leur recherche de financements. La solution intègre :
-- Veille automatisée des opportunités de financement
-- Gestion documentaire avancée avec génération IA
-- Suivi intelligent des candidatures
-- Accompagnement personnalisé des projets
-- Système de commentaires collaboratifs en temps réel
 
 ## 🚀 Fonctionnalités principales
 
