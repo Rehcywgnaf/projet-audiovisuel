@@ -17,7 +17,7 @@ export default function Navigation() {
   return (
     <nav className="w-64 h-screen bg-white border-r fixed left-0 top-0 p-4">
       <div className="mb-8">
-        <h1 className="text-xl font-bold">AudioProd</h1>
+        <h1 className="text-xl font-bold">SAPAV</h1>
       </div>
       <div className="space-y-2">
         {navItems.map(({ href, label, icon: Icon }) => {
