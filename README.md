@@ -23,8 +23,8 @@ SAPAV est une plateforme innovante dédiée au soutien et à l'accompagnement de
    - Validation intelligente
 
 3. **DocumentManager**
-   - Gestion des versions
-   - Système de commentaires
+   - Gestion centralisée des versions (VersionManager)
+   - Système de commentaires collaboratif
    - Import/Export multi-formats
    - Collaboration en temps réel
 
@@ -33,6 +33,7 @@ Pour plus de détails, consultez :
 - `/docs/technical/SAPAV-Architecture.md` : Architecture globale
 - `/docs/technical/RSS-IA-Integration.md` : Système RSS-IA
 - `/docs/technical/AIEnhancedEditor.md` : Éditeur augmenté
+- `/docs/technical/version-system/` : Système de versions
   
 ## 🚀 Fonctionnalités principales
 
@@ -46,7 +47,11 @@ Pour plus de détails, consultez :
 - Génération IA de documents basée sur l'analyse des AAP/AO
 - Suggestions contextuelles intelligentes
 - Templates spécialisés par type de projet
-- Intégration Google Drive native avec versioning
+- Intégration Google Drive native avec système de versions avancé
+  - Gestion centralisée via VersionManager
+  - Interface intuitive VersionHistory
+  - Rollback sécurisé avec RollbackManager
+  - Optimisation des performances de stockage
 - Système de commentaires collaboratifs en temps réel
   - Catégorisation des commentaires par type
   - Support temps réel via WebSocket
@@ -77,6 +82,7 @@ Pour plus de détails, consultez :
 - Système de suivi des équipes
 - Générateur de documents IA
 - Système de commentaires temps réel
+- VersionHistory et VersionControl pour le système de versions
 
 ### Backend
 - Services Email et RSS
@@ -84,12 +90,14 @@ Pour plus de détails, consultez :
 - Système de notification
 - Gestion des authentifications
 - Moteur d'analyse IA
+- VersionManager et RollbackManager
 
 ### Composants Drive
 - DeadlineManager
 - DrivePermissions
 - DriveSync
 - ErrorHandling
+- VersionStore pour le stockage optimisé
 
 ## 📦 Installation
 
