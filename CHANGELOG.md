@@ -18,4 +18,12 @@
 - Suppression des doublons dans les composants Drive
 - Mise à jour de la documentation technique Drive
 
-[Contenu précédent préservé]
+## [1.2.5] - 2025-01-07
+### Added
+- Refonte complète du système de versions
+  - Nouveau composant VersionManager.ts pour la gestion centralisée
+  - RollbackManager.ts dédié aux opérations de retour arrière
+  - VersionStore optimisé pour les performances et la fiabilité
+  - Interfaces VersionHistory.tsx et VersionControl.tsx
+
+[Reste du CHANGELOG conservé à l'identique]
