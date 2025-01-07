@@ -13,6 +13,7 @@ export interface Opportunity {
 export class VeilleManager {
   private rssService: RSSService;
   private notificationService: NotificationService;
+  private readonly keywords = ['audiovisuel', 'production', 'film', 'documentaire', 'série'];
 
   constructor() {
     this.rssService = new RSSService();
@@ -46,8 +47,7 @@ export class VeilleManager {
   }
 
   private isRelevant(item: any): boolean {
-    const keywords = ['audiovisuel', 'production', 'film', 'documentaire', 'série'];
-    return keywords.some(kw => 
+    return this.keywords.some(kw => 
       item.title.toLowerCase().includes(kw) || 
       item.description.toLowerCase().includes(kw)
     );
@@ -86,8 +86,8 @@ export class VeilleManager {
   }
 
   private async notifyTeam(opportunities: Opportunity[]): Promise<void> {
-    for (const opportunity of opportunities) {
-      await this.notificationService.notify({
+    await Promise.all(opportunities.map(opportunity =>
+      this.notificationService.notify({
         type: 'new_opportunity',
         data: {
           id: opportunity.id,
@@ -95,7 +95,7 @@ export class VeilleManager {
           category: opportunity.category,
           deadline: opportunity.deadline
         }
-      });
-    }
+      })
+    ));
   }
 }
