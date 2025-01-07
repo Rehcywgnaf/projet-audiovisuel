@@ -1,5 +1,29 @@
 # Changelog
 
+## [1.2.5] - 2025-01-07
+### Added
+- Refonte complète du système de versions
+  - Nouveau composant VersionManager.ts pour la gestion centralisée
+  - RollbackManager.ts dédié aux opérations de retour arrière
+  - VersionStore optimisé pour les performances et la fiabilité
+  - Interfaces VersionHistory.tsx et VersionControl.tsx
+- Documentation technique détaillée du nouveau système
+  - Architecture et composants
+  - Workflows et intégrations
+  - Tests et sécurité
+  - Roadmap d'évolution
+
+### Changed
+- Suppression de l'ancien système de versions (/src/components/VersionManager/)
+- Optimisation des interactions avec Google Drive
+- Amélioration des performances de stockage et synchronisation
+
+### Technical
+- Migration vers une architecture modulaire
+- Amélioration de la gestion des erreurs
+- Nouveau système de tests unitaires
+- Intégration renforcée avec le DocumentManager
+
 ## [1.2.4] - 2025-01-06
 ### Added
 - Finalisation du système de versioning complet :
