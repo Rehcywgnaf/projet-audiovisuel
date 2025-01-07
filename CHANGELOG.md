@@ -7,23 +7,21 @@
   - Intégration des fonctionnalités de synchronisation
   - Système de permissions consolidé
   - Gestion d'erreurs centralisée
+- Consolidation système de veille
+  - VeilleManager TypeScript
+  - Service RSS unifié
+  - Système de notification intégré
 
 ### Changed
-- Migration vers TypeScript des composants Drive
+- Migration vers TypeScript des composants Drive et Veille
 - Optimisation des appels Google Drive API
 - Unification de la gestion des erreurs
+- Refonte du système de notification
 
 ### Technical
 - Création branche 'integration'
-- Suppression des doublons dans les composants Drive
-- Mise à jour de la documentation technique Drive
+- Suppression des doublons dans les composants Drive et Veille
+- Mise à jour de la documentation technique
 
 ## [1.2.5] - 2025-01-07
-### Added
-- Refonte complète du système de versions
-  - Nouveau composant VersionManager.ts pour la gestion centralisée
-  - RollbackManager.ts dédié aux opérations de retour arrière
-  - VersionStore optimisé pour les performances et la fiabilité
-  - Interfaces VersionHistory.tsx et VersionControl.tsx
-
 [Reste du CHANGELOG conservé à l'identique]
