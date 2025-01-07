@@ -11,17 +11,22 @@
   - VeilleManager TypeScript
   - Service RSS unifié
   - Système de notification intégré
+- Migration TeamTracking
+  - Composant React TypeScript
+  - Service dédié
+  - Intégration notifications
 
 ### Changed
-- Migration vers TypeScript des composants Drive et Veille
+- Migration vers TypeScript des composants Drive, Veille et Teams
 - Optimisation des appels Google Drive API
 - Unification de la gestion des erreurs
 - Refonte du système de notification
+- Amélioration interface TeamTracking
 
 ### Technical
 - Création branche 'integration'
-- Suppression des doublons dans les composants Drive et Veille
-- Mise à jour de la documentation technique
+- Suppression des doublons
+- Mise à jour documentation technique
 
 ## [1.2.5] - 2025-01-07
 [Reste du CHANGELOG conservé à l'identique]
