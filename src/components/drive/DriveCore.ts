@@ -46,41 +46,53 @@ export class DriveCore {
 
   async updatePermissions(fileId: string, permissions: DrivePermission[]): Promise<void> {
     try {
-      for (const permission of permissions) {
-        await this.driveClient.permissions.create({
+      await Promise.all(permissions.map(permission =>
+        this.driveClient.permissions.create({
           fileId,
           requestBody: {
             type: permission.type,
             role: permission.role,
             emailAddress: permission.emailAddress
           }
-        });
-      }
+        })
+      ));
     } catch (error) {
       await this.handleError(error as Error);
       throw error;
     }
   }
 
-  async handleError(error: Error): Promise<void> {
+  private async handleError(error: Error): Promise<void> {
     console.error('Erreur DriveCore:', error);
     
     if (error.message.includes('quota')) {
-      // Gestion spécifique quota
       await this.notifyQuotaExceeded();
     } else if (error.message.includes('permission')) {
-      // Gestion spécifique permissions
       await this.notifyPermissionDenied();
     }
   }
 
   private async notifyQuotaExceeded(): Promise<void> {
-    // Implémentation notification quota
-    console.warn('Quota Drive dépassé');
+    await this.notify('quota_exceeded', {
+      level: 'error',
+      message: 'Quota Drive dépassé',
+      action: 'cleanup_required'
+    });
   }
 
   private async notifyPermissionDenied(): Promise<void> {
-    // Implémentation notification permission
-    console.warn('Accès refusé');
+    await this.notify('permission_denied', {
+      level: 'error',
+      message: 'Accès refusé',
+      action: 'check_permissions'
+    });
+  }
+
+  private async notify(type: string, data: any): Promise<void> {
+    await fetch('/api/notifications', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ type, data })
+    });
   }
 }
