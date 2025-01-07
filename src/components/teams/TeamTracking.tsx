@@ -12,26 +12,26 @@ export default function TeamTracking() {
   const [teams, setTeams] = useState<Team[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const teamService = new TeamService();
-
+  
   useEffect(() => {
+    const fetchTeamData = async () => {
+      try {
+        setLoading(true);
+        const teamService = new TeamService();
+        const members = await teamService.getTeamAvailability();
+        const groupedTeams = groupMembersByTeam(members);
+        setTeams(groupedTeams);
+        setError(null);
+      } catch (err) {
+        setError('Erreur lors du chargement des données équipe');
+        console.error('Erreur TeamTracking:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
     fetchTeamData();
   }, []);
-
-  async function fetchTeamData() {
-    try {
-      setLoading(true);
-      const members = await teamService.getTeamAvailability();
-      const groupedTeams = groupMembersByTeam(members);
-      setTeams(groupedTeams);
-      setError(null);
-    } catch (err) {
-      setError('Erreur lors du chargement des données équipe');
-      console.error('Erreur TeamTracking:', err);
-    } finally {
-      setLoading(false);
-    }
-  }
 
   function groupMembersByTeam(members: TeamMember[]): Team[] {
     const grouped = members.reduce((acc, member) => {
@@ -44,8 +44,15 @@ export default function TeamTracking() {
     return Object.entries(grouped).map(([name, members]) => ({ name, members }));
   }
 
-  if (loading) return <div>Chargement...</div>;
-  if (error) return <div className="text-red-500">{error}</div>;
+  if (loading) return (
+    <div className="flex justify-center items-center h-64">
+      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
+    </div>
+  );
+
+  if (error) return (
+    <div className="text-red-500 p-4 text-center">{error}</div>
+  );
 
   return (
     <div className="p-6 max-w-7xl mx-auto">
@@ -84,7 +91,7 @@ function TeamCard({ team }: { team: Team }) {
                   <h3 className="font-medium">{member.name}</h3>
                   <p className="text-sm text-gray-500">{member.role}</p>
                 </div>
-                <span className={`px-2 py-1 rounded-full text-sm ${getAvailabilityColor(member.availability)}`}>
+                <span className={getAvailabilityClass(member.availability)}>
                   {member.availability}% dispo
                 </span>
               </div>
@@ -118,10 +125,11 @@ function TeamCard({ team }: { team: Team }) {
   );
 }
 
-function getAvailabilityColor(availability: number): string {
-  if (availability > 80) return 'bg-green-100 text-green-800';
-  if (availability > 40) return 'bg-yellow-100 text-yellow-800';
-  return 'bg-red-100 text-red-800';
+function getAvailabilityClass(availability: number): string {
+  const baseClass = 'px-2 py-1 rounded-full text-sm';
+  if (availability > 80) return `${baseClass} bg-green-100 text-green-800`;
+  if (availability > 40) return `${baseClass} bg-yellow-100 text-yellow-800`;
+  return `${baseClass} bg-red-100 text-red-800`;
 }
 
 function formatDate(date: Date): string {
