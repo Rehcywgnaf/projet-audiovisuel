@@ -17,7 +17,9 @@
     "tailwind-merge": "^2.2.0",
     "@radix-ui/react-slot": "^1.0.2",
     "lodash": "^4.17.21",
-    "papaparse": "^5.4.1"
+    "papaparse": "^5.4.1",
+    "googleapis": "^129.0.0",
+    "google-auth-library": "^9.4.1"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^6.1.5",
