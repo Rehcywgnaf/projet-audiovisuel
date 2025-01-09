@@ -1,15 +1,22 @@
-import Navigation from '@/components/Navigation';
-import '@/app/globals.css';
+import type { Metadata } from 'next';
+import { Inter } from 'next/font/google';
+import './globals.css';
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+const inter = Inter({ subsets: ['latin'] });
+
+export const metadata: Metadata = {
+  title: 'SAPAV',
+  description: 'Système d\'Aide aux Projets AudioVisuels',
+};
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <html lang="fr">
-      <body>
-        <Navigation />
-        <main className="pl-64">
-          {children}
-        </main>
-      </body>
+      <body className={inter.className}>{children}</body>
     </html>
   );
 }
