@@ -3,11 +3,11 @@ import { DriveAuth, DriveAuthProvider, DriveManagerTest } from '@/components/dri
 
 export default function Home() {
   return (
-    <DriveAuthProvider>
-      <main className="p-4 space-y-8">
+    <main className="p-4 space-y-8">
+      <DriveAuthProvider>
         <DriveAuth />
         <DriveManagerTest />
-      </main>
-    </DriveAuthProvider>
+      </DriveAuthProvider>
+    </main>
   );
 }
