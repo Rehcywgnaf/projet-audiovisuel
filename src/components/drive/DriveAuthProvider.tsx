@@ -1,5 +1,7 @@
+"use client";
+
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { DriveConfig } from '../../../services/drive/driveConfig';
+import { DriveConfig } from '@/services/drive';
 
 interface DriveAuthContextType {
   isAuthenticated: boolean;
@@ -26,9 +28,9 @@ export function DriveAuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const driveConfig = DriveConfig.getInstance();
       await driveConfig.initialize({
-        clientId: process.env.REACT_APP_GOOGLE_CLIENT_ID!,
-        clientSecret: process.env.REACT_APP_GOOGLE_CLIENT_SECRET!,
-        redirectUri: process.env.REACT_APP_GOOGLE_REDIRECT_URI!
+        clientId: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID!,
+        clientSecret: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_SECRET!,
+        redirectUri: process.env.NEXT_PUBLIC_GOOGLE_REDIRECT_URI!
       });
       setDriveInstance(driveConfig);
       
