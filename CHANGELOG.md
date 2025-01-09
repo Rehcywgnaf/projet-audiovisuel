@@ -1,5 +1,30 @@
 # Changelog
 
+## [1.2.8] - 2025-01-09
+### Added
+- UnifiedDriveManager : Nouveau composant unifié
+  - Fusion des fonctionnalités des branches main et integration
+  - Gestion authentification améliorée
+  - Système de cache optimisé
+  - Catégorisation AAP/AO
+  - Interface utilisateur unifiée avec shadcn/ui
+  - Gestion des permissions intégrée
+  - Surveillance de l'état des fichiers
+  - Synchronisation automatique
+- DriveManagerTest : Composant de test complet
+  - Test de l'authentification
+  - Test du système de cache
+  - Test de l'accès aux fichiers
+  - Interface de visualisation des résultats
+  - Système de surveillance d'erreurs
+  - Validation des workflows
+
+### Technical
+- Nouvelle structure de dossiers pour les composants Drive
+- Préparation pour les futurs composants (DriveSync, DrivePermissions)
+- Organisation modulaire des tests
+- Optimisation des performances de chargement
+
 ## [1.2.7] - 2025-01-07
 ### Fixed
 - Implémentation complète VeilleManager
