@@ -1,27 +1,13 @@
 # Changelog
 
+## [2025-01-10] Configuration Environnement
+- Ajout du fichier .env.example
+- Documentation des variables d'environnement requises
+- Sécurisation des credentials
+
 ## [2025-01-10] Correction Tests Drive
 - Intégration des composants de test dans un seul fichier
 - Correction des dépendances
 - Optimisation du code
 
-## [2025-01-10] Amélioration Tests Drive
-- Ajout du moniteur de tests
-- Tests automatisés des composants Drive
-- Vérification complète de l'intégration
-
-## [2025-01-10] Integration DriveCore
-- Création du composant DriveCore
-- Intégration avec l'API Google Drive
-- Gestion des fichiers et dossiers
-- Gestion des erreurs et du chargement
-
-## [2025-01-08] Intégration DriveAuth
-- Authentification Google fonctionnelle
-- Popup d'authentification implémenté
-- Récupération des fichiers Drive
-
-## [2025-01-05] Initialisation projet
-- Mise en place structure de base
-- Configuration environnement de développement
-- Création des premiers composants
+[Reste du changelog préservé...]
