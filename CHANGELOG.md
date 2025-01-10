@@ -1,5 +1,11 @@
 # Changelog
 
+## [2025-01-10] Test Intégration Drive
+- Création du composant de test DriveIntegrationTest
+- Tests d'intégration DriveAuth et DriveCore
+- Validation du flux d'authentification
+- Vérification de la transmission du token
+
 ## [2025-01-10] Integration DriveCore
 - Création du composant DriveCore
 - Intégration avec l'API Google Drive
