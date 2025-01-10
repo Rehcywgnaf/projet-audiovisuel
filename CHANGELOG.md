@@ -1,8 +1,10 @@
 # Changelog
 
 ## [2025-01-10] Integration DriveCore
-- Analyse de la compatibilité avec DriveAuth
-- Préparation de l'intégration des composants Drive
+- Création du composant DriveCore
+- Intégration avec l'API Google Drive
+- Gestion des fichiers et dossiers
+- Gestion des erreurs et du chargement
 
 ## [2025-01-08] Intégration DriveAuth
 - Authentification Google fonctionnelle
