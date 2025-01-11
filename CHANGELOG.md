@@ -45,3 +45,13 @@
   - Gestion des états de chargement
   - Affichage des disponibilités
   - Calcul de charge par membre
+## [En cours] Integration DriveCore
+- Analyse de la compatibilité avec DriveAuth
+- Préparation de l'intégration des composants Drive
+
+### Technical
+- Suppression des placeholders de code
+- Amélioration de la gestion d'erreurs
+- Documentation des interfaces
+
+[Tout le contenu du CHANGELOG continue ici avec l'historique que vous m'avez fourni...]
