@@ -43,4 +43,20 @@
 - Organisation modulaire des tests
 - Optimisation des performances de chargement
 
-[Reste du CHANGELOG inchangé...]
+## [1.2.7] - 2025-01-07
+### Fixed
+- Implémentation complète VeilleManager
+  - Analyse intelligente des flux RSS
+  - Extraction automatique des dates limites
+  - Détection du budget et des critères
+- Implémentation TeamTracking
+  - Gestion des états de chargement
+  - Affichage des disponibilités
+  - Calcul de charge par membre
+
+### Technical
+- Suppression des placeholders de code
+- Amélioration de la gestion d'erreurs
+- Documentation des interfaces
+
+[Le reste du CHANGELOG continue comme précédemment, avec tout l'historique préservé jusqu'à la version initiale 0.1.0]
