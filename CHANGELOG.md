@@ -1,5 +1,33 @@
 # Changelog
 
+## [1.3.1] - 2025-01-11
+
+### Restructuration Majeure
+- Refonte de l'architecture des composants pour une meilleure modularité
+- Séparation claire des responsabilités entre composants
+- Introduction de composants partagés réutilisables
+
+### Ajouté
+- Composants UI partagés sous src/components/shared/
+  - Système de cartes modulaire (ItemCard)
+  - Gestion des suggestions (SuggestionItem)
+  - Composants de statut réutilisables
+- Service de notification centralisé
+  - Gestion unifiée des notifications
+  - Support pour différents types de notifications
+  - Système d'abonnement/publication
+
+### Modifié
+- Refactorisation des composants existants
+  - Dashboard utilise maintenant les composants partagés
+  - TagSuggestions utilise le nouveau système de suggestions
+  - ProjectList utilise le système de cartes unifié
+
+### Améliorations
+- Meilleure cohérence visuelle entre les composants
+- Réduction de la duplication de code
+- Facilitation des futures évolutions
+
 ## [1.3.0] - 2025-01-11
 ### Remanié
 - Séparation claire des composants Drive
