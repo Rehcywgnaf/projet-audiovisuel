@@ -53,5 +53,3 @@
 - Suppression des placeholders de code
 - Amélioration de la gestion d'erreurs
 - Documentation des interfaces
-
-[Tout le contenu du CHANGELOG continue ici avec l'historique que vous m'avez fourni...]
