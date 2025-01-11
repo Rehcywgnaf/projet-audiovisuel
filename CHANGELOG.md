@@ -45,5 +45,3 @@
   - Gestion des états de chargement
   - Affichage des disponibilités
   - Calcul de charge par membre
-
-[Suite du CHANGELOG existant...]
