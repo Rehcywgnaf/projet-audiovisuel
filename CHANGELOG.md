@@ -1,5 +1,18 @@
 # Changelog
 
+# Version 1.4.2 - 12/01/2025
+
+## Added
+- Interface unifiée DrivePerms/TeamsPerms
+- PermissionsManager centralisé
+- Middleware vérification permissions
+- Tests unitaires permissions
+
+## Changed
+- Taux duplication code : 35% → 30%
+- Optimisation cache permissions
+- Workflow validation accès
+
 ## [1.3.1] - 2025-01-11
 
 ### Restructuration Majeure
