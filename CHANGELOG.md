@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.4.3] - 2025-01-12
+### Removed
+- Ancien composant DrivePermissions.jsx remplacé par la version TypeScript
+  - Suppression des doublons dans l'interface utilisateur
+  - Consolidation vers la version avec support complet des fonctionnalités
+  - Migration finale vers TypeScript
+
+### Changed
+- DrivePermissions.tsx devient le composant unique de gestion des permissions
+  - Support complet de l'héritage des permissions
+  - Interface utilisateur unifiée
+  - Intégration complète avec shadcn/ui
+
 # Version 1.4.2 - 12/01/2025
 
 ## Added
