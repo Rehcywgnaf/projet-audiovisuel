@@ -1,42 +1,42 @@
-// Types communs
-export type ResourceId = string;
-export type UserId = string;
-
-// Types DriveCore
 export interface DriveOperation {
   type: 'create' | 'read' | 'update' | 'delete';
-  resourceId?: ResourceId;
-  payload?: any;
+  fileId?: string;
+  content?: any;
+  metadata?: {
+    name: string;
+    folderId?: string;
+    mimeType?: string;
+  };
 }
 
-// Types DriveSync
-export type SyncStatus = 'synced' | 'pending' | 'error' | 'unknown';
-
-export interface SyncOperation extends DriveOperation {
-  fileId: string;
-  timestamp: Date;
-  retryCount?: number;
+export interface FileMetadata {
+  id?: string;
+  name: string;
+  mimeType?: string;
+  parents?: string[];
+  modifiedTime?: string;
+  size?: string;
+  version?: string;
+  webViewLink?: string;
+  permissions?: DrivePermission[];
 }
 
-// Types DrivePerms
-export enum PermissionLevel {
-  READ = 1,
-  WRITE = 2,
-  ADMIN = 3
+export interface DrivePermission {
+  id: string;
+  type: 'user' | 'group' | 'domain' | 'anyone';
+  emailAddress?: string;
+  role: 'owner' | 'writer' | 'reader';
+  displayName?: string;
 }
 
-export interface Permission {
-  userId: UserId;
-  resourceId: ResourceId;
-  level: PermissionLevel;
-  grantedAt: Date;
-  grantedBy: UserId;
+export interface DriveResponse {
+  data: any;
+  status: number;
+  headers: any;
 }
 
-export interface AccessAudit {
-  timestamp: Date;
-  action: 'set_permission' | 'revoke_permission' | 'check_permission';
-  userId: UserId;
-  resourceId: ResourceId;
-  level?: PermissionLevel;
+export interface CacheConfig {
+  enabled: boolean;
+  ttl: number; // Time to live in seconds
+  maxSize: number; // Maximum cache size in MB
 }
