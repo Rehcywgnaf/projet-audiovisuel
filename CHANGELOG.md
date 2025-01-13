@@ -1,5 +1,30 @@
 # Changelog
 
+## [1.4.4] - 2025-01-13
+### Added
+- Implémentation complète de DriveCore
+ - Interface unifiée avec Google Drive API
+ - Gestion CRUD optimisée
+ - Support des types MIME
+ - Intégration système de cache
+
+- CacheManager pour l'optimisation des performances
+ - Cache intelligent avec TTL
+ - Gestion automatique de l'espace
+ - Invalidation sélective
+ - Statistiques d'utilisation
+
+- Système complet de gestion d'erreurs
+ - Traitement unifié des erreurs
+ - Retry automatique configurable
+ - Logging détaillé
+ - Support événementiel
+
+### Changed
+- Architecture Drive consolidée et optimisée
+- Réduction de la duplication de code
+- Amélioration des performances globales
+
 ## [1.4.3] - 2025-01-12
 ### Removed
 - Ancien composant DrivePermissions.jsx remplacé par la version TypeScript
