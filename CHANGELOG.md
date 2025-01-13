@@ -1,5 +1,27 @@
 # Changelog
 
+## [1.4.8] - 2025-01-13
+
+### Added
+- Système d'audit et de journalisation des événements
+  - EventSystem pour la gestion centralisée des événements
+  - AuditService pour le traitement des logs d'audit
+  - Handlers d'événements spécifiques
+- Intégration du système d'audit avec TeamTracking
+  - Suivi des modifications d'équipe
+  - Journalisation des changements de disponibilité
+  - Traçabilité des ajouts de membres
+
+### Changed
+- Refactorisation de TeamTracking pour utilisation des événements
+- Amélioration de la structure des logs d'audit
+- Optimisation de la gestion des événements prioritaires
+
+### Security
+- Ajout de la validation des événements critiques
+- Mise en place du système de rotation des logs
+- Traçabilité complète des modifications sensibles
+
 ## [1.4.7] - 2025-01-13
 ### Documentation
 - Mise à jour du diagramme d'architecture principal reflétant l'état actuel du système
