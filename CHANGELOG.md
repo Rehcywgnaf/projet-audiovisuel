@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.4.6] - 2025-01-13
+### Ajouté
+- Tests unitaires et d'intégration pour TemplateManager
+- Tests unitaires et d'intégration pour DocumentManager
+- Coverage tests > 80% pour les composants template/document
+
+### Amélioré
+- Restructuration des tests par composant
+- Ajout de mocks pour les appels API
+- Documentation des tests dans /docs/technical/
+
 ## [1.4.5] - 2025-01-13
 ### Refactoring
 - Réorganisation de l'architecture Template/Document Management
