@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.4.5] - 2025-01-13
+### Refactoring
+- Réorganisation de l'architecture Template/Document Management
+  - Suppression de DocManager.tsx obsolète
+  - Création des composants TemplateManager
+  - Déplacement de AIEnhancedEditor vers TemplateManager/AIEditor
+  - Ajout de StructureManager
+
+### Ajouts
+- Nouveau système de gestion des templates
+  - TemplateCatalog : Affichage et sélection des modèles
+  - StructureManager : Validation et gestion de structure
+  - Types fortement typés pour les templates
+
 ## [1.4.4] - 2025-01-13
 ### Added
 - Implémentation complète de DriveCore
