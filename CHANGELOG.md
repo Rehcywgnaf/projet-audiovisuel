@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.4.7] - 2025-01-13
+### Documentation
+- Mise à jour du diagramme d'architecture principal reflétant l'état actuel du système
+- Suppression des diagrammes redondants pour une meilleure clarté
+- Consolidation de la documentation technique sous docs/diagrams/
+
 ## [1.4.6] - 2025-01-13
 ### Ajouté
 - Tests unitaires et d'intégration pour TemplateManager
