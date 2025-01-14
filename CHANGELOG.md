@@ -1,5 +1,25 @@
 # Changelog
 
+## [1.5.0] - 2025-01-14
+### Added
+- Système de validation des documents
+  - Composant DocumentValidator pour interface temps réel
+  - Hook useDocumentValidation pour la logique métier
+  - Support multi-formats (DOC, DOCX, PDF, ODT)
+  - Validation intelligente des métadonnées
+  - Tests automatisés complets
+
+### Changed
+- Intégration avec système d'audit (EventSystem)
+- Optimisation des retours utilisateur
+- Extension du système de validation existant
+
+### Technical
+- Nouveaux composants React avec shadcn/ui
+- Architecture modulaire pour évolutions futures
+- Tests unitaires et d'intégration
+- Performance : validation temps réel optimisée
+
 ## [1.4.9] - 2025-01-14
 
 ### Changed
