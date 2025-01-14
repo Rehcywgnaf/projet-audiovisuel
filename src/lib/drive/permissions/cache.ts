@@ -64,5 +64,4 @@ class PermissionCache {
 }
 
 export const permissionCache = new PermissionCache();
-
 export default PermissionCache;
