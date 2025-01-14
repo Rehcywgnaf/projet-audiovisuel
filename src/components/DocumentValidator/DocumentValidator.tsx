@@ -1,0 +1,1 @@
+[Le contenu du DocumentValidator.tsx créé précédemment]
