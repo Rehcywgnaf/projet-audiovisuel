@@ -1,0 +1,21 @@
+sequenceDiagram
+    participant U as User
+    participant DV as DocumentValidator
+    participant EV as EventSystem
+    participant DM as DocumentManager
+    participant AL as AuditLogs
+
+    U->>DV: Upload Document
+    DV->>DV: Validate Format & Size
+    DV->>DV: Check Metadata
+    
+    alt Valid Document
+        DV->>EV: Emit Validation Success
+        EV->>DM: Store Document
+        EV->>AL: Log Success
+        DM-->>U: Confirm Success
+    else Invalid Document
+        DV->>EV: Emit Validation Error
+        EV->>AL: Log Error
+        DV-->>U: Show Error Details
+    end
