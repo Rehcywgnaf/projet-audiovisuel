@@ -1,0 +1,29 @@
+graph LR
+    subgraph "Étape 1: Upload"
+        A[Sélection Document] --> B[Vérification Format]
+        B --> C{Format Valide?}
+        C -->|Non| D[Message Erreur<br>Formats Acceptés]
+        C -->|Oui| E[Validation Taille]
+    end
+
+    subgraph "Étape 2: Métadonnées"
+        E --> F[Formulaire<br>Métadonnées]
+        F --> G[Validation<br>Temps Réel]
+        G --> H{Métadonnées<br>Complètes?}
+        H -->|Non| I[Indication<br>Champs Requis]
+        H -->|Oui| J[Aperçu<br>Document]
+    end
+
+    subgraph "Étape 3: Confirmation"
+        J --> K{Valider?}
+        K -->|Non| F
+        K -->|Oui| L[Sauvegarde<br>& Audit]
+    end
+
+    style A fill:#f9f,stroke:#333
+    style C fill:#ffd700,stroke:#333
+    style H fill:#ffd700,stroke:#333
+    style K fill:#ffd700,stroke:#333
+    style L fill:#90EE90,stroke:#333
+    style D fill:#FFB6C1,stroke:#333
+    style I fill:#FFB6C1,stroke:#333
