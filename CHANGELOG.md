@@ -1,5 +1,24 @@
 # Changelog
 
+## [1.4.9] - 2025-01-14
+
+### Changed
+- Refactorisation du composant TeamTracking
+  - Fusion avec TeamMemberForm pour une meilleure cohésion
+  - Implémentation des validations en temps réel
+  - Optimisation de la gestion d'état
+  - Suppression des dépendances externes
+
+### Improved
+- Validation des formulaires
+  - Vérification en temps réel des entrées
+  - Messages d'erreur contextuels
+  - Support multi-langues pour les messages d'erreur
+
+### Removed
+- Composant TeamMemberForm (fusionné dans TeamTracking)
+- Dépendances non supportées
+
 ## [1.4.8] - 2025-01-13
 
 ### Added
