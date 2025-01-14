@@ -1,5 +1,28 @@
 # Changelog
 
+## [1.5.1] - 2025-01-14
+### Changed
+- Refactorisation majeure des composants Template pour une meilleure maintenabilité
+  - Séparation en composants plus petits et spécialisés
+  - TemplateUI : Interface utilisateur de base (~45 lignes)
+  - TemplateFeatures : Gestion des fonctionnalités IA (~50 lignes)
+  - PermissionChecker : Logique de permissions (~90 lignes)
+
+### Added
+- Tests unitaires complets pour chaque composant
+  - Tests du rendu et des props pour TemplateUI
+  - Tests de contrôle d'accès pour TemplateFeatures
+  - Tests de cache et permissions pour PermissionChecker
+- Documentation technique détaillée
+  - Tests par composant dans __tests__/
+  - Mocks configurés pour les dépendances
+  - Couverture complète des cas d'utilisation
+
+### Technical
+- Amélioration de la cohérence des imports avec @/
+- Standardisation des tests avec React Testing Library
+- Organisation claire des responsabilités
+
 ## [1.5.0] - 2025-01-14
 ### Added
 - Système de validation des documents
