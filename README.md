@@ -27,6 +27,8 @@ SAPAV est une plateforme innovante dédiée au soutien et à l'accompagnement de
    - Système de commentaires collaboratif
    - Import/Export multi-formats
    - Collaboration en temps réel
+   - Validation automatique des documents
+   - Vérification temps réel des formats
 
 ## Documentation Technique
 Pour plus de détails, consultez :
@@ -34,6 +36,7 @@ Pour plus de détails, consultez :
 - `/docs/technical/RSS-IA-Integration.md` : Système RSS-IA
 - `/docs/technical/AIEnhancedEditor.md` : Éditeur augmenté
 - `/docs/technical/version-system/` : Système de versions
+- `/docs/technical/document-validation/` : Système de validation
   
 ## 🚀 Fonctionnalités principales
 
@@ -57,6 +60,11 @@ Pour plus de détails, consultez :
   - Support temps réel via WebSocket
   - Interaction avec le système de suggestions IA
   - Interface responsive et intuitive
+- Système de validation intelligent des documents
+  - Validation temps réel des formats (DOC, DOCX, PDF, ODT)
+  - Vérification automatique des métadonnées
+  - Contrôle de cohérence des contenus
+  - Interface de feedback immédiat
 - Personnalisation avancée des documents
 - Système de feedback et révision
 - Gestion avancée des deadlines
@@ -83,6 +91,10 @@ Pour plus de détails, consultez :
 - Générateur de documents IA
 - Système de commentaires temps réel
 - VersionHistory et VersionControl pour le système de versions
+- DocumentValidator pour la validation intelligente
+  - Interface temps réel
+  - Feedback utilisateur contextuel
+  - Intégration système d'audit
 
 ### Backend
 - Services Email et RSS
@@ -91,6 +103,10 @@ Pour plus de détails, consultez :
 - Gestion des authentifications
 - Moteur d'analyse IA
 - VersionManager et RollbackManager
+- Système de validation documentaire
+  - Validation des formats et métadonnées
+  - Contrôle d'intégrité
+  - Journalisation sécurisée
 
 ### Composants Drive
 - DeadlineManager
@@ -98,6 +114,11 @@ Pour plus de détails, consultez :
 - DriveSync
 - ErrorHandling
 - VersionStore pour le stockage optimisé
+- DocumentValidator
+  - Validation temps réel
+  - Gestion des formats
+  - Intégration audit
+  - Tests automatisés
 
 ## 📦 Installation
 
@@ -107,64 +128,56 @@ Pour plus de détails, consultez :
 - npm ou yarn
 - Compte Google Workspace
 - Droits d'administration
-```
+Configuration
 
-### Configuration
-1. Cloner le repository
-```bash
-git clone [URL_REPO_PRIVÉ]
+Cloner le repository
+
+bashCopygit clone [URL_REPO_PRIVÉ]
 cd sapav
-```
 
-2. Installer les dépendances
-```bash
-npm install
-```
+Installer les dépendances
 
-3. Configurer les variables d'environnement
-```bash
-cp .env.example .env
+bashCopynpm install
+
+Configurer les variables d'environnement
+
+bashCopycp .env.example .env
 # Éditer .env avec vos paramètres
-```
 
-4. Lancer l'application
-```bash
-npm run dev
-```
+Lancer l'application
 
-## 🔧 Guide d'utilisation
+bashCopynpm run dev
+🔧 Guide d'utilisation
+Configuration initiale
 
-### Configuration initiale
-1. Connexion avec compte Google Workspace
-2. Configuration des sources de veille
-3. Paramétrage des notifications
-4. Personnalisation des templates
+Connexion avec compte Google Workspace
+Configuration des sources de veille
+Paramétrage des notifications
+Personnalisation des templates
 
-### Utilisation quotidienne
-1. Dashboard de suivi
-2. Génération et édition des documents
-3. Suivi des deadlines
-4. Reporting et statistiques
+Utilisation quotidienne
 
-## 📞 Support
+Dashboard de suivi
+Génération et édition des documents
+Suivi des deadlines
+Reporting et statistiques
 
-### Support technique
-- Email : support@sapav.com
-- Documentation : /docs
-- Wiki : [URL_WIKI]
+📞 Support
+Support technique
 
-### Ressources
-- Guide utilisateur : /docs/user-guide
-- Documentation API : /docs/api
-- Tutoriels vidéo : /docs/tutorials
+Email : support@sapav.com
+Documentation : /docs
+Wiki : [URL_WIKI]
 
-## 📄 Licence
+Ressources
 
+Guide utilisateur : /docs/user-guide
+Documentation API : /docs/api
+Tutoriels vidéo : /docs/tutorials
+
+📄 Licence
 Projet privé - Tous droits réservés
+🔄 Mises à jour
+Consultez le CHANGELOG.md pour l'historique des modifications.
 
-## 🔄 Mises à jour
-
-Consultez le [CHANGELOG.md](./CHANGELOG.md) pour l'historique des modifications.
-
----
-*Note: Ce README est maintenu à jour via le repository GitHub. Pour plus de détails techniques, consultez la documentation dans le dossier `/docs`.*
+Note: Ce README est maintenu à jour via le repository GitHub. Pour plus de détails techniques, consultez la documentation dans le dossier /docs.
