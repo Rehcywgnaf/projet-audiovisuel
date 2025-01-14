@@ -30,6 +30,14 @@ SAPAV est une plateforme innovante dédiée au soutien et à l'accompagnement de
    - Validation automatique des documents
    - Vérification temps réel des formats
 
+4. **Système de Templates**
+   - Architecture modulaire et testable
+   - TemplateUI : Interface utilisateur de base
+   - TemplateFeatures : Gestion des fonctionnalités IA
+   - PermissionChecker : Contrôle d'accès intelligent
+   - Tests unitaires complets
+   - Documentation détaillée
+
 ## Documentation Technique
 Pour plus de détails, consultez :
 - `/docs/technical/SAPAV-Architecture.md` : Architecture globale
@@ -37,6 +45,7 @@ Pour plus de détails, consultez :
 - `/docs/technical/AIEnhancedEditor.md` : Éditeur augmenté
 - `/docs/technical/version-system/` : Système de versions
 - `/docs/technical/document-validation/` : Système de validation
+- `/docs/technical/template-system/` : Architecture des templates
   
 ## 🚀 Fonctionnalités principales
 
@@ -50,6 +59,9 @@ Pour plus de détails, consultez :
 - Génération IA de documents basée sur l'analyse des AAP/AO
 - Suggestions contextuelles intelligentes
 - Templates spécialisés par type de projet
+  - Interface modulaire et maintenable
+  - Gestion intelligente des permissions
+  - Support IA intégré
 - Intégration Google Drive native avec système de versions avancé
   - Gestion centralisée via VersionManager
   - Interface intuitive VersionHistory
@@ -95,6 +107,10 @@ Pour plus de détails, consultez :
   - Interface temps réel
   - Feedback utilisateur contextuel
   - Intégration système d'audit
+- Système de Templates Modulaire
+  - Composants légers et spécialisés
+  - Tests unitaires exhaustifs
+  - Documentation maintenue à jour
 
 ### Backend
 - Services Email et RSS
