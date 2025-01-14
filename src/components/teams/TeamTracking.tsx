@@ -1,26 +1,25 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Users, Film, Calendar } from 'lucide-react';
-import { EventSystem } from '../../services/events/EventSystem';
+import TeamMemberForm from './TeamMemberForm';
 
 export default function TeamTracking() {
-  const eventSystem = EventSystem.getInstance();
-  
-  const teams = [
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [teams, setTeams] = useState([
     {
       name: 'Équipe Technique',
       members: [
         {
           name: 'Jean Dupont',
           role: 'Directeur Technique',
-          availability: '80%',
+          availability: '80',
           currentProjects: ['Documentaire Nature'],
           nextAvailable: '15 Feb 2024'
         },
         {
           name: 'Marie Martin',
           role: 'Cadreur',
-          availability: '100%',
+          availability: '100',
           currentProjects: ['Web-série Innovation'],
           nextAvailable: 'Disponible'
         }
@@ -32,71 +31,61 @@ export default function TeamTracking() {
         {
           name: 'Pierre Dubois',
           role: 'Producteur',
-          availability: '50%',
+          availability: '50',
           currentProjects: ['Documentaire Nature', 'Web-série Innovation'],
           nextAvailable: '1 Mar 2024'
         }
       ]
     }
-  ];
+  ]);
 
-  const emitTeamEvent = (action: string, details: any) => {
-    const eventData = {
-      action,
-      data: details,
-      timestamp: new Date(),
-      userId: 'current_user_id',
-      source: 'TeamTracking'
-    };
-    eventSystem.emit('team:update', eventData);
-  };
-
-  const handleAddMember = () => {
-    emitTeamEvent('add_member', {
-      teamId: 'current_team_id',
-      details: {
-        action: 'member_added',
-        status: 'pending'
+  const handleAddMember = (newMember) => {
+    // Par défaut, ajout à l'équipe technique
+    const updatedTeams = teams.map(team => {
+      if (team.name === 'Équipe Technique') {
+        return {
+          ...team,
+          members: [...team.members, {
+            ...newMember,
+            currentProjects: [],
+            nextAvailable: 'Disponible'
+          }]
+        };
       }
+      return team;
     });
+    setTeams(updatedTeams);
+    setShowAddForm(false);
   };
 
-  const handleAvailabilityChange = (memberId: string, newAvailability: string) => {
-    emitTeamEvent('update_availability', {
-      memberId,
-      newAvailability,
-      previousAvailability: getCurrentAvailability(memberId)
-    });
-  };
-
-  // Fonction utilitaire pour obtenir la disponibilité actuelle
-  const getCurrentAvailability = (memberId: string): string => {
-    for (const team of teams) {
-      for (const member of team.members) {
-        if (member.name === memberId) {
-          return member.availability;
-        }
-      }
-    }
-    return '';
+  const handleAvailabilityChange = (teamIndex, memberIndex, newAvailability) => {
+    const updatedTeams = [...teams];
+    updatedTeams[teamIndex].members[memberIndex].availability = newAvailability;
+    setTeams(updatedTeams);
   };
 
   return (
     <div className="p-6 max-w-7xl mx-auto">
       <div className="mb-6 flex items-center justify-between">
         <h1 className="text-2xl font-bold">Suivi des Équipes</h1>
-        <button 
+        <button
+          onClick={() => setShowAddForm(!showAddForm)}
           className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2"
-          onClick={handleAddMember}
         >
           <Users className="w-4 h-4" />
-          Ajouter membre
+          {showAddForm ? 'Fermer' : 'Ajouter membre'}
         </button>
       </div>
 
+      {showAddForm && (
+        <div className="mb-6">
+          <TeamMemberForm onSubmit={handleAddMember} />
+        </div>
+      )}
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {teams.map((team, index) => (
-          <Card key={index}>
+        {teams.map((team, teamIndex) => (
+          <Card key={teamIndex}>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Users className="w-5 h-5" />
@@ -105,8 +94,8 @@ export default function TeamTracking() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {team.members.map((member, idx) => (
-                  <div key={idx} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
+                {team.members.map((member, memberIndex) => (
+                  <div key={memberIndex} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
                     <div className="flex justify-between items-start mb-3">
                       <div>
                         <h3 className="font-medium">{member.name}</h3>
@@ -120,9 +109,9 @@ export default function TeamTracking() {
                             ? 'bg-yellow-100 text-yellow-800'
                             : 'bg-red-100 text-red-800'
                         }`}
-                        onClick={() => handleAvailabilityChange(member.name, member.availability)}
+                        onClick={() => handleAvailabilityChange(teamIndex, memberIndex, member.availability)}
                       >
-                        {member.availability} dispo
+                        {member.availability}% dispo
                       </span>
                     </div>
                     
