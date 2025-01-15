@@ -1,5 +1,34 @@
 # Changelog
 
+## [1.5.2] - 2025-01-15
+### Added
+- Tests d'intégration complets RSS-IA et TemplateManager
+  - Test du workflow complet de détection AAP/AO à la génération du template
+  - Validation des interactions entre composants
+  - Tests de performance (<200ms par rendu)
+  - Couverture complète des cas d'erreur
+  
+### Technical
+- Documentation technique des tests d'intégration
+  - Guide détaillé dans /docs/technical/integration-tests/
+  - Configuration des mocks et données de test
+  - Scénarios de test documentés
+  - Métriques de performance attendues
+
+### Changed
+- Amélioration de la robustesse de l'intégration RSS-IA
+  - Gestion optimisée des erreurs de chargement
+  - Validation renforcée des métadonnées
+  - États de chargement plus précis
+
+### Tests
+- Nouveaux tests pour les composants modulaires :
+  - TemplateUI
+  - TemplateFeatures
+  - PermissionChecker
+- Tests de performance avec métriques
+- Tests de gestion d'erreurs
+
 ## [1.5.1] - 2025-01-14
 ### Changed
 - Refactorisation majeure des composants Template pour une meilleure maintenabilité
