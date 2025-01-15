@@ -24,6 +24,11 @@
 - ✅ Extracteur de Données - *Structuration validée*
 - 🟡 Moteur Analyse Contextuelle - *Optimisation en cours*
 
+### Communication
+- ✅ Intégration Google Chat - *Fonctionnelle*
+- ✅ Gestion des espaces - *Tests validés*
+- ✅ Gestion des membres - *Implémentée*
+
 ## Gestion des Documents
 
 ### Template System
@@ -99,11 +104,10 @@
 - 🟡 Guide Utilisateur - *En rédaction*
 
 ## Points Bloquants Prioritaires pour la Beta
-1. ❌ Implémentation WebSocket pour système de commentaires
-2. ❌ Setup des tests E2E
-3. ❌ Tests de charge Drive
-4. ❌ Formation de l'équipe support
-5. ❌ Configuration du Load Balancer
+1. ❌ Setup des tests E2E
+2. ❌ Tests de charge Drive
+3. ❌ Formation de l'équipe support
+4. ❌ Configuration du Load Balancer
 
 ---
 *Note : Cette checklist est maintenue par l'équipe de développement. Pour toute mise à jour, créer une pull request avec les modifications.*
