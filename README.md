@@ -14,6 +14,7 @@ SAPAV est une plateforme innovante dédiée au soutien et à l'accompagnement de
    - Veille automatisée des opportunités
    - Analyse intelligente des AAP/AO
    - Extraction de données structurées
+   - Tests d'intégration complets
    - Enrichissement contextuel
 
 2. **AIEnhancedEditor**
@@ -32,10 +33,10 @@ SAPAV est une plateforme innovante dédiée au soutien et à l'accompagnement de
 
 4. **Système de Templates**
    - Architecture modulaire et testable
-   - TemplateUI : Interface utilisateur de base
-   - TemplateFeatures : Gestion des fonctionnalités IA
-   - PermissionChecker : Contrôle d'accès intelligent
-   - Tests unitaires complets
+   - TemplateUI : Interface utilisateur de base (~45 lignes)
+   - TemplateFeatures : Gestion des fonctionnalités IA (~50 lignes)
+   - PermissionChecker : Contrôle d'accès intelligent (~90 lignes)
+   - Tests unitaires et d'intégration complets
    - Documentation détaillée
 
 ## Documentation Technique
@@ -46,6 +47,7 @@ Pour plus de détails, consultez :
 - `/docs/technical/version-system/` : Système de versions
 - `/docs/technical/document-validation/` : Système de validation
 - `/docs/technical/template-system/` : Architecture des templates
+- `/docs/technical/integration-tests/` : Tests d'intégration
   
 ## 🚀 Fonctionnalités principales
 
@@ -54,14 +56,16 @@ Pour plus de détails, consultez :
 - Agrégation multi-sources (CNC, régions, plateformes...)
 - Système de notification personnalisé
 - Analyse de pertinence intégrée
+- Tests d'intégration validés
 
 ### 2. Gestion Documentaire
 - Génération IA de documents basée sur l'analyse des AAP/AO
 - Suggestions contextuelles intelligentes
 - Templates spécialisés par type de projet
-  - Interface modulaire et maintenable
+  - Interface modulaire et maintainable
   - Gestion intelligente des permissions
   - Support IA intégré
+  - Tests de performance (<200ms)
 - Intégration Google Drive native avec système de versions avancé
   - Gestion centralisée via VersionManager
   - Interface intuitive VersionHistory
