@@ -7,7 +7,7 @@ SAPAV est une plateforme innovante dédiée au soutien et à l'accompagnement de
 - Gestion documentaire avancée avec génération IA
 - Suivi intelligent des candidatures
 - Accompagnement personnalisé des projets
-- Système de commentaires collaboratifs en temps réel
+- Système de commentaires collaboratifs via Google Chat intégré
 
 ### Composants Principaux
 1. **Système RSS-IA**
@@ -38,6 +38,12 @@ SAPAV est une plateforme innovante dédiée au soutien et à l'accompagnement de
    - PermissionChecker : Contrôle d'accès intelligent (~90 lignes)
    - Tests unitaires et d'intégration complets
    - Documentation détaillée
+
+5. **ChatIntegration**
+   - Espaces de discussion par projet
+   - Gestion des membres intégrée
+   - Utilisation de l'API Google Chat native
+   - Authentification unifiée avec Google Workspace
 
 ## Documentation Technique
 Pour plus de détails, consultez :
@@ -71,11 +77,11 @@ Pour plus de détails, consultez :
   - Interface intuitive VersionHistory
   - Rollback sécurisé avec RollbackManager
   - Optimisation des performances de stockage
-- Système de commentaires collaboratifs en temps réel
-  - Catégorisation des commentaires par type
-  - Support temps réel via WebSocket
-  - Interaction avec le système de suggestions IA
-  - Interface responsive et intuitive
+- Système de commentaires collaboratifs en temps réel via Google Chat
+  - Espaces de discussion dédiés par projet
+  - Gestion intégrée des membres
+  - Communication native Google Workspace
+  - Interface unifiée et intuitive
 - Système de validation intelligent des documents
   - Validation temps réel des formats (DOC, DOCX, PDF, ODT)
   - Vérification automatique des métadonnées
@@ -105,7 +111,10 @@ Pour plus de détails, consultez :
 - Interface Google Drive
 - Système de suivi des équipes
 - Générateur de documents IA
-- Système de commentaires temps réel
+- Intégration Google Chat
+  - Gestion des espaces de discussion
+  - Interface de gestion des membres
+  - Communication temps réel native
 - VersionHistory et VersionControl pour le système de versions
 - DocumentValidator pour la validation intelligente
   - Interface temps réel
@@ -167,6 +176,9 @@ npm install
 ```bash
 cp .env.example .env
 # Éditer .env avec vos paramètres
+# - NEXT_PUBLIC_GOOGLE_CLIENT_ID pour OAuth
+# - NEXT_PUBLIC_GOOGLE_API_KEY pour Drive
+# - NEXT_PUBLIC_GOOGLE_CHAT_SCOPE pour Chat
 ```
 
 4. Lancer l'application
@@ -181,6 +193,7 @@ npm run dev
 2. Configuration des sources de veille
 3. Paramétrage des notifications
 4. Personnalisation des templates
+5. Configuration des espaces de discussion
 
 ### Utilisation quotidienne
 1. Dashboard de suivi
