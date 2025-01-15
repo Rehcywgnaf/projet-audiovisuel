@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.5.3] - 2024-01-15
+### Ajouté
+- Intégration Google Chat pour la communication en temps réel
+  - Création d'espaces de discussion par projet
+  - Gestion des membres (ajout/suppression)
+  - Interface de gestion des espaces de discussion
+  - Utilisation des credentials Google existants
+
 ## [1.5.2] - 2025-01-15
 ### Added
 - Tests d'intégration complets RSS-IA et TemplateManager
