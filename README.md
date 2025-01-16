@@ -9,35 +9,46 @@ SAPAV est une plateforme innovante dédiée au soutien et à l'accompagnement de
 - Accompagnement personnalisé des projets
 - Système de commentaires collaboratifs via Google Chat intégré
 
+### Architecture IA
+Le projet utilise Claude-3 Sonnet d'Anthropic via une architecture centralisée :
+- AIServiceManager : Point d'entrée unique pour l'IA
+- Budget optimisé (max 15$/mois)
+- Cache intelligent par composant
+- Monitoring en temps réel des coûts
+
 ### Composants Principaux
 1. **Système RSS-IA**
    - Veille automatisée des opportunités
-   - Analyse intelligente des AAP/AO
+   - Analyse intelligente des AAP/AO via AIServiceManager
    - Extraction de données structurées
    - Tests d'intégration complets
    - Enrichissement contextuel
+   - Cache 1h, priorité haute
 
 2. **AIEnhancedEditor**
-   - Génération assistée de contenu
-   - Suggestions contextuelles
+   - Génération assistée de contenu via AIServiceManager
+   - Suggestions contextuelles en temps réel
    - Interface d'édition augmentée
    - Validation intelligente
+   - Cache 5min, priorité moyenne
 
 3. **DocumentManager**
    - Gestion centralisée des versions (VersionManager)
    - Système de commentaires collaboratif
    - Import/Export multi-formats
    - Collaboration en temps réel
-   - Validation automatique des documents
+   - Validation automatique des documents via AIServiceManager
    - Vérification temps réel des formats
+   - Cache 10min, priorité moyenne
 
 4. **Système de Templates**
    - Architecture modulaire et testable
    - TemplateUI : Interface utilisateur de base (~45 lignes)
-   - TemplateFeatures : Gestion des fonctionnalités IA (~50 lignes)
+   - TemplateFeatures : Gestion des fonctionnalités IA via AIServiceManager
    - PermissionChecker : Contrôle d'accès intelligent (~90 lignes)
    - Tests unitaires et d'intégration complets
    - Documentation détaillée
+   - Cache 24h, priorité basse
 
 5. **ChatIntegration**
    - Espaces de discussion par projet
@@ -48,12 +59,14 @@ SAPAV est une plateforme innovante dédiée au soutien et à l'accompagnement de
 ## Documentation Technique
 Pour plus de détails, consultez :
 - `/docs/technical/SAPAV-Architecture.md` : Architecture globale
+- `/docs/technical/AI-Integration-Guide.md` : Architecture IA centralisée
 - `/docs/technical/RSS-IA-Integration.md` : Système RSS-IA
 - `/docs/technical/AIEnhancedEditor.md` : Éditeur augmenté
 - `/docs/technical/version-system/` : Système de versions
 - `/docs/technical/document-validation/` : Système de validation
 - `/docs/technical/template-system/` : Architecture des templates
 - `/docs/technical/integration-tests/` : Tests d'intégration
+
   
 ## 🚀 Fonctionnalités principales
 
