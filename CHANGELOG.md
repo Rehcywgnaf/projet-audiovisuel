@@ -1,5 +1,35 @@
 # Changelog
 
+# Changelog
+
+## [1.5.4] - 2025-01-16 : AIEnhancedEditor Tests
+### Ajouté
+- Tests unitaires complets pour AIEnhancedEditor
+  - Validation du rendu initial
+  - Tests des suggestions
+  - Tests de saisie utilisateur
+  - Tests des indicateurs visuels
+
+- Tests d'intégration pour AIEnhancedEditor
+  - Intégration avec TemplateManager (chargement templates, validation structure)
+  - Intégration avec DocumentManager (sauvegarde, chargement)
+  - Gestion des erreurs d'intégration entre composants
+
+- Tests de performance pour AIEnhancedEditor
+  - Mesures de temps de rendu (< 100ms)
+  - Tests de réactivité des suggestions (< 200ms)
+  - Monitoring utilisation mémoire
+  - Tests de charge (grand volume de texte, multiples suggestions)
+
+### Supprimé
+- Documentation de test non alignée avec l'implémentation réelle
+
+### Technique
+- Ajout de mesures de performance précises
+- Mise en place de tests de charge mémoire
+- Implémentation de mocks pour TemplateManager et DocumentManager
+- Configuration des timers Jest pour les tests asynchrones
+
 ## [1.5.3] - 2024-01-15
 ### Ajouté
 - Intégration Google Chat pour la communication en temps réel
