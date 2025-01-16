@@ -1,5 +1,52 @@
 # Changelog
 
+## [1.5.8] - 2025-01-16
+
+### Ajouté
+- Système de gestion des procédures d'urgence
+  - Interface de gestion des incidents avec priorités
+  - Procédures détaillées par type d'incident
+  - Actions immédiates et contacts d'urgence
+- Documentation technique des procédures
+  - Classification des incidents (P0, P1, P2)
+  - Procédures détaillées par scénario
+  - Guide de maintenance post-incident
+  - Points de contact et d'escalade
+
+### Optimisé
+- Interface des actions d'urgence
+  - Validation en temps réel des actions
+  - Statut visuel des incidents actifs
+  - Historique des interventions
+
+### Documentation
+- Ajout section procédures d'urgence dans /docs/technical/
+- Mise à jour des guides d'intervention
+- Intégration des nouveaux points de contact
+
+## [1.5.7] - 2025-01-16
+
+### Ajouté
+- Système complet de tests de charge avec interface utilisateur dédiée
+  - Scénarios de test paramétrables (validation documents, IA, cache, lecture)
+  - Monitoring en temps réel des performances
+  - Seuils d'alerte configurables
+- Documentation technique détaillée des procédures de test
+  - Guide d'interprétation des résultats
+  - Procédures d'exécution standardisées
+  - Métriques clés et analyse des erreurs
+
+### Optimisé
+- Performance du système de validation
+  - Parallélisation des validations (150-200ms)
+  - Cache optimisé par composant avec monitoring
+  - System de préchargement intelligent
+
+### Documentation
+- Ajout section monitoring dans le README
+- Nouvelle documentation technique pour les tests de charge
+- Guide de maintenance et procédures d'urgence
+
 ## [1.5.6] - 2025-01-16 : Optimisation des Performances du Système de Validation
 
 ## Ajouts
@@ -24,6 +71,7 @@
 - Optimisation des accès Drive
 
 ## [1.5.5] - 2025-01-16 : Architecture IA Centralisée
+
 ### Added
 - Service centralisé AIServiceManager
   - Point d'entrée unique pour toutes les interactions IA
