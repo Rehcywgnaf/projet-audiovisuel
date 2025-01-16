@@ -1,6 +1,34 @@
 # Changelog
 
-# Changelog
+## [1.5.5] - 2025-01-16 : Architecture IA Centralisée
+### Added
+- Service centralisé AIServiceManager
+  - Point d'entrée unique pour toutes les interactions IA
+  - Utilisation de l'API Claude-3 Sonnet
+  - Système de cache intelligent par composant
+  - Monitoring des coûts en temps réel
+
+- Système de gestion des coûts
+  - Budget maximal : 15$ par mois
+  - Système d'alertes (5$, 8$, 10$)
+  - Tracking par composant
+  - Optimisation automatique des coûts
+
+- Documentation technique complète
+  - Guide d'intégration IA
+  - Exemples de code détaillés
+  - Bonnes pratiques
+
+### Changed
+- Refonte RSS-IA pour utiliser AIServiceManager
+- Migration AIEnhancedEditor vers l'architecture centralisée
+- Optimisation du système de templates avec IA
+
+### Technical
+- Tests d'intégration complets avec AIServiceManager
+- Système de monitoring en temps réel
+- Cache intelligent par type de composant
+- Tests de performance (<200ms par requête)
 
 ## [1.5.4] - 2025-01-16 : AIEnhancedEditor Tests
 ### Ajouté
