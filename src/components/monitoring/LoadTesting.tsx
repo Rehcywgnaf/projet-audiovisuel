@@ -1,0 +1,1 @@
+[Contenu du composant LoadTesting.tsx créé précédemment]
