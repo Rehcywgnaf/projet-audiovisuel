@@ -1,6 +1,6 @@
 # Changelog
 
-# [1.5.6] - 2025-01-16 : Optimisation des Performances du Système de Validation
+## [1.5.6] - 2025-01-16 : Optimisation des Performances du Système de Validation
 
 ## Ajouts
 - Implémentation d'un ValidatorService optimisé avec gestion parallélisée
