@@ -183,6 +183,26 @@ Pour plus de détails, consultez :
   - Tests automatisés
   - Préchargement intelligent
 
+### Système de Tests
+- Tests unitaires et d'intégration
+  - Couverture >80% sur les composants core
+  - Tests AIServiceManager (100% coverage)
+  - Tests Cache System validés
+  - Tests RSS-IA intégrés
+  - Tests Templates validés
+  - Tests Multi-formats validés
+  - Tests UI/UX en cours (60%)
+- Tests E2E avec Cypress
+  - Environnement configuré
+  - Tests de base en place
+  - Mocks et fixtures préparés
+  - Tests avancés en développement
+- Tests de performance
+  - Validation Documents (50 docs/60s)
+  - Génération IA (20 req/min)
+  - Cache (100 entrées/30s)
+  - Lecture (200 req/min)
+
 ### Système de Monitoring
 - Métriques temps réel par composant
 - Tests de charge automatisés
