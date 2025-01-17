@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.5.9] - 2025-01-17
+
+### Added
+- Installation et configuration de l'environnement de test E2E avec Cypress
+- Mise en place de la structure de base des tests
+- Premier test fonctionnel validé
+
+### Updated
+- Mise à jour de la checklist beta avec le statut des tests E2E
+- Réorganisation de la documentation des tests
+
 ## [1.5.8] - 2025-01-16
 
 ### Ajouté
