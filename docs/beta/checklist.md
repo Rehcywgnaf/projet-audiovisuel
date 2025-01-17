@@ -1,6 +1,6 @@
 # Checklist Beta - SAPAV
 
-*Dernière mise à jour : 16/01/2025*
+*Dernière mise à jour : 17/01/2025*
 
 ## 🔍 Comment utiliser cette checklist
 - ✅ : Prêt et validé
@@ -107,7 +107,12 @@
 - ✅ Tests RSS-IA - *Intégration validée*
 - ✅ Tests Multi-formats - *Import/Export OK*
 - 🟡 Tests UI/UX - *60% complétés*
-- ❌ Tests E2E - *Setup requis*
+- 🟡 Tests E2E - *Environnement configuré, premiers tests en place*
+  - ✅ Installation Cypress 
+  - ✅ Configuration environnement test
+  - ✅ Structure des tests définie
+  - 🟡 Implémentation tests de base
+  - ❌ Tests avancés à implémenter
 - ❌ Tests Charge Drive - *À réaliser*
 - ⚪ Tests Beta Utilisateurs - *Planning à définir*
 
@@ -133,7 +138,7 @@
 - 🟡 Guide Utilisateur - *En rédaction*
 
 ## Points Bloquants Prioritaires pour la Beta
-1. ❌ Setup des tests E2E
+1. 🟡 Finalisation des tests E2E (en cours)
 2. ❌ Tests de charge Drive
 3. ❌ Formation de l'équipe support
 4. ❌ Configuration du Load Balancer
