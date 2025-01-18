@@ -147,6 +147,16 @@ Pour plus de détails, consultez :
 
 ### Frontend
 - Dashboard principal (React/Tailwind)
+- Système de filtrage avancé
+  - Filtres intelligents par type de projet
+  - Score de pertinence configurable
+  - Filtres budget et temporels
+  - Interface intuitive et réactive
+- Tests complets
+  - Couverture de test Dashboard >80%
+  - Tests unitaires et d'intégration
+  - Mocks configurés pour les dépendances
+  - Validation des interactions utilisateur
 - Modules RSS & Alertes
 - Interface Google Drive
 - Système de suivi des équipes
