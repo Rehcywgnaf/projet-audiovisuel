@@ -1,0 +1,1 @@
+// [Contenu du fichier template-management.cy.js tel que défini plus haut]
