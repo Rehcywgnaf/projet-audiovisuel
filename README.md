@@ -145,6 +145,28 @@ Pour plus de détails, consultez :
 
 ## 🛠 Architecture Technique
 
+### Système de Monitoring
+- Dashboard de performance en temps réel
+- Suivi des métriques par composant
+- Tests de charge automatisés
+  - Validation simultanée (50 documents)
+  - Génération AI (20 requêtes/min)
+  - Mise à jour cache (100 entrées)
+  - Lecture intensive (200 requêtes/min)
+- Seuils d'alerte configurables
+- Procédures d'urgence documentées
+- Interface de monitoring visuelle
+- Alertes proactives
+
+### Load Balancing
+- Configuration Nginx optimisée
+  - Répartition de charge intelligente
+  - Serveur de backup automatique
+  - Gestion des failover
+  - Cache optimisé pour les ressources statiques
+  - Protection contre les surcharges
+  - Healthcheck intégré
+
 ### Frontend
 - Dashboard principal (React/Tailwind)
 - Système de filtrage avancé
