@@ -9,6 +9,18 @@ SAPAV est une plateforme innovante dédiée au soutien et à l'accompagnement de
 - Accompagnement personnalisé des projets
 - Système de commentaires collaboratifs via Google Chat intégré
 
+### Dashboard Principal
+- Système de veille intelligent avec score de pertinence
+- Visualisation des nouvelles opportunités (AAP/AO)
+- Métriques de performance en temps réel
+  - Suivi des projets actifs
+  - Taux de succès
+  - Gestion des équipes
+- Points d'attention centralisés
+  - Alertes deadlines
+  - Suivi des validations
+  - Planning des revues
+
 ### Architecture IA
 Le projet utilise Claude-3 Sonnet d'Anthropic via une architecture centralisée :
 - AIServiceManager : Point d'entrée unique pour l'IA
