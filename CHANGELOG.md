@@ -1,5 +1,25 @@
 # Changelog
 
+## [1.6.0] - 2025-01-18
+
+### Ajouté
+- Tests E2E pour l'intégration RSS-IA
+- Tests E2E pour le TemplateManager
+- Tests E2E pour l'intégration Google Drive
+- Tests E2E pour le système de notifications
+- Tests de synchronisation et gestion des conflits Drive
+- Tests de gestion des erreurs et mode hors-ligne
+
+### Modifié
+- Mise à jour de la checklist de test avec 70% de complétion
+- Optimisation des fixtures pour les tests
+- Amélioration de la gestion des erreurs Drive
+
+### En Cours
+- Développement des tests E2E pour le reporting et analytics
+- Implémentation des tests de performance
+- Optimisation des tests de charge Drive
+
 ## [1.5.9] - 2025-01-17
 
 ### Added
