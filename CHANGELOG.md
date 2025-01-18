@@ -1,5 +1,29 @@
 # Changelog
 
+## [1.6.4] - 2025-01-18
+### Ajouté
+- Dashboard de monitoring Drive
+  - Visualisation temps réel des métriques
+  - Seuils d'alerte configurés (temps de réponse, taux d'erreur, débit)
+  - Interface de monitoring visuelle
+- Configuration Load Balancer Nginx
+  - Répartition de charge intelligente
+  - Gestion de failover
+  - Cache optimisé
+  - Protection contre les surcharges
+
+### Modifié
+- Optimisation des timeouts pour les opérations Drive
+- Amélioration de la gestion du cache
+
+### Technique
+- Seuils de monitoring:
+  - Temps de réponse: Warning >200ms, Critique >500ms
+  - Taux d'erreur: Warning >1%, Critique >5%
+  - Débit: Warning >180 req/min, Critique >250 req/min
+
+[Le reste du CHANGELOG précédent reste inchangé]
+
 ## [1.6.3] - 2025-01-18
 ### Ajouté
 - Tests unitaires Dashboard Principal
