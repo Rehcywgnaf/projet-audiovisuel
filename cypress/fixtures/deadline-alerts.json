@@ -1,0 +1,22 @@
+{
+  "deadlines": [
+    {
+      "id": "dead-001",
+      "projectId": "proj-001",
+      "projectName": "AAP Documentaire",
+      "dueDate": "2025-01-20T23:59:59Z",
+      "daysRemaining": 3,
+      "priority": "high",
+      "status": "pending"
+    },
+    {
+      "id": "dead-002",
+      "projectId": "proj-002",
+      "projectName": "AAP Production",
+      "dueDate": "2025-02-15T23:59:59Z",
+      "daysRemaining": 29,
+      "priority": "medium",
+      "status": "in_progress"
+    }
+  ]
+}
