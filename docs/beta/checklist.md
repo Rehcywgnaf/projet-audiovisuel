@@ -88,7 +88,21 @@
 ## Architecture & Tests
 
 ### Frontend
-- 🟡 Dashboard Principal - *Optimisation UI*
+- ✅ Dashboard Principal - *Framework complet implémenté*
+  - ✅ Système de veille avec scoring
+  - ✅ Métriques temps réel
+  - ✅ Points d'attention
+  - 🟡 Intégration API de veille
+- ✅ Tests unitaires Dashboard - *>80% couverture*
+  - ✅ Tests de rendu
+  - ✅ Tests des métriques
+  - ✅ Tests d'interaction
+  - 🟡 Tests d'intégration veille
+- ✅ Système de filtrage - *Composant validé*
+  - ✅ Filtres type projet
+  - ✅ Filtre score pertinence
+  - ✅ Filtres budget
+  - 🟡 Sauvegarde préférences
 - ✅ Composants UI partagés - *Bibliothèque complète*
 - ✅ Responsive Design - *Mobile & Desktop*
 - ✅ UI Performance - *Lazy loading OK*
