@@ -1,0 +1,22 @@
+{
+  "drafts": [
+    {
+      "id": "doc-001",
+      "title": "Projet Documentaire 2025",
+      "templateId": "tpl-001",
+      "version": "1.0",
+      "status": "draft",
+      "created": "2025-01-17T11:30:00Z",
+      "sections": [
+        {
+          "id": "s1",
+          "content": "Contenu de la note d'intention"
+        },
+        {
+          "id": "s2",
+          "content": "Détails du budget"
+        }
+      ]
+    }
+  ]
+}
