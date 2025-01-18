@@ -1,0 +1,1 @@
+// [Contenu complet du fichier analytics-integration.cy.js tel que défini plus haut]
