@@ -194,9 +194,13 @@ Pour plus de détails, consultez :
   - Tests UI/UX en cours (60%)
 - Tests E2E avec Cypress
   - Environnement configuré
-  - Tests de base en place
-  - Mocks et fixtures préparés
-  - Tests avancés en développement
+  - Tests complets pour RSS-IA
+  - Tests complets pour TemplateManager
+  - Tests complets pour intégration Drive
+  - Tests complets pour système de notifications
+  - Tests de reporting et analytics en cours
+  - Tests de performance à venir
+  - Couverture actuelle : 70%
 - Tests de performance
   - Validation Documents (50 docs/60s)
   - Génération IA (20 req/min)
