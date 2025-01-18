@@ -1,0 +1,18 @@
+{
+  "sections": [
+    {
+      "titre": "Note d'intention",
+      "description": "Présentation détaillée du projet",
+      "required": true
+    },
+    {
+      "titre": "Budget",
+      "description": "Plan financier détaillé",
+      "required": true
+    }
+  ],
+  "suggestions": [
+    "Ajouter une section impact social",
+    "Détailler l'innovation technique"
+  ]
+}
