@@ -1,0 +1,18 @@
+{
+  "versions": [
+    {
+      "id": "v1.1",
+      "version": "1.1",
+      "timestamp": "2025-01-17T10:15:00Z",
+      "author": "user@test.com",
+      "comment": "Mise à jour contenu"
+    },
+    {
+      "id": "v1.0",
+      "version": "1.0",
+      "timestamp": "2025-01-17T09:00:00Z",
+      "author": "user@test.com",
+      "comment": "Version initiale"
+    }
+  ]
+}
