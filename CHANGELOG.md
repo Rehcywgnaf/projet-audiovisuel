@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.6.5] - 2025-01-18
+### Documentation
+- Documentation technique complète du système de failover
+  - Guide d'installation détaillé
+  - Procédures de test standardisées
+  - Métriques et seuils définis
+  - Résolution des problèmes
+  - Maintenance et mises à jour
+
 ## [1.6.4] - 2025-01-18
 ### Ajouté
 - Dashboard de monitoring Drive
