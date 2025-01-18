@@ -1,5 +1,29 @@
 # Changelog
 
+## [1.6.3] - 2025-01-18
+### Ajouté
+- Tests unitaires Dashboard Principal
+  - Configuration des mocks pour recharts
+  - Tests de rendu des composants
+  - Tests des interactions utilisateur
+  - Tests des affichages de données
+- Service d'intégration de la veille (VeilleService)
+  - Types et interfaces pour les opportunités
+  - Service de récupération des données
+  - Système de filtrage et de scoring
+  - Context React pour la gestion d'état
+- Composant DashboardFilters
+  - Filtres par type (AAP/AO)
+  - Filtre par score de pertinence
+  - Filtres de budget
+  - Interface utilisateur avec shadcn/ui
+
+### Documentation
+- Checklist beta pour le dashboard
+  - État d'avancement détaillé
+  - Points à implémenter
+  - Critères de sécurité et accessibilité
+
 ## [1.6.2] - 2025-01-18
 ### Amélioré
 - Dashboard Principal : Refonte complète de l'interface
