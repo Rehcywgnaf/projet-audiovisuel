@@ -1,5 +1,23 @@
 # Changelog
 
+## [1.6.1] - 2025-01-18
+
+### Ajouté
+- Tests E2E complets pour le système d'analytics
+  - Tests des tableaux de bord et métriques
+  - Tests des rapports d'analyse
+  - Tests des analyses AAP/AO
+  - Tests des statistiques d'équipe
+  - Tests de gestion des erreurs
+- Fixtures pour les tests analytics
+  - Métriques globales
+  - Rapports d'analyse
+  - Statistiques d'équipe
+
+### Modifié
+- Mise à jour de la documentation des tests
+- Structure des fixtures pour support analytics
+
 ## [1.6.0] - 2025-01-18
 
 ### Ajouté
