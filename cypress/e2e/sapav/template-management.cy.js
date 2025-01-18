@@ -1,1 +1,1 @@
-// [Contenu du fichier template-management.cy.js tel que défini plus haut]
+// [Le contenu exact du fichier template-management.cy.js créé plus haut]
