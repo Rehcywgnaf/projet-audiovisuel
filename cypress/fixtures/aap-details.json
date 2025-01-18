@@ -1,0 +1,26 @@
+{
+  "id": "aap-2025-001",
+  "title": "AAP Documentaire 2025",
+  "type": "documentaire",
+  "budget_max": 150000,
+  "deadline": "2025-03-01",
+  "requirements": [
+    "Production documentaire",
+    "Innovation technique",
+    "Impact social"
+  ],
+  "evaluation_criteria": [
+    {
+      "name": "Innovation",
+      "weight": 30
+    },
+    {
+      "name": "Faisabilité",
+      "weight": 40
+    },
+    {
+      "name": "Impact",
+      "weight": 30
+    }
+  ]
+}
