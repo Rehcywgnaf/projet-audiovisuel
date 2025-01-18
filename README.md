@@ -145,6 +145,14 @@ Pour plus de détails, consultez :
 
 ## 🛠 Architecture Technique
 
+### Haute Disponibilité
+- Load Balancing Nginx optimisé
+  - Failover automatique
+  - Cache intelligent
+  - Répartition de charge
+  - Tests de charge complets
+  - Documentation détaillée
+
 ### Système de Monitoring
 - Dashboard de performance en temps réel
 - Suivi des métriques par composant
