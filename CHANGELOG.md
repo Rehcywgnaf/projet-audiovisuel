@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.6.2] - 2025-01-18
+### Amélioré
+- Dashboard Principal : Refonte complète de l'interface
+  - Ajout section "Nouvelles Opportunités" avec scoring de pertinence
+  - Regroupement des métriques projets et performance
+  - Nouvelle section points d'attention
+  - Optimisation des performances d'affichage
+
 ## [1.6.1] - 2025-01-18
 
 ### Ajouté
