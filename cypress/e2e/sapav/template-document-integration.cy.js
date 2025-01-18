@@ -1,0 +1,1 @@
+// [Contenu complet du fichier template-document-integration.cy.js tel que défini plus haut]
