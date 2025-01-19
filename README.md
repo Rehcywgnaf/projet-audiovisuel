@@ -235,6 +235,19 @@ Pour plus de détails, consultez :
   - Tests automatisés
   - Préchargement intelligent
 
+### Environnement de Formation
+- Scripts d'initialisation/clôture automatisés
+- Jeux de données test préconfigurés
+  - AAP/AO types
+  - Scénarios incidents
+  - Templates test
+- Système de monitoring dédié
+  - Dashboard temps réel
+  - Métriques formation spécifiques
+  - Alertes paramétrables
+- Durée formation : 5 jours
+- Support post-formation inclus
+
 ### Système de Tests
 - Tests unitaires et d'intégration
   - Couverture >80% sur les composants core
