@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.6.9] - 2025-01-19
+
+### Added
+- Système de gestion des priorités et des tâches
+  * PriorityManager : Gestion intelligente des priorités basée sur les deadlines et budgets
+  * TaskManager : Gestion des files d'attente avec traitement prioritaire
+  * Tests unitaires complets pour les deux composants
+  * Intégration avec le système événementiel existant
+
+### Enhanced
+- Optimisation du traitement des tâches avec gestion des priorités
+- Amélioration du suivi des tâches avec système d'événements
+
 ## [1.6.8] - 2025-01-19  Tests de Charge Drive
 ### Ajouté
 - Structure de test Drive avec simulation
