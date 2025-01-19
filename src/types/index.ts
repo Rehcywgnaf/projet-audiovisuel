@@ -1,26 +1,18 @@
-export interface PermissionLevel {
-  read: boolean;
-  write: boolean;
-  share: boolean;
-  delete: boolean;
+export enum TaskPriority {
+  HIGH = 'HIGH',
+  STANDARD = 'STANDARD',
+  LOW = 'LOW'
 }
 
-export interface DrivePermission {
-  userId: string;
-  resourceId: string;
-  level: PermissionLevel;
-  teamId?: string;
-  expiresAt?: Date;
+export enum TaskType {
+  AAP = 'AAP',
+  AO = 'AO',
+  OTHER = 'OTHER'
 }
 
-export interface TeamRole {
-  userId: string;
-  teamId: string;
-  role: 'admin' | 'editor' | 'viewer';
-}
-
-export interface UserAccess {
-  userId: string;
-  permissions: DrivePermission[];
-  teamRoles: TeamRole[];
+export interface Task {
+  id: string;
+  type: TaskType;
+  deadline?: Date;
+  budget?: number;
 }
