@@ -1,6 +1,19 @@
 # Changelog
 
-## [1.6.7] - 2025-01-19 -Structure de Tests
+## [1.6.8] - 2025-01-19  Tests de Charge Drive
+### Ajouté
+- Structure de test Drive avec simulation
+- Composants de test :
+  - DriveTestExecutor pour l'interface utilisateur
+  - DriveTestService pour la gestion des tests
+  - DriveTestDemo pour la visualisation
+- Documentation technique de l'architecture des tests
+
+### En Attente
+- Intégration avec les opérations Drive réelles
+- Configuration des seuils finaux
+
+## [1.6.7] - 2025-01-19 - Structure de Tests
 ### Ajouté
 - Structure de documentation pour les tests futurs
   - Plan de tests détaillé (/docs/testing/future/TEST-PLAN.md)
