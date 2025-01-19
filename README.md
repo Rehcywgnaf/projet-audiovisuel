@@ -65,13 +65,39 @@ Le projet utilise Claude-3 Sonnet d'Anthropic via une architecture centralisée 
    - Documentation détaillée
    - Cache 24h, priorité basse (99% hit rate)
 
-5. **ChatIntegration**
+5. **Système de Monitoring**
+   - Dashboard de performance temps réel
+     * État des files d'attente par priorité
+     * Seuils d'alerte configurables
+     * Visualisations graphiques
+   - Gestion des Alertes
+     * Alertes de taille de file
+     * Alertes de temps d'attente
+     * Notifications temps réel
+   - Historique des Erreurs
+     * Suivi des reprises
+     * Tentatives de récupération
+     * Analyse des patterns d'erreur
+   - Monitoring Proactif
+     * Détection précoce des problèmes
+     * Backoff exponentiel intégré
+     * Métriques de performance
+   - Documentation Complète
+     * Guide utilisateur détaillé
+     * Procédures d'urgence
+     * Best practices
+   - Cache optimisé pour les performances
+     * Hit rate >95% sur les métriques
+     * Rafraîchissement configurable
+     * Historique de 7 jours
+
+6. **ChatIntegration**
    - Espaces de discussion par projet
    - Gestion des membres intégrée
    - Utilisation de l'API Google Chat native
    - Authentification unifiée avec Google Workspace
 
-6. **Système de Monitoring**
+7. **Système de Monitoring**
    - Dashboard de performance en temps réel
    - Suivi des métriques par composant
    - Tests de charge automatisés
@@ -154,17 +180,31 @@ Pour plus de détails, consultez :
   - Documentation détaillée
 
 ### Système de Monitoring
-- Dashboard de performance en temps réel
-- Suivi des métriques par composant
+- Dashboard de monitoring centralisé
+  * Files d'attente en temps réel
+  * Historique des erreurs et reprises
+  * Métriques de performance
 - Tests de charge automatisés
-  - Validation simultanée (50 documents)
-  - Génération AI (20 requêtes/min)
-  - Mise à jour cache (100 entrées)
-  - Lecture intensive (200 requêtes/min)
-- Seuils d'alerte configurables
-- Procédures d'urgence documentées
-- Interface de monitoring visuelle
-- Alertes proactives
+  * Validation simultanée (50 documents)
+  * Génération AI (20 requêtes/min)
+  * Mise à jour cache (100 entrées)
+  * Lecture intensive (200 requêtes/min)
+- Gestion des alertes
+  * Seuils configurables par priorité
+  * Notifications temps réel
+  * Escalade automatique
+- Reprise sur erreur
+  * Stratégies de reprise configurables
+  * Backoff exponentiel
+  * Historique des tentatives
+- Interface visuelle intuitive
+  * Graphiques temps réel
+  * Indicateurs de statut
+  * Filtres avancés
+- Documentation complète
+  * Guide utilisateur
+  * Procédures d'urgence
+  * Best practices
 
 ### Load Balancing
 - Configuration Nginx optimisée
