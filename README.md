@@ -97,16 +97,6 @@ Le projet utilise Claude-3 Sonnet d'Anthropic via une architecture centralisée 
    - Utilisation de l'API Google Chat native
    - Authentification unifiée avec Google Workspace
 
-7. **Système de Monitoring**
-   - Dashboard de performance en temps réel
-   - Suivi des métriques par composant
-   - Tests de charge automatisés
-   - Seuils d'alerte configurables
-   - Procédures d'urgence documentées
-   - Interface de monitoring visuelle
-   - Historique des performances sur 7 jours
-   - Alertes proactives
-
 ## Documentation Technique
 Pour plus de détails, consultez :
 - `/docs/technical/SAPAV-Architecture.md` : Architecture globale
