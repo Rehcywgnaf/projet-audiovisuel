@@ -1,5 +1,22 @@
 # Changelog
 
+## [1.6.6] - 2024-01-19
+
+### Ajouté
+- Environnement de formation complet
+  - Scripts automatisés pour initialisation/clôture sessions
+  - Jeux de données test pour formation Support N1
+  - Système de monitoring spécifique formation
+  - Documentation détaillée formation Support N1
+- Support monitoring formation
+  - Dashboard temps réel performances
+  - Métriques spécifiques formation
+  - Système d'alertes paramétrable
+
+### Modifié
+- Optimisation scripts automatisation
+- Amélioration gestion ressources formation
+
 ## [1.6.5] - 2025-01-18
 ### Documentation
 - Documentation technique complète du système de failover
