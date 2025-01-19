@@ -1,5 +1,26 @@
 # Changelog
 
+## [1.7.0] - 2025-01-19
+
+### Added
+- Système de monitoring complet
+  * Dashboard de performance temps réel
+  * Gestion des files d'attente par priorité
+  * Système d'alertes configurable
+  * Module de reprise sur erreur avec backoff exponentiel
+  * Interface de visualisation des métriques
+
+### Enhanced
+- Amélioration de la documentation
+  * Guide utilisateur pour le dashboard de monitoring
+  * Documentation technique du système de monitoring
+  * Procédures d'urgence et best practices
+
+### Optimized
+- Cache monitoring optimisé (hit rate >95%)
+- Performance des validations parallèles
+- Gestion des alertes en temps réel
+
 ## [1.6.9] - 2025-01-19
 
 ### Added
