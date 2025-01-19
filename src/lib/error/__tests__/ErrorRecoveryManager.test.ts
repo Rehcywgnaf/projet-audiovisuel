@@ -59,4 +59,31 @@ describe('ErrorRecoveryManager', () => {
     expect(fatalErrorEvents).toHaveLength(1);
     expect(fatalErrorEvents[0].taskId).toBe(mockTask.id);
   });
+
+  test('should handle unregistered error types', async () => {
+    const error = new Error('UnknownError: Something went wrong');
+    const shouldRetry = await errorRecoveryManager.handleError(mockTask, error);
+
+    expect(shouldRetry).toBe(false);
+    expect(fatalErrorEvents).toHaveLength(1);
+    expect(retryEvents).toHaveLength(0);
+  });
+
+  test('should use exponential backoff', async () => {
+    const mockStrategy: RetryStrategy = {
+      shouldRetry: jest.fn().mockResolvedValue(true)
+    };
+
+    errorRecoveryManager.registerStrategy('NetworkError', mockStrategy);
+    const error = new Error('NetworkError: Connection failed');
+
+    const timeBefore = Date.now();
+    await errorRecoveryManager.handleError(mockTask, error);
+    const firstRetryTime = new Date(retryEvents[0].nextRetryTime).getTime() - timeBefore;
+
+    await errorRecoveryManager.handleError(mockTask, error);
+    const secondRetryTime = new Date(retryEvents[1].nextRetryTime).getTime() - timeBefore;
+
+    expect(secondRetryTime).toBeGreaterThan(firstRetryTime);
+  });
 });

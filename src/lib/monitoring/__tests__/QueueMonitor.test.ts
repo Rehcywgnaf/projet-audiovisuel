@@ -65,4 +65,18 @@ describe('QueueMonitor', () => {
     );
     expect(alerts).toHaveLength(1);
   });
+
+  test('should provide accurate metrics', () => {
+    const task = createTask('1', Date.now());
+    queueMonitor.updateMetrics(
+      { high: 5, standard: 3, low: 1 },
+      { high: task, standard: null, low: null }
+    );
+
+    const metrics = queueMonitor.getMetrics();
+    expect(metrics.high.size).toBe(5);
+    expect(metrics.standard.size).toBe(3);
+    expect(metrics.low.size).toBe(1);
+    expect(metrics.high.oldestTask).toBe(task);
+  });
 });
