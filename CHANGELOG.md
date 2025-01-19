@@ -1,6 +1,17 @@
 # Changelog
 
-## [1.6.6] - 2024-01-19
+## [1.6.7] - 2025-01-19 -Structure de Tests
+### Ajouté
+- Structure de documentation pour les tests futurs
+  - Plan de tests détaillé (/docs/testing/future/TEST-PLAN.md)
+  - Documentation des tests de charge
+  - Préparation des scénarios de test
+
+### Modifié
+- Organisation des tests reportés dans une structure dédiée
+- Clarification des prérequis pour les tests de charge
+
+## [1.6.6] - 2025-01-19
 
 ### Ajouté
 - Environnement de formation complet
