@@ -276,6 +276,12 @@ Pour plus de détails, consultez :
   - Génération IA (20 req/min)
   - Cache (100 entrées/30s)
   - Lecture (200 req/min)
+- Tests Planifiés et Documentation
+  - Documentation détaillée dans `/docs/testing/future/`
+  - Tests de charge Drive prévus post-déploiement
+  - Métriques et monitoring en préparation
+  - Plan de tests complet disponible
+  - Scénarios de test documentés
 
 ### Système de Monitoring
 - Métriques temps réel par composant
