@@ -1,14 +1,12 @@
-import { DriveAuth, DriveAuthProvider, DriveManagerTest } from '@/components/drive';
+import {  DriveAuth, DriveAuthProvider, DriveManagerTest } from '@/components/Drive';
 import React from 'react';
-// Commentaire Anthony
-
 
 export default function Home() {
   return (
     <main className="p-4 space-y-8">
       <DriveAuthProvider>
         <DriveAuth />
-        <DriveManagerTest />
+        {/* <DriveManagerTest /> */}
       </DriveAuthProvider>
     </main>
   );
