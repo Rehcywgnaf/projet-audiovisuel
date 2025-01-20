@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
+import { Card, CardHeader, CardTitle, CardContent } from '../../../components/ui/card';
+import { Alert, AlertTitle, AlertDescription } from '../../../components/ui/alert';
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, ResponsiveContainer, Tooltip, CartesianGrid } from 'recharts';
 import { Clock, AlertTriangle, RefreshCcw, CheckCircle2 } from 'lucide-react';
 import { monitoringService } from '@/lib/monitoring/MonitoringService';
+import type { MonitoringMetrics, QueueAlert } from '@/types/monitoring';
 
 const alertThresholds = {
   high: { size: 10, waitTime: 300 },     // 5 minutes
@@ -12,18 +13,18 @@ const alertThresholds = {
 };
 
 const DashboardMonitoring = () => {
-  const [metrics, setMetrics] = useState({
+  const [metrics, setMetrics] = useState<MonitoringMetrics>({
     queueSizes: [],
     errorRates: [],
     retryAttempts: [],
     activeAlerts: []
   });
 
-  const [systemStatus, setSystemStatus] = useState('healthy');
+  const [systemStatus, setSystemStatus] = useState<'healthy' | 'warning'>('healthy');
 
   useEffect(() => {
     // Abonnement aux métriques via MonitoringService
-    const unsubscribeMetrics = monitoringService.onMetricsUpdate((newMetrics) => {
+    const unsubscribeMetrics = monitoringService.onMetricsUpdate((newMetrics: MonitoringMetrics) => {
       setMetrics(prev => ({
         ...prev,
         queueSizes: newMetrics.queueSizes.slice(-50),
@@ -33,7 +34,7 @@ const DashboardMonitoring = () => {
     });
 
     // Abonnement aux alertes
-    const unsubscribeAlerts = monitoringService.onAlertsUpdate((alerts) => {
+    const unsubscribeAlerts = monitoringService.onAlertsUpdate((alerts: QueueAlert[]) => {
       setMetrics(prev => ({
         ...prev,
         activeAlerts: alerts
@@ -60,8 +61,23 @@ const DashboardMonitoring = () => {
           <AlertTriangle className="w-4 h-4" />
           <AlertTitle>Alertes Actives ({metrics.activeAlerts.length})</AlertTitle>
           <AlertDescription>
-            {metrics.activeAlerts.map((alert, index) => (
-              <div key={index} className="mt-1">{alert.message}</div>
+            {metrics.activeAlerts.map((alert) => (
+              <div key={alert.id} className="mt-1">
+                {alert.message}
+                {alert.priority && (
+                  <span className={
+                    `ml-2 px-2 py-0.5 rounded-full text-xs ${
+                      alert.priority === 'high' 
+                        ? 'bg-red-100 text-red-800'
+                        : alert.priority === 'standard'
+                        ? 'bg-blue-100 text-blue-800'
+                        : 'bg-green-100 text-green-800'
+                    }`
+                  }>
+                    {alert.priority}
+                  </span>
+                )}
+              </div>
             ))}
           </AlertDescription>
         </Alert>
