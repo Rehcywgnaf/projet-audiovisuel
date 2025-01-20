@@ -1,38 +1,89 @@
 import React, { useState } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { Filter, AlertTriangle, CheckCircle, RefreshCw } from 'lucide-react';
+import { Slider } from '@/components/ui/slider';
+import { FilterCriteria, useVeille } from '../../../services/VeilleService';
 
 const DashboardFilters = () => {
-  const [error, setError] = useState(null);
-  const [syncStatus, setSyncStatus] = useState('synced');
-  
-  const handleFilterChange = async () => {
-    try {
-      setSyncStatus('syncing');
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      setSyncStatus('synced');
-    } catch (err) {
-      setError('Erreur lors de la mise à jour des filtres');
-      setSyncStatus('error');
-    }
+  const { filterOpportunities } = useVeille();
+  const [filters, setFilters] = useState<FilterCriteria>({
+    minMatch: 70,
+    type: undefined,
+    minBudget: 0,
+    maxBudget: undefined
+  });
+
+  const handleFilterChange = async (newFilters: Partial<FilterCriteria>) => {
+    const updatedFilters = { ...filters, ...newFilters };
+    setFilters(updatedFilters);
+    await filterOpportunities(updatedFilters);
   };
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Filter className="w-6 h-6" />
-          Filtres du Dashboard
-        </CardTitle>
+        <CardTitle className="text-lg font-medium">Filtres</CardTitle>
       </CardHeader>
       <CardContent>
-        {error && (
-          <div className="p-4 bg-red-50 rounded-lg flex items-center gap-2">
-            <AlertTriangle className="w-5 h-5 text-red-500" />
-            <p className="text-sm text-red-700">{error}</p>
+        <div className="space-y-6">
+          <div>
+            <label className="text-sm font-medium">Type de projet</label>
+            <div className="grid grid-cols-2 gap-2 mt-2">
+              <button
+                onClick={() => handleFilterChange({ type: 'AAP' })}
+                className={`px-4 py-2 rounded-lg border ${
+                  filters.type === 'AAP' ? 'bg-blue-100 border-blue-500' : ''
+                }`}
+              >
+                AAP
+              </button>
+              <button
+                onClick={() => handleFilterChange({ type: 'AO' })}
+                className={`px-4 py-2 rounded-lg border ${
+                  filters.type === 'AO' ? 'bg-green-100 border-green-500' : ''
+                }`}
+              >
+                AO
+              </button>
+            </div>
           </div>
-        )}
-        {/* Les autres contenus du filtre ici */}
+
+          <div>
+            <label className="text-sm font-medium">Score minimum</label>
+            <div className="mt-2">
+              <Slider
+                defaultValue={[70]}
+                max={100}
+                step={5}
+                onValueChange={(value) => handleFilterChange({ minMatch: value[0] })}
+              />
+              <div className="text-xs text-right mt-1">
+                {filters.minMatch}% minimum
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <label className="text-sm font-medium">Budget (k€)</label>
+            <div className="grid grid-cols-2 gap-4 mt-2">
+              <div>
+                <input
+                  type="number"
+                  placeholder="Min"
+                  className="w-full px-3 py-1 border rounded"
+                  onChange={(e) => handleFilterChange({ minBudget: Number(e.target.value) })}
+                />
+              </div>
+              <div>
+                <input
+                  type="number"
+                  placeholder="Max"
+                  className="w-full px-3 py-1 border rounded"
+                  onChange={(e) => handleFilterChange({ maxBudget: Number(e.target.value) })}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
       </CardContent>
     </Card>
   );
