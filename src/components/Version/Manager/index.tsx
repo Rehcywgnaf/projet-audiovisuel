@@ -1,2 +1,1 @@
-// Migration de VersionManager/index.tsx
-// TODO: Copier le contenu exact du fichier
+// TODO: Copier le contenu exact de VersionManager/index.tsx
