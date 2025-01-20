@@ -37,4 +37,12 @@
 
 ## [1.7.0] - 2025-01-19
 
-[Suite du CHANGELOG existant...]
+### Added
+- Système de monitoring complet
+  * Dashboard de performance temps réel
+  * Gestion des files d'attente par priorité
+  * Système d'alertes configurable
+  * Module de reprise sur erreur avec backoff exponentiel
+  * Interface de visualisation des métriques
+
+[CONTENU PRÉCÉDENT CONSERVÉ...]
