@@ -16,7 +16,7 @@ interface DriveFile {
   modifiedTime: string;
 }
 
-export function DriveAuth() {
+export default function DriveAuth() {
   const [status, setStatus] = useState('non initialisé');
   const [accessToken, setAccessToken] = useState<string | null>(null);
   const [files, setFiles] = useState<DriveFile[]>([]);
