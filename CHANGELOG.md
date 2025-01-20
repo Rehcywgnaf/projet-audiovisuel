@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.8.1] - 2025-01-20
+### Ajouté
+- Système Load Balancer avec monitoring avancé
+- Stratégie de failover à 3 niveaux
+- Composant LoadTestMonitor pour tests de charge
+- Seuils optimisés pour équilibre coût/performance
+- Documentation technique failover-strategy.md
+
+### Modifié
+- Optimisation des seuils de déclenchement
+- Intégration monitoring coûts IA
+
 ## [1.8.0] - 2025-01-20
 
 ### Added
