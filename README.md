@@ -195,6 +195,11 @@ Pour plus de détails, consultez :
   * Guide utilisateur
   * Procédures d'urgence
   * Best practices
+- Gestion Load Balancer et Failover
+  * Seuils optimisés (CPU 70%, Mémoire 75%, Latence 1500ms)
+  * Stratégie progressive à 3 niveaux
+  * Monitoring coûts IA en temps réel
+  * Basculement automatique sur backup
 
 ### Load Balancing
 - Configuration Nginx optimisée
@@ -306,6 +311,11 @@ Pour plus de détails, consultez :
   - Génération IA (20 req/min)
   - Cache (100 entrées/30s)
   - Lecture (200 req/min)
+- Tests Load Balancer
+  * Validation seuils de déclenchement
+  * Simulation failover (<2s)
+  * Tests mode économie
+  * Validation conservation sessions
 - Tests Planifiés et Documentation
   - Documentation détaillée dans `/docs/testing/future/`
   - Tests de charge Drive prévus post-déploiement
