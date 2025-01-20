@@ -1,16 +1,29 @@
 export interface QueueMetrics {
-  high: QueueStatus;
-  standard: QueueStatus;
-  low: QueueStatus;
-}
-
-export interface QueueStatus {
-  size: number;
-  oldestTask: Task | null;
+  queueSizes: {
+    timestamp: string;
+    high: number;
+    standard: number;
+    low: number;
+    total: number;
+  }[];
+  errorRates: {
+    timestamp: string;
+    rate: number;
+  }[];
+  retryAttempts: {
+    timestamp: string;
+    count: number;
+  }[];
 }
 
 export interface QueueAlert {
-  type: 'QUEUE_SIZE' | 'WAIT_TIME';
-  priority: string;
+  id: string;
+  type: 'warning' | 'error';
   message: string;
+  timestamp: Date;
+  priority: 'high' | 'standard' | 'low';
+}
+
+export interface MonitoringMetrics extends QueueMetrics {
+  activeAlerts: QueueAlert[];
 }
