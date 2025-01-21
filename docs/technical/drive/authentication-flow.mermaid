@@ -1,0 +1,31 @@
+sequenceDiagram
+    participant App as Application
+    participant DC as DriveConfig
+    participant TS as TokenStorage
+    participant GD as Google Drive
+
+    Note over App,GD: Processus d'authentification
+    
+    App->>DC: initialize(credentials)
+    DC->>TS: getStoredToken()
+    
+    alt Token exists
+        TS-->>DC: Return token
+        DC->>DC: validateToken()
+        
+        alt Token valid
+            DC->>GD: Initialize API
+        else Token expired
+            DC->>DC: refreshToken()
+            DC->>TS: storeNewToken()
+        end
+        
+    else No token
+        DC-->>App: Return auth URL
+        App->>DC: authenticate(authCode)
+        DC->>GD: getToken(authCode)
+        GD-->>DC: Return new token
+        DC->>TS: storeToken(newToken)
+    end
+    
+    Note over App,GD: Token stocké et API initialisée
