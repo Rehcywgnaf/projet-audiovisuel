@@ -1,0 +1,1 @@
+// Code complet du EquipmentCalculator avec catalogue Pictanovo
