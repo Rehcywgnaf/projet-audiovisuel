@@ -20,11 +20,13 @@ src/
 1. Services Drive
    - `/services/drive`
    - `/src/services/drive`
-   - Fichiers en doublon: `driveConfig.ts`, `tokenStorage.ts`
+   - ✓ Migration `driveConfig.ts`
+   - ✓ Migration `tokenStorage.ts` 
 
 2. Systèmes de Cache
    - Multiples implémentations du cache
    - Pas de stratégie centralisée
+   - ✓ Intégration avec CacheManager pour TokenStorage
 
 3. Gestion des Permissions
    - Implémentations dispersées
@@ -38,9 +40,9 @@ src/
   ```
   /src/services/
   ├── drive/
-  │   ├── config/
-  │   │   ├── driveConfig.ts
-  │   │   └── tokenStorage.ts
+  │   ├── config/             # ✓ Migré
+  │   │   ├── driveConfig.ts  # ✓ Migré
+  │   │   └── tokenStorage.ts # ✓ Migré
   │   ├── api/
   │   │   ├── files.ts
   │   │   └── permissions.ts
@@ -81,7 +83,9 @@ src/
 
 1. **Phase 1 : Services**
    - [x] Analyse des doublons
-   - [ ] Migration Drive Services
+   - [x] Migration Drive Services - Configuration (DriveConfig, TokenStorage)
+   - [ ] Migration Drive Services - API (files, permissions)
+   - [ ] Migration Drive Services - Auth
    - [ ] Tests d'intégration
    - [ ] Documentation mise à jour
 
@@ -134,7 +138,9 @@ src/
 
 | Composant | État | Tests | Documentation |
 |-----------|------|-------|---------------|
-| Services Drive | En cours | - | - |
+| Services Drive Config | ✓ Complété | - | - |
+| Services Drive API | Non démarré | - | - |
+| Services Drive Auth | Non démarré | - | - |
 | Core Events | Non démarré | - | - |
 | UI Components | Non démarré | - | - |
 
