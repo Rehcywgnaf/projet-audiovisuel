@@ -1,1 +1,1 @@
-// Code complet du EquipmentCalculator avec catalogue Pictanovo
+// Code complet de EquipmentCalculator avec tout le catalogue Pictanovo
