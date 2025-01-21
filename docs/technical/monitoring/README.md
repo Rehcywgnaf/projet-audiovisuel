@@ -1,148 +1,152 @@
 # Documentation Technique - Système de Monitoring SAPAV
 
-## Architecture du Système
+## Architecture
 
 ### Composants Principaux
-1. **MonitoringService**
-   - Singleton centralisant la gestion du monitoring
-   - Interface entre le monitoring et les composants métier
-   - Gestion des abonnements aux événements
-   - Rétention d'historique limitée à 50 entrées
+1. **MonitoringDashboard**
+   - Vue temps réel des métriques
+   - Graphiques de performance
+   - État du cache
+   - Alertes système
 
-2. **QueueMonitor**
-   - Surveillance des files d'attente par priorité
-   - Génération d'alertes basée sur des seuils
-   - Métriques en temps réel des tailles de files
-   - Surveillance des temps d'attente
+2. **MetricsCollector**
+   - Collecte en temps réel
+   - Agrégation données
+   - Historisation
+   - Format standardisé
 
-3. **ErrorRecoveryManager**
-   - Gestion des stratégies de reprise
-   - Historique des erreurs et reprises
-   - Back-off exponentiel pour les tentatives
-   - Limite de 3 tentatives par tâche
+## Métriques Surveillées
 
-4. **MonitoringDashboard**
-   - Interface utilisateur temps réel
-   - Visualisation des métriques
-   - Affichage des alertes actives
-   - Historique des erreurs et reprises
+### Performance Validation
+- Temps moyen : 150-200ms optimal
+- Seuil alerte : >200ms
+- Granularité : par requête
+- Historique : 7 jours
 
-## Flux de Données
+### Cache Performance
+| Composant | Duration | Hit Rate Cible | Seuil Alerte |
+|-----------|-----------|----------------|---------------|
+| RSS-IA | 1h | 95% | <90% |
+| AI Editor | 2min | 98% | <95% |
+| Doc Validation | 10min | 95% | <90% |
+| Templates | 24h | 99% | <95% |
 
-### Monitoring des Files
-1. Les métriques sont collectées par QueueMonitor
-2. MonitoringService agrège et distribue les données
-3. Le dashboard s'abonne aux mises à jour
-4. Les alertes sont générées selon les seuils définis
+## Système d'Alertes
 
-### Gestion des Erreurs
-1. ErrorRecoveryManager détecte les erreurs
-2. Application des stratégies de reprise
-3. Émission d'événements de monitoring
-4. Mise à jour de l'historique
+### Niveaux
+1. **Info**
+   - Événements normaux
+   - Changements état
+   - Métriques standard
 
-## Configuration
+2. **Warning**
+   - Dégradation légère
+   - Approche seuils
+   - Latence anormale
 
-### Seuils d'Alerte
-```typescript
-const alertThresholds = {
-  high: { size: 10, waitTime: 300 },     // 5 minutes
-  standard: { size: 20, waitTime: 900 },  // 15 minutes
-  low: { size: 30, waitTime: 1800 }      // 30 minutes
-};
-```
+3. **Error**
+   - Seuils dépassés
+   - Services impactés
+   - Erreurs système
 
-### Gestion des Reprises
-```typescript
-const retryConfig = {
-  maxRetries: 3,
-  baseDelay: 1000,  // 1 seconde
-  maxDelay: 3600000 // 1 heure
-};
-```
+### Canaux Notification
+- Dashboard temps réel
+- Emails équipe technique
+- SMS urgence
+- Intégration Slack
 
-## Événements du Système
+## Interface Monitoring
 
-### Événements Monitoring
-- `metricUpdate` : Mise à jour des métriques
-- `newAlert` : Nouvelle alerte générée
-- `alertResolved` : Alerte résolue
-- `queueThresholdExceeded` : Seuil dépassé
+### Temps Réel
+- Temps validation
+- Hit rate cache
+- État services
+- Alertes actives
 
-### Événements Erreur
-- `taskRetry` : Nouvelle tentative de tâche
-- `taskFatalError` : Échec définitif d'une tâche
-- `retryStrategyUpdated` : Mise à jour stratégie
-
-## Intégration
-
-### Utilisation de MonitoringService
-```typescript
-const monitoring = MonitoringService.getInstance();
-
-// Abonnement aux métriques
-const unsubscribe = monitoring.onMetricsUpdate((metrics) => {
-  // Traitement des nouvelles métriques
-});
-
-// Abonnement aux alertes
-monitoring.onAlertsUpdate((alerts) => {
-  // Gestion des alertes actives
-});
-
-// Nettoyage
-unsubscribe();
-```
-
-### Ajout de Stratégies de Reprise
-```typescript
-const customStrategy: RetryStrategy = {
-  shouldRetry: async (task, record) => {
-    // Logique de décision
-    return record.retryCount < 3;
-  }
-};
-
-errorManager.registerStrategy('NetworkError', customStrategy);
-```
+### Historique
+- Graphiques tendances
+- Analyse patterns
+- Export données
+- Rapports automatiques
 
 ## Maintenance
 
-### Points de Surveillance
-- Taille de l'historique (limité à 50 entrées)
-- Expiration des alertes (5 minutes)
-- État des abonnements aux événements
-- Performances du dashboard
+### Quotidienne
+- Vérification alertes
+- Analyse tendances
+- Ajustement seuils
+- Nettoyage données
 
-### Backoff Exponentiel
-- Première tentative : 1s
-- Deuxième tentative : 2s
-- Troisième tentative : 4s
-- Maximum : 1h
+### Hebdomadaire
+- Revue performances
+- Optimisation cache
+- Rapport synthèse
+- Planning améliorations
 
-## Métriques Clés
+## Intégrations
 
-### Performance
-- Temps de réponse du dashboard < 200ms
-- Latence des alertes < 100ms
-- Précision des métriques temps réel
-- Utilisation mémoire limitée
+### Services
+- AIServiceManager
+- Cache System
+- DocumentValidator
+- RSSAnalyzer
 
-### Fiabilité
-- Taux de perte d'événements < 0.1%
-- Disponibilité du monitoring > 99.9%
-- Cohérence des données > 99.99%
-- Délai maximum de reprise : 1h
+### APIs
+- Métriques Push
+- Alertes Pull
+- Export Data
+- Config Update
 
-## Tests
+## Configuration
 
-### Tests Unitaires
-- QueueMonitor : Seuils et alertes
-- ErrorRecoveryManager : Stratégies
-- MonitoringService : Événements
+### Seuils
+```json
+{
+  "validation": {
+    "response_time": 200,
+    "error_rate": 1
+  },
+  "cache": {
+    "hit_rate": 90,
+    "sync_time": 500
+  },
+  "system": {
+    "cpu": 80,
+    "memory": 85
+  }
+}
+```
 
-### Tests d'Intégration
-- Circuit complet de monitoring
-- Scénarios de reprise
-- Performance sous charge
-- Gestion des erreurs
+### Rétention
+- Métriques temps réel : 24h
+- Données agrégées : 7 jours
+- Alertes : 30 jours
+- Rapports : 90 jours
+
+## Performance
+
+### Objectifs
+- Temps réponse dashboard <100ms
+- Délai alertes <5s
+- Précision métriques >99%
+- Disponibilité système >99.9%
+
+### Optimisations
+1. Cache métriques fréquentes
+2. Agrégation données intelligente
+3. Compression historique
+4. Nettoyage automatique
+
+## Points Attention
+
+### Sécurité
+- Accès restreint dashboard
+- Chiffrement données
+- Audit logs complet
+- Validation inputs
+
+### Maintenance
+- Backup métriques
+- Rotation logs
+- Mise à jour seuils
+- Documentation MAJ
