@@ -9,6 +9,10 @@ const ChatSpaceManager = ({ projectData }) => {
   const [error, setError] = useState(null);
   const [isInitialized, setIsInitialized] = useState(false);
 
+  // États pour la gestion des espaces
+  const [newSpaceName, setNewSpaceName] = useState('');
+  const [showCreateForm, setShowCreateForm] = useState(false);
+
   // États pour la gestion des membres
   const [selectedSpace, setSelectedSpace] = useState(null);
   const [showMemberForm, setShowMemberForm] = useState(false);
@@ -118,6 +122,24 @@ const ChatSpaceManager = ({ projectData }) => {
     } catch (err) {
       console.error('Erreur chargement membres:', err);
       setError('Erreur lors du chargement des membres');
+    }
+  };
+
+  // Ajouter un membre à un espace
+  const addMemberToSpace = async (spaceId, email) => {
+    try {
+      await window.gapi.client.chat.spaces.members.create({
+        parent: spaceId,
+        requestBody: {
+          member: {
+            type: 'HUMAN',
+            name: email
+          }
+        }
+      });
+    } catch (err) {
+      console.error('Erreur ajout membre:', err);
+      throw err; // Propage l'erreur pour gestion dans handleAddMember
     }
   };
 
