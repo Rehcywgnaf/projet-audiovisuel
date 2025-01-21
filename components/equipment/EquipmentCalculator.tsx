@@ -1,0 +1,1 @@
+Le code complet du composant EquipmentCalculator que nous avons développé
