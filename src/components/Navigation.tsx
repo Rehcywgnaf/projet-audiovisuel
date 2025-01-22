@@ -3,22 +3,21 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { LayoutDashboard, Film, Calendar, PiggyBank, Users, Eye } from 'lucide-react';
 
-const navItems = [
-  { href: '/', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/projects', label: 'Projets', icon: Film },
-  { href: '/planning', label: 'Planning', icon: Calendar },
-  { href: '/budget', label: 'Budget', icon: PiggyBank },
-  { href: '/teams', label: 'Équipes', icon: Users },
-  { href: '/watch', label: 'Veille', icon: Eye }
-];
-
 export default function Navigation() {
   const pathname = usePathname();
+  const navItems = [
+    { href: '/', label: 'Dashboard', icon: LayoutDashboard },
+    { href: '/projects', label: 'Projets', icon: Film },
+    { href: '/planning', label: 'Planning', icon: Calendar },
+    { href: '/budget', label: 'Budget', icon: PiggyBank },
+    { href: '/teams', label: 'Équipes', icon: Users },
+    { href: '/watch', label: 'Veille', icon: Eye }
+  ];
 
   return (
     <nav className="w-64 h-screen bg-white border-r fixed left-0 top-0 p-4">
       <div className="mb-8">
-        <h1 className="text-xl font-bold">AudioProd</h1>
+        <h1 className="text-xl font-bold">SAPAV</h1>
       </div>
       <div className="space-y-2">
         {navItems.map(({ href, label, icon: Icon }) => {

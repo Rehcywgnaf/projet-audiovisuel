@@ -1,0 +1,23 @@
+{
+  "files": [
+    {
+      "id": "doc-001",
+      "name": "AAP Documentaire 2025 - Dossier",
+      "type": "document",
+      "version": "1.0",
+      "lastModified": "2025-01-17T10:00:00Z",
+      "modifiedBy": "user@test.com",
+      "status": "synced"
+    },
+    {
+      "id": "doc-002",
+      "name": "AAP Production - Budget",
+      "type": "spreadsheet",
+      "version": "2.1",
+      "lastModified": "2025-01-16T15:30:00Z",
+      "modifiedBy": "collaborator@test.com",
+      "status": "synced"
+    }
+  ],
+  "nextPageToken": null
+}

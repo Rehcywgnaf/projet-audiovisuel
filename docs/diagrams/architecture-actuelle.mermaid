@@ -1,0 +1,45 @@
+graph TD
+    subgraph Frontend[Interface Utilisateur]
+        Dashboard[Dashboard Principal]
+        MultiProject[Gestion Multi-Projets]
+        Teams[Interface Équipes]
+        RSS[Module RSS]
+    end
+
+    subgraph Drive[Intégration Google]
+        DriveCore[Core Drive Integration]
+        DriveSync[DriveSync]
+        DrivePerms[DrivePermissions]
+        ErrorHandle[ErrorHandling]
+    end
+
+    subgraph Components[Composants Métier]
+        StateManager[Gestion État]
+        DocManager[Document Manager]
+        Templates[Template Manager]
+        Submissions[Gestion Soumissions]
+    end
+
+    %% Relations principales
+    Dashboard --> StateManager
+    MultiProject --> StateManager
+    DriveCore --> DriveSync
+    DriveCore --> DrivePerms
+    DocManager --> DriveCore
+    RSS --> StateManager
+    Teams --> StateManager
+
+    %% Intégrations
+    StateManager --> DocManager
+    StateManager --> Templates
+    ErrorHandle --> DriveCore
+
+    %% Style des composants
+    classDef stable fill:#90EE90,stroke:#333
+    classDef inProgress fill:#FFA500,stroke:#333
+    classDef planned fill:#FFE4B5,stroke:#333
+
+    %% État des composants
+    class Dashboard,RSS,DriveCore,StateManager stable
+    class DocManager,Templates,MultiProject inProgress
+    class Submissions planned

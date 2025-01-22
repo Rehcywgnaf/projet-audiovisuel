@@ -1,0 +1,14 @@
+{
+  "tokenConfig": {
+    "expiresIn": "7d",
+    "lastRotation": null,
+    "refreshRate": "6d",
+    "scope": ["https://www.googleapis.com/auth/drive.file"]
+  },
+  "driveConfig": {
+    "rootFolderId": null,
+    "temporaryFolderId": null,
+    "maxRetries": 3,
+    "retryDelay": 1000
+  }
+}

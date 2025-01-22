@@ -1,0 +1,19 @@
+{
+  "settings": {
+    "emailEnabled": true,
+    "desktopEnabled": true,
+    "frequency": "daily",
+    "filters": [
+      {
+        "type": "budget",
+        "operator": "gte",
+        "value": 100000
+      }
+    ],
+    "channels": [
+      "email",
+      "desktop",
+      "platform"
+    ]
+  }
+}

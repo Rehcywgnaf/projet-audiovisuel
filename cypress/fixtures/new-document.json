@@ -1,0 +1,18 @@
+{
+  "id": "doc-002",
+  "title": "Projet Documentaire 2025",
+  "templateId": "tpl-001",
+  "version": "1.0",
+  "status": "draft",
+  "created": "2025-01-17T14:00:00Z",
+  "sections": [
+    {
+      "id": "s1",
+      "content": ""
+    },
+    {
+      "id": "s2",
+      "content": ""
+    }
+  ]
+}

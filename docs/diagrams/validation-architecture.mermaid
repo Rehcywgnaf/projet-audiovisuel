@@ -1,0 +1,33 @@
+graph TD
+    subgraph "Frontend"
+        UI[Interface Utilisateur]
+        DV[DocumentValidator]
+        PM[PreviewManager]
+    end
+
+    subgraph "Services"
+        VS[ValidationService]
+        ES[EventSystem]
+        AS[AuditService]
+    end
+
+    subgraph "Storage"
+        DM[DocumentManager]
+        AL[AuditLogs]
+    end
+
+    UI --> DV
+    DV --> VS
+    VS --> ES
+    ES --> AS
+    ES --> DM
+    AS --> AL
+    DM --> PM
+
+    classDef frontend fill:#f9f,stroke:#333
+    classDef service fill:#bbf,stroke:#333
+    classDef storage fill:#bfb,stroke:#333
+
+    class UI,DV,PM frontend
+    class VS,ES,AS service
+    class DM,AL storage

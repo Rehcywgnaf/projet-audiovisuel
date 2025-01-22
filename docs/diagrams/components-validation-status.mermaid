@@ -1,0 +1,33 @@
+graph TD
+    subgraph "État Validation"
+        A[TeamTracking<br>✓ Validation Complète] --> B[État: Production]
+        C[DocumentValidator<br>✓ Implémenté] --> D[État: Tests]
+        E[ProjectManager<br>⌛ En attente] --> F[État: Planifié]
+    end
+
+    subgraph "Points d'Intégration"
+        G[Google Drive]
+        H[EventSystem]
+        I[AuditLogs]
+    end
+
+    subgraph "Validation Croisée"
+        J[Cohérence Métadonnées]
+        K[Formats Supportés]
+        L[Règles Métier]
+    end
+
+    A --> H
+    C --> G
+    C --> H
+    C --> I
+    E -.-> H
+
+    J --> C
+    K --> C
+    L --> C
+
+    style A fill:#90EE90,stroke:#333
+    style C fill:#FFD700,stroke:#333
+    style E fill:#FFB6C1,stroke:#333
+    style H fill:#87CEEB,stroke:#333

@@ -1,0 +1,1 @@
+[Le contenu complet de l'artifact validation-monitor]

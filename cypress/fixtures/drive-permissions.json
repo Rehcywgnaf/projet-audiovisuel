@@ -1,0 +1,24 @@
+{
+  "permissions": [
+    {
+      "id": "perm-001",
+      "type": "user",
+      "role": "owner",
+      "emailAddress": "owner@test.com"
+    },
+    {
+      "id": "perm-002",
+      "type": "user",
+      "role": "editor",
+      "emailAddress": "collaborator@test.com"
+    }
+  ],
+  "inheritedPermissions": [
+    {
+      "id": "perm-003",
+      "type": "group",
+      "role": "viewer",
+      "groupName": "Équipe Production"
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "sources": [
+    {
+      "id": "cnc-1",
+      "name": "CNC Actualités",
+      "url": "https://www.cnc.fr/professionnels/actualites",
+      "type": "AAP",
+      "lastCheck": "2025-01-16T10:00:00.000Z",
+      "status": "active"
+    },
+    {
+      "id": "region-idf",
+      "name": "Région IDF - Culture",
+      "url": "https://www.iledefrance.fr/aides-services",
+      "type": "AO",
+      "lastCheck": "2025-01-16T09:30:00.000Z",
+      "status": "active"
+    }
+  ],
+  "lastUpdate": "2025-01-16T10:00:00.000Z"
+}

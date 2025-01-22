@@ -1,0 +1,28 @@
+{
+  "reports": [
+    {
+      "id": "rep-001",
+      "type": "aap-analysis",
+      "title": "Analyse des AAP - Janvier 2025",
+      "metrics": ["success-rate", "response-time"],
+      "data": {
+        "success_rate": {
+          "value": 75.5,
+          "trend": "up",
+          "details": {
+            "previous": 73.2,
+            "change": 2.3
+          }
+        },
+        "response_time": {
+          "value": 3.2,
+          "trend": "down",
+          "details": {
+            "previous": 3.5,
+            "change": -0.3
+          }
+        }
+      }
+    }
+  ]
+}
