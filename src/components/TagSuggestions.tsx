@@ -16,6 +16,7 @@ export default function TagSuggestions() {
 
   const addTag = (tag: string) => {
     setSuggestedTags(prev => prev.filter(t => t.tag !== tag));
+    // TODO: Ajouter aux tags connus
   };
 
   const ignoreTag = (tag: string) => {
