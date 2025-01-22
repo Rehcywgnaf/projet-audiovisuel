@@ -2,8 +2,21 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Users, Film, Calendar } from 'lucide-react';
 
+type TeamMember = {
+  name: string;
+  role: string;
+  availability: string;
+  currentProjects: string[];
+  nextAvailable: string;
+};
+
+type Team = {
+  name: string;
+  members: TeamMember[];
+};
+
 export default function TeamTracking() {
-  const teams = [
+  const teams: Team[] = [
     {
       name: 'Équipe Technique',
       members: [
