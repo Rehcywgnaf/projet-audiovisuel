@@ -1,12 +1,18 @@
+'use client';
 import React from 'react';
 import { useDriveAuth } from './DriveAuthProvider';
 
 export default function DriveAuth() {
-  const { isAuthenticated, login, logout } = useDriveAuth();
+  const { isAuthenticated, isInitializing, error, login, logout } = useDriveAuth();
+
+  if (isInitializing) {
+    return <div>Initialisation en cours...</div>;
+  }
 
   return (
     <div className="p-4 border rounded shadow">
       <h2 className="text-lg font-bold mb-4">Google Drive Authentication</h2>
+      {error && <p className="text-red-500 mb-4">{error}</p>}
       {isAuthenticated ? (
         <button
           onClick={logout}
