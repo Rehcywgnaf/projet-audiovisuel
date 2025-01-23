@@ -2,32 +2,34 @@
 
 [... contenu précédent ...]
 
-### 7. Système de Gestion des Équipes
+### 8. Système de Validation
 ```
-/TeamDashboard/               # Vue globale équipes
-├── Dashboard.tsx            # 1.2KB - Composant principal
-├── KPIs.tsx                # 2.7KB - Métriques équipes
-├── Navigation.tsx          # 1.3KB - Navigation entre équipes
-└── index.ts
+/validation/
+└── OptimizedDocumentValidator.ts   # Validateur optimisé
 
-/TeamTracking/               # Suivi détaillé
-├── TeamTracking.tsx        # 4.7KB - Suivi disponibilité
-├── hooks.ts               # 1.4KB - Logique métier
-└── TeamTracking.test.tsx   # 5.0KB - Tests unitaires
+Documentation technique :
+/docs/technical/validation-system/
+├── README.md                      # Vue d'ensemble (2.5KB)
+├── rules.md                       # Règles métier
+├── integration.md                 # Guide d'intégration
+└── troubleshooting.md            # Résolution problèmes
 ```
 
-Statut : ✅ Complet et Fonctionnel
+Statut : ⚠️ Documentation > Implémentation
+- Documentation détaillée disponible
+- Composant principal à développer
+- Tests à implémenter
 
-Fonctionnalités :
-- Dashboard avec KPIs en temps réel
-- Tracking de disponibilité
-- Gestion des projets par équipe
-- Alertes de surcharge
-- Métriques de performance
+Fonctionnalités documentées :
+- Validation formats (DOC, DOCX, PDF, ODT)
+- Vérification métadonnées
+- Validation structure contenu
+- Intégration cache système
+- Audit et journalisation
 
-Intégrations :
-- Components UI (shadcn)
-- TeamManager
-- Hooks personnalisés
+Points d'attention :
+- Écart entre documentation et implémentation
+- Tests à développer selon la documentation
+- Cache système à mettre en place
 
 [... reste du contenu ...]
