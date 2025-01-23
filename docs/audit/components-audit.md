@@ -2,16 +2,32 @@
 
 [... contenu précédent ...]
 
-### 6. Système de Veille RSS
+### 7. Système de Gestion des Équipes
 ```
-/RSSManager/
-└── index.jsx                  # Gestionnaire RSS (3.7KB)
+/TeamDashboard/               # Vue globale équipes
+├── Dashboard.tsx            # 1.2KB - Composant principal
+├── KPIs.tsx                # 2.7KB - Métriques équipes
+├── Navigation.tsx          # 1.3KB - Navigation entre équipes
+└── index.ts
+
+/TeamTracking/               # Suivi détaillé
+├── TeamTracking.tsx        # 4.7KB - Suivi disponibilité
+├── hooks.ts               # 1.4KB - Logique métier
+└── TeamTracking.test.tsx   # 5.0KB - Tests unitaires
 ```
 
 Statut : ✅ Complet et Fonctionnel
-- Gestion multi-sources (RSS, API, Scraping)
-- Monitoring des sources
-- Statuts en temps réel
-- Sources pré-configurées (CNC, marchés publics)
+
+Fonctionnalités :
+- Dashboard avec KPIs en temps réel
+- Tracking de disponibilité
+- Gestion des projets par équipe
+- Alertes de surcharge
+- Métriques de performance
+
+Intégrations :
+- Components UI (shadcn)
+- TeamManager
+- Hooks personnalisés
 
 [... reste du contenu ...]
