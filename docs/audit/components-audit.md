@@ -4,38 +4,36 @@
 
 ### 8. Système de Validation
 ```
-/DocumentValidator/               # Composant principal
-└── DocumentValidator.tsx        # Interface validation (2.2KB)
+/DocumentValidator/
+└── DocumentValidator.tsx          # Version de base (2.2KB)
 
-/validation/                     # Optimisation
-└── OptimizedDocumentValidator.ts # Validateur optimisé
+/validation/
+└── OptimizedDocumentValidator.ts  # Version optimisée (en dev)
 
 Documentation technique :
 /docs/technical/validation-system/
-├── README.md                    # Vue d'ensemble (2.5KB)
-├── rules.md                     # Règles métier
-├── integration.md               # Guide d'intégration
-└── troubleshooting.md          # Résolution problèmes
+├── README.md                      # Vue d'ensemble (2.5KB)
+├── rules.md                       # Règles métier
+├── integration.md                 # Guide d'intégration
+└── troubleshooting.md            # Résolution problèmes
 ```
 
-Statut : ✅ Fonctionnel avec optimisations prévues
-
-Composant principal (DocumentValidator) :
-- Validation formats (doc, docx, pdf, odt)
-- Vérification taille fichiers
-- Validation contenu et métadonnées
-- Interface utilisateur avec shadcn/ui
-- Gestion des erreurs
-
-Système d'optimisation (/validation) :
-- Optimisations planifiées
+Statut : 🔄 En Migration
+- Version de base fonctionnelle
+- Version optimisée en développement
 - Documentation détaillée disponible
-- Tests à développer
 
-Documentation :
-- Complète et à jour
-- Règles métier détaillées
-- Guides d'intégration
-- Procédures de dépannage
+Fonctionnalités actuelles :
+- Validation formats (doc, docx, pdf, odt)
+- Vérification taille fichiers (max 10MB)
+- Validation métadonnées requises
+- Vérification structure contenu
+- Interface utilisateur avec statuts
+
+Points d'attention :
+- Migration vers version optimisée en cours
+- Doublons temporaires à résoudre
+- Tests à migrer/adapter
+- Mettre à jour documentation post-migration
 
 [... reste du contenu ...]
