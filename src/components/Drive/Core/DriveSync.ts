@@ -3,8 +3,11 @@ import { DriveCore } from './DriveCore';
 export class DriveSync {
   private static instance: DriveSync;
   private syncQueue: Array<any> = [];
+  private driveCore: DriveCore;
   
-  private constructor() {}
+  private constructor() {
+    this.driveCore = new DriveCore();
+  }
 
   public static getInstance(): DriveSync {
     if (!DriveSync.instance) {
@@ -23,7 +26,7 @@ export class DriveSync {
       const operation = this.syncQueue[0];
       try {
         await this.executeOperation(operation);
-        this.syncQueue.shift(); // Remove processed operation
+        this.syncQueue.shift();
       } catch (error) {
         console.error('Sync error:', error);
         break;
@@ -32,7 +35,20 @@ export class DriveSync {
   }
 
   private async executeOperation(operation: any) {
-    // Implementation
+    switch(operation.type) {
+      case 'upload':
+        return await this.driveCore.uploadFile(operation.data);
+      case 'update':
+        return await this.driveCore.updateFile(operation.data);
+      case 'delete':
+        return await this.driveCore.deleteFile(operation.data);
+      default:
+        throw new Error('Unknown operation type');
+    }
+  }
+
+  async synchronize() {
+    return this.processQueue();
   }
 }
 
