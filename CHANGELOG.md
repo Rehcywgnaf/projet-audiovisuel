@@ -1,5 +1,23 @@
 # Changelog
 
+# [v1.9.0] - 2025-01-25
+
+## Architecture Auth
+### Ajouté
+- Nouveau service AuthService dans /src/services/auth/
+- Gestionnaire de permissions avec PermissionService
+- Tests unitaires pour AuthService et PermissionService
+- Tests d'intégration TeamPermissions
+
+### Modifié
+- Migration du stockage des tokens vers /src/services/auth/tokenStorage
+- Centralisation de la gestion des permissions
+
+### Supprimé
+- Ancien système AuthenticationManager
+- Anciens fichiers de permissions Drive
+- Tests DrivePerms obsolètes
+
 ## [1.8.1] - 2025-01-20
 ### Ajouté
 - Système Load Balancer avec monitoring avancé
