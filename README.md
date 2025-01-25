@@ -110,6 +110,14 @@ Pour plus de détails, consultez :
 - `/docs/technical/template-system/` : Architecture des templates
 - `/docs/technical/integration-tests/` : Tests d'intégration
 - `/docs/technical/performance-monitoring/` : Monitoring des performances
+- [Architecture globale](/docs/project/architecture/core.md)
+- [Guide IA](/docs/project/architecture/ai-service.md)
+- [Documentation composants](/docs/project/overview.md)
+
+Documentation complète :
+- [Guide utilisateur](/docs/project/guides/user-guide.md)
+- [Guide développeur](/docs/project/guides/dev-guide.md)  
+- [Guide déploiement](/docs/project/guides/deploy-guide.md)
   
 ## 🚀 Fonctionnalités principales
 
