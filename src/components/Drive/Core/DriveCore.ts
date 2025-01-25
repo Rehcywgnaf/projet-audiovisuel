@@ -1,6 +1,20 @@
-// Classe principale de gestion Drive
+import { DrivePerms } from './DrivePerms';
+
+export interface DriveConfig {
+  rootFolder: string;
+  maxRetries: number;
+  cacheTimeout: number;
+  uploadChunkSize: number;
+}
+
 export class DriveCore {
   private static instance: DriveCore;
+  private config: DriveConfig = {
+    rootFolder: 'SAPAV',
+    maxRetries: 3,
+    cacheTimeout: 5 * 60 * 1000, // 5 minutes
+    uploadChunkSize: 5 * 1024 * 1024 // 5MB
+  };
   
   private constructor() {}
 
@@ -11,21 +25,45 @@ export class DriveCore {
     return DriveCore.instance;
   }
 
-  // Méthodes principales
-  async initialize() {
-    // Code d'initialisation
+  async uploadFile(data: any) {
+    const perms = DrivePerms.getInstance();
+    if (!await perms.canUpload()) {
+      throw new Error('Upload permission denied');
+    }
+    // Implementation
   }
 
-  async authenticate() {
-    // Code d'authentification
+  async updateFile(data: any) {
+    const perms = DrivePerms.getInstance();
+    if (!await perms.canModify(data.fileId)) {
+      throw new Error('Update permission denied');
+    }
+    // Implementation
   }
 
-  async listFiles(params: any) {
-    // Code de listing
+  async deleteFile(data: any) {
+    const perms = DrivePerms.getInstance();
+    if (!await perms.canDelete(data.fileId)) {
+      throw new Error('Delete permission denied');
+    }
+    // Implementation
   }
 
-  async uploadFile(file: any) {
-    // Code d'upload
+  getConfig(): DriveConfig {
+    return this.config;
+  }
+
+  updateConfig(newConfig: Partial<DriveConfig>) {
+    this.config = { ...this.config, ...newConfig };
+  }
+
+  resetConfig() {
+    this.config = {
+      rootFolder: 'SAPAV',
+      maxRetries: 3,
+      cacheTimeout: 5 * 60 * 1000,
+      uploadChunkSize: 5 * 1024 * 1024
+    };
   }
 }
 
