@@ -1,0 +1,46 @@
+{
+  "team_members": [
+    {
+      "id": "user-001",
+      "name": "Jean Dupont",
+      "stats": {
+        "active_projects": 4,
+        "success_rate": 78.5,
+        "avg_response_time": 2.8,
+        "on_time_completion": 92.3
+      },
+      "projects": [
+        {
+          "id": "proj-001",
+          "status": "active",
+          "deadline": "2025-02-15",
+          "progress": 65
+        }
+      ]
+    },
+    {
+      "id": "user-002",
+      "name": "Marie Martin",
+      "stats": {
+        "active_projects": 3,
+        "success_rate": 82.1,
+        "avg_response_time": 2.5,
+        "on_time_completion": 95.0
+      },
+      "projects": [
+        {
+          "id": "proj-002",
+          "status": "active",
+          "deadline": "2025-03-01",
+          "progress": 45
+        }
+      ]
+    }
+  ],
+  "global_stats": {
+    "avg_projects_per_member": 3.5,
+    "team_success_rate": 80.3,
+    "team_response_time": 2.65,
+    "team_completion_rate": 93.65
+  }
+}

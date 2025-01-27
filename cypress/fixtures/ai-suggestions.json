@@ -1,0 +1,27 @@
+{
+  "status": "success",
+  "suggestions": {
+    "sections": [
+      {
+        "name": "Note d'intention",
+        "content_suggestions": [
+          "Décrire l'approche documentaire",
+          "Expliquer l'innovation narrative",
+          "Détailler l'impact attendu"
+        ]
+      },
+      {
+        "name": "Traitement",
+        "content_suggestions": [
+          "Description du dispositif technique",
+          "Planning de production",
+          "Moyens mis en œuvre"
+        ]
+      }
+    ],
+    "improvements": [
+      "Ajouter des références de productions similaires",
+      "Détailler l'expérience de l'équipe"
+    ]
+  }
+}

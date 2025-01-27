@@ -1,0 +1,23 @@
+{
+  "status": "success",
+  "analysis": {
+    "project_type": "documentaire",
+    "suggested_sections": [
+      {
+        "title": "Impact Social",
+        "reason": "Critère important pour ce type d'AAP",
+        "priority": "high"
+      },
+      {
+        "title": "Innovation Technique",
+        "reason": "Mentionné dans les critères d'évaluation",
+        "priority": "medium"
+      }
+    ],
+    "key_requirements": [
+      "Budget maximum: 150000€",
+      "Deadline: 2025-03-01",
+      "Expérience documentaire requise"
+    ]
+  }
+}

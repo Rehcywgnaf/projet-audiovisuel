@@ -1,0 +1,23 @@
+{
+  "notifications": [
+    {
+      "id": "notif-001",
+      "type": "new_comment",
+      "projectId": "proj-001",
+      "message": "Nouveau commentaire sur AAP Documentaire",
+      "timestamp": "2025-01-17T10:00:00Z",
+      "read": false,
+      "priority": "medium"
+    },
+    {
+      "id": "notif-002",
+      "type": "deadline_approaching",
+      "projectId": "proj-002",
+      "message": "Deadline dans 3 jours : AAP Production",
+      "timestamp": "2025-01-17T09:30:00Z",
+      "read": false,
+      "priority": "high"
+    }
+  ],
+  "unreadCount": 2
+}

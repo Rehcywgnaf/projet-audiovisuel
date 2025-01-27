@@ -1,0 +1,21 @@
+{
+  "templates": [
+    {
+      "id": "tpl-001",
+      "name": "AAP Documentaire Standard",
+      "type": "documentaire",
+      "status": "actif",
+      "lastUpdate": "2025-01-17T10:00:00Z",
+      "sections": [
+        {
+          "titre": "Note d'intention",
+          "required": true
+        },
+        {
+          "titre": "Budget",
+          "required": true
+        }
+      ]
+    }
+  ]
+}

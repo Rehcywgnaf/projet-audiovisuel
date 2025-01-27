@@ -1,0 +1,24 @@
+{
+  "status": "success",
+  "validation": {
+    "score": 85,
+    "feedback": [
+      {
+        "section": "Note d'intention",
+        "score": 90,
+        "strengths": [
+          "Objectifs clairement définis",
+          "Public cible bien identifié"
+        ],
+        "improvements": [
+          "Développer l'aspect innovation",
+          "Ajouter des exemples concrets"
+        ]
+      }
+    ],
+    "global_recommendations": [
+      "Renforcer la cohérence entre les sections",
+      "Ajouter plus de détails techniques"
+    ]
+  }
+}

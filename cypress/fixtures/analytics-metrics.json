@@ -1,0 +1,42 @@
+{
+  "metrics": {
+    "global": {
+      "success_rate": 75.5,
+      "active_projects": 12,
+      "monthly_submissions": 8,
+      "avg_response_time": 3.2,
+      "trend": "up"
+    },
+    "monthly_trend": [
+      {
+        "month": "2025-01",
+        "success_rate": 75.5,
+        "submissions": 8,
+        "avg_response_time": 3.2
+      },
+      {
+        "month": "2024-12",
+        "success_rate": 73.2,
+        "submissions": 7,
+        "avg_response_time": 3.5
+      }
+    ],
+    "key_factors": [
+      {
+        "name": "Innovation technique",
+        "weight": 0.35,
+        "trend": "stable"
+      },
+      {
+        "name": "Impact social",
+        "weight": 0.28,
+        "trend": "up"
+      },
+      {
+        "name": "Budget",
+        "weight": 0.25,
+        "trend": "down"
+      }
+    ]
+  }
+}
