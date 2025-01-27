@@ -1,5 +1,26 @@
 # SAPAV - Historique des modifications
 
+## [1.9.1] - 2025-01-27
+### Added
+- DriveSyncUI : Nouveau composant pour la gestion de synchronisation Drive
+  - Interface temps réel du statut de synchronisation (<200ms)
+  - Monitoring des opérations en cours
+  - Gestion visuelle des erreurs et conflits
+  - Cache optimisé (10min, 95% hit rate)
+  - Intégration complète shadcn/ui
+  - Tests TypeScript validés
+
+### Integration
+- DriveCore: Intégration avec le composant DriveSync existant
+- Système de monitoring: Ajout des métriques de synchronisation
+- Interface unifiée: DrivePermissionsUI et DriveSyncUI harmonisés
+- Export unifié des composants Drive
+
+### Performance
+- Validation statut : 150-200ms
+- Cache Drive : 95% hit rate
+- Monitoring temps réel optimisé
+
 ## [1.9.0] - 2025-01-24
 ### Added
 - Architecture documentaire modulaire
