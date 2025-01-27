@@ -1,5 +1,5 @@
-import { google } from 'googleapis';
-import { DriveOperation, FileMetadata, DriveResponse, CacheConfig } from '../types';
+import { google, drive_v3 } from 'googleapis';
+import { DriveOperation, FileMetadata, DriveResponse } from '../types';
 import { ErrorHandling } from '../error/ErrorHandling';
 import { CacheManager } from '../cache/CacheManager';
 
@@ -9,7 +9,7 @@ import { CacheManager } from '../cache/CacheManager';
  */
 class DriveCore {
   private static instance: DriveCore;
-  private drive: any; // Google Drive API instance
+  private Drive: drive_v3.Drive;
   private cacheManager: CacheManager;
   private errorHandler: ErrorHandling;
 
@@ -27,7 +27,7 @@ class DriveCore {
       const auth = await google.auth.getClient({
         scopes: ['https://www.googleapis.com/auth/drive']
       });
-      this.drive = google.drive({ version: 'v3', auth });
+      this.Drive = google.drive({ version: 'v3', auth });
     } catch (error) {
       this.errorHandler.handleError('DRIVE_INIT_ERROR', error);
     }
@@ -58,7 +58,7 @@ class DriveCore {
         ...(folderId && { parents: [folderId] })
       };
 
-      const response = await this.drive.files.create({
+      const response = await this.Drive.files.create({
         requestBody: metadata,
         media: {
           body: content
@@ -83,7 +83,7 @@ class DriveCore {
       const cached = await this.cacheManager.getFile(fileId);
       if (cached) return cached;
 
-      const response = await this.drive.files.get({
+      const response = await this.Drive.files.get({
         fileId,
         alt: 'media'
       });
@@ -102,7 +102,7 @@ class DriveCore {
    */
   async updateFile(fileId: string, content: any): Promise<void> {
     try {
-      await this.drive.files.update({
+      await this.Drive.files.update({
         fileId,
         media: {
           body: content
@@ -121,7 +121,7 @@ class DriveCore {
    */
   async deleteFile(fileId: string): Promise<void> {
     try {
-      await this.drive.files.delete({
+      await this.Drive.files.delete({
         fileId
       });
 
@@ -141,7 +141,7 @@ class DriveCore {
       const cached = await this.cacheManager.getMetadata(fileId);
       if (cached) return cached;
 
-      const response = await this.drive.files.get({
+      const response = await this.Drive.files.get({
         fileId,
         fields: '*'
       });
@@ -188,7 +188,7 @@ class DriveCore {
    */
   private determineMimeType(filename: string): string {
     const ext = filename.split('.').pop()?.toLowerCase();
-    const mimeTypes = {
+    const mimeTypes: Record<string, string> = {
       'pdf': 'application/pdf',
       'doc': 'application/msword',
       'docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
