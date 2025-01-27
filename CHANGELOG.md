@@ -457,6 +457,7 @@
 - Optimisation des retours utilisateur
 - Extension du système de validation existant
 
+
 ### Technical
 - Nouveaux composants React avec shadcn/ui
 - Architecture modulaire pour évolutions futures
@@ -701,11 +702,6 @@
 ## [En cours] Integration DriveCore
 - Analyse de la compatibilité avec DriveAuth
 - Préparation de l'intégration des composants Drive
-
-### Technical
-- Suppression des placeholders de code
-- Amélioration de la gestion d'erreurs
-- Documentation des interfaces
 
 ### Technical
 - Suppression des placeholders de code
@@ -1042,3 +1038,4 @@
 - Configuration de base
 - Structure des dossiers
 - Mise en place de l'environnement de développement
+
