@@ -1,1 +1,1 @@
-export { default } from './DriveIntegration';
+export { default as DriveSyncUI } from './DriveSyncUI';
