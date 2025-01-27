@@ -16,6 +16,8 @@ import React, { useEffect, useState } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Loader2, CloudOff, CheckCircle, AlertTriangle } from 'lucide-react';
+import DriveCore from '../Core/DriveCore';
+import { AIServiceManager } from '@/services/ai/AIServiceManager';
 
 // Types
 interface SyncStatus {
@@ -51,13 +53,17 @@ const DriveIntegration: React.FC<DriveIntegrationProps> = ({
   });
   const [aiSuggestions, setAiSuggestions] = useState<string[]>([]);
 
+  // Instance DriveCore
+  const driveCore = DriveCore.getInstance();
+  const aiManager = AIServiceManager.getInstance();
+
   // Gestion de la synchronisation
   const handleSync = async () => {
     try {
       setSyncStatus({ status: 'syncing' });
       
       // Appel à DriveCore pour la synchronisation
-      await window.DriveCore.sync();
+      await driveCore.sync();
       
       setSyncStatus({ 
         status: 'success',
@@ -78,7 +84,7 @@ const DriveIntegration: React.FC<DriveIntegrationProps> = ({
   // Monitoring des métriques du cache
   useEffect(() => {
     const updateMetrics = async () => {
-      const metrics = await window.DriveCore.getCacheMetrics();
+      const metrics = await driveCore.getCacheMetrics();
       setCacheMetrics(metrics);
     };
 
@@ -91,7 +97,7 @@ const DriveIntegration: React.FC<DriveIntegrationProps> = ({
   // Intégration IA pour les suggestions
   useEffect(() => {
     const loadAISuggestions = async () => {
-      const suggestions = await window.AIServiceManager.getContextualSuggestions();
+      const suggestions = await aiManager.getContextualSuggestions();
       setAiSuggestions(suggestions);
     };
 
