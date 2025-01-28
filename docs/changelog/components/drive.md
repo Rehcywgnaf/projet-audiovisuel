@@ -1,7 +1,24 @@
 # Changelog - Intégration Drive
 
-## [1.9.0] - 2025-01-25
+## [1.9.1] - 2025-01-28
+### Modifié
+- Migration complète vers AuthService
+  - Suppression de l'authentification interne
+  - Intégration PermissionService pour tous les accès
+  - Initialisation paresseuse via ensureDriveInitialized
+  - Tests d'intégration complets
 
+### Technique
+- Optimisation des performances
+  - Validation des accès < 200ms
+  - Cache des tokens optimisé
+  - Gestion d'erreurs améliorée
+- Tests mis à jour
+  - Nouveaux tests avec AuthService
+  - Tests de performance ajoutés
+  - Validation des cas d'erreurs
+
+## [1.9.0] - 2025-01-25
 ### Ajouté
 - Intégration avec le nouveau AuthService
   - Authentification centralisée via AuthService
