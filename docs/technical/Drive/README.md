@@ -3,41 +3,37 @@
 ## Structure des composants
 
 ```
-Drive/
-├── driveExports.ts                # Point d'entrée principal des exports
+src/components/Drive/
 ├── Core/
-│   ├── coreExports.ts            # Exports des composants Core
-│   ├── DriveCore.ts              # Gestion des opérations Drive (5.6KB)
-│   ├── DrivePerms.ts             # Gestion des permissions (3.2KB)
-│   └── DriveSync.ts              # Synchronisation Drive (4.7KB)
+│   ├── DriveCore.ts              # Gestion des opérations Drive (7.6KB)
+│   ├── DriveConfig.ts            # Configuration et Auth Drive (3.7KB)
+│   └── DriveSync.ts              # Synchronisation Drive (1.2KB)
 ├── Auth/
-│   ├── authExports.ts            # Exports des composants Auth
 │   ├── DriveAuth.tsx             # Composant Auth UI (0.9KB)
 │   └── DriveAuthProvider.tsx     # Provider Auth (2.8KB)
 ├── UI/
-│   ├── uiExports.ts             # Exports des composants UI
 │   ├── DriveSyncUI.tsx          # Interface synchronisation (3.1KB)
 │   └── DrivePermissionsUI.tsx   # Interface permissions (2.9KB)
 └── Integration/
-    ├── integrationExports.ts     # Exports des composants Integration
-    └── DriveIntegration.tsx      # Integration Drive (2.2KB)
+    └── DriveIntegration.tsx      # Integration Drive (6.0KB)
 ```
 
 ## Composants Core
 
+### DriveConfig
+- Point d'entrée pour l'authentification et la configuration Drive
+- Gestion OAuth2 avec Google
+- Gestion des tokens et rafraîchissement
+- Initialisation de l'API Drive
+- Support complet MIME types
+
 ### DriveCore
 - Singleton pour les opérations Drive
+- Utilise DriveConfig pour l'authentification
 - Gestion cache et erreurs (95% hit rate)
 - Support complet MIME types
 - Implémente CRUD complet
 - Validation optimisée (150-200ms)
-
-### DrivePerms
-- Gestion permissions ressources
-- Intégration EventSystem
-- Support rôles et équipes
-- Validation autorisations
-- Cache intelligent (10min TTL)
 
 ### DriveSync
 - Synchronisation en temps réel
@@ -65,7 +61,7 @@ Drive/
 
 ### DriveAuth
 - Interface authentification
-- Support OAuth2
+- Support OAuth2 via DriveConfig
 - Gestion tokens
 - Refresh automatique
 
@@ -75,7 +71,7 @@ Drive/
 - Refresh automatique tokens
 - Monitoring des sessions
 
-## Intégration
+## Integration
 
 ### DriveIntegration
 - Point d'entrée unifié
@@ -86,16 +82,6 @@ Drive/
   - Cache intelligent (98% hit rate)
   - Suggestions contextuelles
   - Préchargement prédictif
-
-## Intégration IA
-
-### AIServiceManager
-- Analyse intelligente des documents
-- Suggestions de métadonnées
-- Détection de conflits avancée
-- Cache optimisé 
-  - Documents : 10min TTL, 95% hit rate
-  - Métadonnées : 1h TTL, 98% hit rate
 
 ## Monitoring et Performance
 
