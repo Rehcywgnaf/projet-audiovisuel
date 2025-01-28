@@ -1,6 +1,6 @@
 'use client';
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { DriveConfig } from '@/services/drive';
+import DriveConfig from '../Core/DriveConfig';
 
 interface DriveAuthContextType {
   isAuthenticated: boolean;
