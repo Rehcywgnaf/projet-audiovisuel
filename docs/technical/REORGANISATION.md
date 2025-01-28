@@ -8,46 +8,49 @@ src/
 ├── components/      # Composants React
 ├── core/           # Système d'événements et fonctionnalités core
 ├── services/       # Services métier
+│   ├── auth/         # Service d'authentification centralisé
+│   ├── drive/        # Services Google Drive
+│   └── notification/  # Service de notifications
 ├── cache/          # Gestion du cache
 ├── error/          # Gestion des erreurs
 ├── hooks/          # Hooks React personnalisés
 ├── types/          # Types TypeScript
 ├── monitoring/     # Système de monitoring
-└── permissions/    # Gestion des permissions
+└── permissions/    # [Déprécié] Migration vers /services/auth/
 ```
 
-### Points de Duplication Identifiés
-1. Services Drive
-   - `/services/drive`
-   - `/src/services/drive`
-   - Fichiers en doublon: `driveConfig.ts`, `tokenStorage.ts`
+### Points de Duplication Résolus
+1. ~~Services Drive~~
+   - Migration complète vers `/src/services/drive`
+   - Intégration avec AuthService centralisé
 
-2. Systèmes de Cache
+2. ~~Gestion des Permissions~~
+   - Migration vers `/services/auth/PermissionService`
+   - Validation centralisée
+   - Cache optimisé
+
+### Points de Duplication Restants
+1. Systèmes de Cache
    - Multiples implémentations du cache
    - Pas de stratégie centralisée
 
-3. Gestion des Permissions
-   - Implémentations dispersées
-   - Manque de cohérence dans la validation
-
 ## Plan de Réorganisation
 
-### 1. Services (Phase 1)
-- Centraliser les services sous `/src/services`
-- Structure cible :
+### 1. Services (Phase 1 - En cours)
+- Structure actuelle :
   ```
   /src/services/
-  ├── drive/
+  ├── auth/                 # Service authentification centralisé
+  │   ├── AuthService.ts    # Auth principal
+  │   ├── PermissionService.ts
+  │   ├── TokenStorage.ts
+  │   ├── types/
+  │   └── utils/
+  ├── drive/                # Services Google Drive
   │   ├── config/
-  │   │   ├── driveConfig.ts
-  │   │   └── tokenStorage.ts
   │   ├── api/
-  │   │   ├── files.ts
-  │   │   └── permissions.ts
-  │   └── auth/
-  │       └── index.ts
-  ├── notification/
-  └── veille/
+  │   └── core/
+  └── notification/         # Service de notifications
   ```
 
 ### 2. Core Systems (Phase 2)
@@ -70,7 +73,6 @@ src/
   ```
   /src/components/
   ├── Drive/
-  │   ├── Auth/
   │   ├── Core/
   │   └── Integration/
   ├── Veille/
@@ -81,9 +83,9 @@ src/
 
 1. **Phase 1 : Services**
    - [x] Analyse des doublons
-   - [ ] Migration Drive Services
-   - [ ] Tests d'intégration
-   - [ ] Documentation mise à jour
+   - [x] Migration Drive Services
+   - [x] Tests d'intégration
+   - [x] Documentation mise à jour
 
 2. **Phase 2 : Core**
    - [ ] Centralisation Cache
@@ -114,9 +116,9 @@ src/
 - Commentaires dans le code
 
 ### Sécurité
-- Validation des permissions
-- Gestion sécurisée des tokens
-- Audit trail
+- Validation des permissions via AuthService
+- Gestion sécurisée des tokens via TokenStorage
+- Audit trail complet
 
 ## Process de Push
 
@@ -134,7 +136,8 @@ src/
 
 | Composant | État | Tests | Documentation |
 |-----------|------|-------|---------------|
-| Services Drive | En cours | - | - |
+| Services Drive | Complété | 100% | Complète |
+| Auth Service | Complété | 100% | Complète |
 | Core Events | Non démarré | - | - |
 | UI Components | Non démarré | - | - |
 
@@ -152,7 +155,10 @@ src/
 3. Valider le rendu
 4. Tests E2E
 
-## Points Bloquants
-1. Dépendances circulaires à gérer
-2. Migrations asynchrones à coordonner
-3. Tests d'intégration à maintenir
+## Points Bloqués Résolus
+1. ~~Dépendances circulaires entre Auth et Drive~~
+2. ~~Migrations asynchrones des permissions~~
+
+## Points Bloquants Restants
+1. Tests d'intégration du système de cache
+2. Standardisation des stratégies de cache
