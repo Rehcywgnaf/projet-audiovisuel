@@ -1,5 +1,41 @@
 # Changelog
 
+## [1.9.1] - 2025-01-28
+### Auth & Drive Integration
+- Intégration complète AuthService avec DriveCore
+  - Migration de l'authentification Drive vers AuthService
+  - Ajout vérification permissions via PermissionService
+  - Initialisation paresseuse du drive
+  - Tests d'intégration complets
+- Optimisation performances
+  - Validation des droits d'accès < 200ms
+  - Cache intelligent des tokens
+  - Gestion des erreurs améliorée
+  
+### Documentation
+- Nouvelle structure de documentation changelog
+  - Organisation par composants sous /docs/changelog/
+  - Vue détaillée par module
+  - Historique préservé et enrichi
+
+# [v1.9.0] - 2025-01-25
+
+## Architecture Auth
+### Ajouté
+- Nouveau service AuthService dans /src/services/auth/
+- Gestionnaire de permissions avec PermissionService
+- Tests unitaires pour AuthService et PermissionService
+- Tests d'intégration TeamPermissions
+
+### Modifié
+- Migration du stockage des tokens vers /src/services/auth/tokenStorage
+- Centralisation de la gestion des permissions
+
+### Supprimé
+- Ancien système AuthenticationManager
+- Anciens fichiers de permissions Drive
+- Tests DrivePerms obsolètes
+
 ## [1.8.1] - 2025-01-20
 ### Ajouté
 - Système Load Balancer avec monitoring avancé
@@ -439,6 +475,7 @@
 - Optimisation des retours utilisateur
 - Extension du système de validation existant
 
+
 ### Technical
 - Nouveaux composants React avec shadcn/ui
 - Architecture modulaire pour évolutions futures
@@ -683,11 +720,6 @@
 ## [En cours] Integration DriveCore
 - Analyse de la compatibilité avec DriveAuth
 - Préparation de l'intégration des composants Drive
-
-### Technical
-- Suppression des placeholders de code
-- Amélioration de la gestion d'erreurs
-- Documentation des interfaces
 
 ### Technical
 - Suppression des placeholders de code
