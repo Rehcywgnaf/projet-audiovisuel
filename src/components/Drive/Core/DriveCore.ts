@@ -44,6 +44,72 @@ class DriveCore {
   }
 
   /**
+   * Sync changes with Google Drive
+   */
+  async sync(): Promise<void> {
+    try {
+      // Vérification de la connexion
+      if (!this.Drive) {
+        await this.initializeDrive();
+      }
+
+      // Mise à jour du cache local
+      await this.cacheManager.refreshCache();
+
+      // Liste des changements en attente
+      const changes = await this.Drive.changes.list({
+        pageToken: await this.getLatestChangeToken(),
+        spaces: 'drive'
+      });
+
+      // Traitement des changements
+      for (const change of changes.data.changes || []) {
+        if (change.file) {
+          await this.cacheManager.invalidateFile(change.fileId);
+          if (change.removed || change.file.trashed) {
+            await this.cacheManager.removeFromCache(change.fileId);
+          }
+        }
+      }
+
+      // Sauvegarde du nouveau token
+      if (changes.data.newStartPageToken) {
+        await this.saveChangeToken(changes.data.newStartPageToken);
+      }
+    } catch (error) {
+      throw this.errorHandler.handleError('SYNC_ERROR', error);
+    }
+  }
+
+  /**
+   * Get cache metrics
+   */
+  async getCacheMetrics(): Promise<{ hitRate: number; size: number; lastCleared: Date }> {
+    return this.cacheManager.getMetrics();
+  }
+
+  /**
+   * Get latest change token
+   */
+  private async getLatestChangeToken(): Promise<string> {
+    try {
+      const response = await this.Drive.changes.getStartPageToken({});
+      return response.data.startPageToken;
+    } catch (error) {
+      throw this.errorHandler.handleError('TOKEN_ERROR', error);
+    }
+  }
+
+  /**
+   * Save change token for future sync
+   */
+  private async saveChangeToken(token: string): Promise<void> {
+    // Implémentation de la sauvegarde du token
+    // À adapter selon le système de stockage utilisé
+    localStorage.setItem('driveChangeToken', token);
+  }
+
+  /**
    * Create a new file in Drive
    * @param name File name
    * @param content File content
