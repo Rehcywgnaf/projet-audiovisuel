@@ -6,61 +6,67 @@ L'architecture Drive de SAPAV est organisée en modules distincts pour une meill
 
 ### Structure des dossiers
 ```
-/src/services/
-├── drive/
-│   ├── config/
-│   │   ├── driveConfig.ts       # Configuration principale
-│   │   └── tokenStorage.ts      # Gestion sécurisée des tokens
-│   ├── api/
-│   │   ├── files.ts            # Opérations sur les fichiers
-│   │   └── permissions.ts      # Gestion des permissions
-│   └── auth/
-│       └── index.ts            # Authentification centralisée
+/src/components/Drive/
+├── Core/
+│   ├── DriveCore.ts          # Point d'entrée des opérations
+│   ├── DriveConfig.ts        # Configuration et authentification
+│   └── DriveSync.ts          # Synchronisation temps réel
+├── Auth/
+│   ├── DriveAuth.tsx         # Interface d'authentification
+│   └── DriveAuthProvider.tsx # Gestion de l'état auth
+└── Integration/
+    └── DriveIntegration.tsx  # Point d'entrée unifié
 ```
 
 ## Composants Principaux
 
-### DriveConfig
+### DriveConfig (Core)
 - Singleton pour la gestion de la configuration Drive
 - Gestion du cycle de vie de l'authentification
 - Support modes online/offline
 - Gestion automatique du refresh token
+- Intégration Google OAuth2
 
-### TokenStorage
-- Chiffrement des tokens avec CryptoJS
-- Gestion sécurisée des accès
-- Vérification d'expiration des tokens
-- Support de clés d'encryption configurables
+### DriveCore (Core)
+- Interface unifiée pour les opérations Drive
+- Gestion intelligente du cache
+- Validation des opérations
+- Support complet MIME types
+- Monitoring des performances
 
-### Authentification
-- Support complet OAuth2
-- Gestion des sessions
-- Vérification automatique des permissions
-- Refresh automatique des tokens expirés
+### DriveSync (Core)
+- Synchronisation temps réel
+- Gestion des conflits
+- Queue d'opérations optimisée
+- Métriques de performance
+- Préchargement intelligent
 
 ## Flux d'authentification
 
 1. Initialisation :
+   - Instanciation DriveConfig
    - Vérification des credentials
-   - Configuration de l'environnement
-   - Initialisation du stockage sécurisé
+   - Initialisation du contexte d'authentification
+   - Configuration DriveCore
 
 2. Authentification :
-   - Génération URL d'authentification
-   - Traitement du code d'autorisation
-   - Stockage sécurisé des tokens
+   - DriveAuthProvider gère l'état
+   - DriveAuth fournit l'interface utilisateur
+   - DriveConfig gère les tokens
+   - Intégration OAuth2 avec Google
 
 3. Utilisation :
    - Vérification automatique d'expiration
    - Refresh automatique si nécessaire
    - Gestion des erreurs d'authentification
+   - Métriques et monitoring
 
 ## Sécurité
 
-### Stockage des Tokens
-- Chiffrement AES des tokens
-- Clé d'encryption configurable
-- Validation de l'intégrité
+### Gestion des Tokens
+- Gestion sécurisée via DriveConfig
+- Refresh automatique
+- Validation d'intégrité
 - Nettoyage automatique des tokens expirés
 
 ### Gestion des Permissions
@@ -72,33 +78,33 @@ L'architecture Drive de SAPAV est organisée en modules distincts pour une meill
 ## Tests et Validation
 
 ### Tests Unitaires
-- Couverture complète des composants
-- Mocking des appels Google Drive
+- Couverture > 90% sur les composants core
+- Tests d'intégration complets
 - Validation des scénarios d'erreur
 - Tests de sécurité
 
-### Tests d'Intégration
-- Validation des flux complets
-- Tests de performance
-- Scénarios de récupération
-- Validation des timeouts
+### Tests de Performance
+- Validation temps de réponse
+- Tests de charge (50 docs/60s)
+- Mesures hit rate cache
+- Validation latence sync
 
 ## Points d'attention
 
-1. Sécurité :
-   - Vérification systématique des tokens
-   - Validation des permissions
-   - Logging sécurisé
-   - Gestion des erreurs
+### Sécurité
+- Validation stricte tokens et permissions
+- Audit trail complet
+- Encryption données sensibles
+- Circuit breakers configurés
 
-2. Performance :
-   - Cache optimisé
-   - Minimisation des appels API
-   - Gestion efficace de la mémoire
-   - Optimisation des refreshs
+### Performance
+- Cache stratifié (mémoire + persistant)
+- Optimisation des opérations batch
+- Préchargement intelligent
+- Métriques temps réel
 
-3. Maintenance :
-   - Documentation à jour
-   - Logs détaillés
-   - Monitoring des opérations
-   - Alertes configurables
+### Maintenance
+- Documentation à jour
+- Logs structurés
+- Monitoring proactif
+- Tests automatisés

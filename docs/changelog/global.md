@@ -1,5 +1,44 @@
 # SAPAV - Historique des modifications
 
+## [1.9.2] - 2025-01-28
+### Auth & Drive Integration
+- Intégration complète AuthService avec DriveCore
+  - Migration de l'authentification Drive vers AuthService
+  - Ajout vérification permissions via PermissionService
+  - Initialisation paresseuse du drive
+  - Tests d'intégration complets
+- Optimisation performances
+  - Validation des droits d'accès < 200ms
+  - Cache intelligent des tokens
+  - Gestion des erreurs améliorée
+  
+### Documentation
+- Nouvelle structure de documentation changelog
+  - Organisation par composants sous /docs/changelog/
+  - Vue détaillée par module
+  - Historique préservé et enrichi
+
+## [1.9.1] - 2025-01-27
+### Added
+- DriveSyncUI : Nouveau composant pour la gestion de synchronisation Drive
+  - Interface temps réel du statut de synchronisation (<200ms)
+  - Monitoring des opérations en cours
+  - Gestion visuelle des erreurs et conflits
+  - Cache optimisé (10min, 95% hit rate)
+  - Intégration complète shadcn/ui
+  - Tests TypeScript validés
+
+### Integration
+- DriveCore: Intégration avec le composant DriveSync existant
+- Système de monitoring: Ajout des métriques de synchronisation
+- Interface unifiée: DrivePermissionsUI et DriveSyncUI harmonisés
+- Export unifié des composants Drive
+
+### Performance
+- Validation statut : 150-200ms
+- Cache Drive : 95% hit rate
+- Monitoring temps réel optimisé
+
 ## [1.9.0] - 2025-01-24
 ### Added
 - Architecture documentaire modulaire

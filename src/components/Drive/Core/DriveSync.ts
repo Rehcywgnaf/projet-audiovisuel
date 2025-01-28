@@ -1,10 +1,14 @@
-import { DriveCore } from './DriveCore';
+import DriveCore from './DriveCore';
+import type { DriveOperation } from '../types';
 
 export class DriveSync {
   private static instance: DriveSync;
-  private syncQueue: Array<any> = [];
+  private syncQueue: DriveOperation[] = [];
+  private driveCore: DriveCore;
   
-  private constructor() {}
+  private constructor() {
+    this.driveCore = DriveCore.getInstance();
+  }
 
   public static getInstance(): DriveSync {
     if (!DriveSync.instance) {
@@ -13,7 +17,7 @@ export class DriveSync {
     return DriveSync.instance;
   }
 
-  async addToQueue(operation: any) {
+  async addToQueue(operation: DriveOperation) {
     this.syncQueue.push(operation);
     await this.processQueue();
   }
@@ -25,14 +29,18 @@ export class DriveSync {
         await this.executeOperation(operation);
         this.syncQueue.shift(); // Remove processed operation
       } catch (error) {
-        console.error('Sync error:', error);
+        console.error('Erreur de synchronisation:', error);
         break;
       }
     }
   }
 
-  private async executeOperation(operation: any) {
-    // Implementation
+  private async executeOperation(operation: DriveOperation) {
+    try {
+      return await this.driveCore.executeOperation(operation);
+    } catch (error) {
+      throw new Error(`Erreur lors de l'exécution de l'opération: ${error.message}`);
+    }
   }
 }
 
