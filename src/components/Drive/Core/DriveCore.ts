@@ -1,7 +1,9 @@
 import { google } from 'googleapis';
-import { DriveOperation, FileMetadata, DriveResponse, CacheConfig } from '../types';
+import { DriveOperation, FileMetadata, DriveResponse } from '../types';
 import { ErrorHandling } from '../error/ErrorHandling';
 import { CacheManager } from '../cache/CacheManager';
+import { AuthService } from '../../../services/auth/AuthService';
+import { PermissionService } from '../../../services/auth/PermissionService';
 
 /**
  * Core component for Google Drive operations
@@ -12,24 +14,28 @@ class DriveCore {
   private drive: any; // Google Drive API instance
   private cacheManager: CacheManager;
   private errorHandler: ErrorHandling;
+  private authService: AuthService;
+  private permissionService: PermissionService;
 
   private constructor() {
-    this.initializeDrive();
     this.cacheManager = CacheManager.getInstance();
     this.errorHandler = ErrorHandling.getInstance();
+    this.authService = AuthService.getInstance();
+    this.permissionService = new PermissionService();
   }
 
   /**
    * Initialize Google Drive API connection
    */
-  private async initializeDrive() {
+  private async initializeDrive(): Promise<void> {
     try {
-      const auth = await google.auth.getClient({
-        scopes: ['https://www.googleapis.com/auth/drive']
-      });
+      const token = await this.authService.authenticate();
+      const auth = new google.auth.OAuth2();
+      auth.setCredentials({ access_token: token });
+      
       this.drive = google.drive({ version: 'v3', auth });
     } catch (error) {
-      this.errorHandler.handleError('DRIVE_INIT_ERROR', error);
+      throw this.errorHandler.handleError('DRIVE_INIT_ERROR', error);
     }
   }
 
@@ -44,14 +50,37 @@ class DriveCore {
   }
 
   /**
+   * Ensure drive is initialized before operations
+   */
+  private async ensureDriveInitialized(): Promise<void> {
+    if (!this.drive) {
+      await this.initializeDrive();
+    }
+  }
+
+  /**
+   * Check operation permissions
+   */
+  private async checkPermission(fileId: string, operation: 'read' | 'write' | 'delete'): Promise<void> {
+    const hasPermission = await this.permissionService.checkPermission(fileId, operation);
+    if (!hasPermission) {
+      throw this.errorHandler.handleError(
+        'PERMISSION_DENIED',
+        new Error(`Permission denied for operation ${operation} on file ${fileId}`)
+      );
+    }
+  }
+
+  /**
    * Create a new file in Drive
-   * @param name File name
-   * @param content File content
-   * @param folderId Optional parent folder ID
-   * @returns Created file ID
    */
   async createFile(name: string, content: any, folderId?: string): Promise<string> {
     try {
+      await this.ensureDriveInitialized();
+      if (folderId) {
+        await this.checkPermission(folderId, 'write');
+      }
+
       const metadata: FileMetadata = {
         name,
         mimeType: this.determineMimeType(name),
@@ -60,9 +89,7 @@ class DriveCore {
 
       const response = await this.drive.files.create({
         requestBody: metadata,
-        media: {
-          body: content
-        },
+        media: { body: content },
         fields: 'id'
       });
 
@@ -75,11 +102,12 @@ class DriveCore {
 
   /**
    * Read file content from Drive
-   * @param fileId File ID to read
-   * @returns File content
    */
   async readFile(fileId: string): Promise<DriveResponse> {
     try {
+      await this.ensureDriveInitialized();
+      await this.checkPermission(fileId, 'read');
+
       const cached = await this.cacheManager.getFile(fileId);
       if (cached) return cached;
 
@@ -97,16 +125,15 @@ class DriveCore {
 
   /**
    * Update existing file in Drive
-   * @param fileId File ID to update
-   * @param content New content
    */
   async updateFile(fileId: string, content: any): Promise<void> {
     try {
+      await this.ensureDriveInitialized();
+      await this.checkPermission(fileId, 'write');
+
       await this.drive.files.update({
         fileId,
-        media: {
-          body: content
-        }
+        media: { body: content }
       });
 
       await this.cacheManager.invalidateFile(fileId);
@@ -117,14 +144,13 @@ class DriveCore {
 
   /**
    * Delete file from Drive
-   * @param fileId File ID to delete
    */
   async deleteFile(fileId: string): Promise<void> {
     try {
-      await this.drive.files.delete({
-        fileId
-      });
+      await this.ensureDriveInitialized();
+      await this.checkPermission(fileId, 'delete');
 
+      await this.drive.files.delete({ fileId });
       await this.cacheManager.invalidateFile(fileId);
     } catch (error) {
       throw this.errorHandler.handleError('FILE_DELETE_ERROR', error);
@@ -133,11 +159,12 @@ class DriveCore {
 
   /**
    * Get file metadata
-   * @param fileId File ID
-   * @returns File metadata
    */
   async getFileMetadata(fileId: string): Promise<FileMetadata> {
     try {
+      await this.ensureDriveInitialized();
+      await this.checkPermission(fileId, 'read');
+
       const cached = await this.cacheManager.getMetadata(fileId);
       if (cached) return cached;
 
@@ -155,11 +182,11 @@ class DriveCore {
 
   /**
    * Execute generic Drive operation
-   * @param operation Operation details
-   * @returns Operation result
    */
   async executeOperation(operation: DriveOperation): Promise<any> {
     try {
+      await this.ensureDriveInitialized();
+      
       switch (operation.type) {
         case 'create':
           return await this.createFile(
@@ -183,8 +210,6 @@ class DriveCore {
 
   /**
    * Determine MIME type from filename
-   * @param filename Name of file
-   * @returns MIME type
    */
   private determineMimeType(filename: string): string {
     const ext = filename.split('.').pop()?.toLowerCase();
