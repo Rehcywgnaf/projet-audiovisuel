@@ -1,4 +1,4 @@
-import { google } from 'googleapis';
+import { drive_v3, google } from 'googleapis';
 import { DriveOperation, FileMetadata, DriveResponse } from '../types';
 import { ErrorHandling } from '../error/ErrorHandling';
 import { CacheManager } from '../cache/CacheManager';
@@ -11,7 +11,7 @@ import { PermissionService } from '../../../services/auth/PermissionService';
  */
 class DriveCore {
   private static instance: DriveCore;
-  private drive: any; // Google Drive API instance
+  private drive: drive_v3.Drive;
   private cacheManager: CacheManager;
   private errorHandler: ErrorHandling;
   private authService: AuthService;
@@ -69,6 +69,67 @@ class DriveCore {
         new Error(`Permission denied for operation ${operation} on file ${fileId}`)
       );
     }
+  }
+
+  /**
+   * Sync changes with Google Drive
+   */
+  async sync(): Promise<void> {
+    try {
+      await this.ensureDriveInitialized();
+
+      // Mise à jour du cache local
+      await this.cacheManager.refreshCache();
+
+      // Liste des changements en attente
+      const changes = await this.drive.changes.list({
+        pageToken: await this.getLatestChangeToken(),
+        spaces: 'drive'
+      });
+
+      // Traitement des changements
+      for (const change of changes.data.changes || []) {
+        if (change.file) {
+          await this.cacheManager.invalidateFile(change.fileId);
+          if (change.removed || change.file.trashed) {
+            await this.cacheManager.removeFromCache(change.fileId);
+          }
+        }
+      }
+
+      // Sauvegarde du nouveau token
+      if (changes.data.newStartPageToken) {
+        await this.saveChangeToken(changes.data.newStartPageToken);
+      }
+    } catch (error) {
+      throw this.errorHandler.handleError('SYNC_ERROR', error);
+    }
+  }
+
+  /**
+   * Get cache metrics
+   */
+  async getCacheMetrics(): Promise<{ hitRate: number; size: number; lastCleared: Date }> {
+    return this.cacheManager.getMetrics();
+  }
+
+  /**
+   * Get latest change token
+   */
+  private async getLatestChangeToken(): Promise<string> {
+    try {
+      const response = await this.drive.changes.getStartPageToken({});
+      return response.data.startPageToken;
+    } catch (error) {
+      throw this.errorHandler.handleError('TOKEN_ERROR', error);
+    }
+  }
+
+  /**
+   * Save change token for future sync
+   */
+  private async saveChangeToken(token: string): Promise<void> {
+    localStorage.setItem('driveChangeToken', token);
   }
 
   /**
@@ -213,7 +274,7 @@ class DriveCore {
    */
   private determineMimeType(filename: string): string {
     const ext = filename.split('.').pop()?.toLowerCase();
-    const mimeTypes = {
+    const mimeTypes: Record<string, string> = {
       'pdf': 'application/pdf',
       'doc': 'application/msword',
       'docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
