@@ -1,7 +1,8 @@
-import { google, drive_v3 } from 'googleapis';
+import { drive_v3 } from 'googleapis';
 import { DriveOperation, FileMetadata, DriveResponse } from '../types';
 import { ErrorHandling } from '../error/ErrorHandling';
 import { CacheManager } from '../cache/CacheManager';
+import { DriveConfig } from './DriveConfig';
 
 /**
  * Core component for Google Drive operations
@@ -12,11 +13,13 @@ class DriveCore {
   private Drive: drive_v3.Drive;
   private cacheManager: CacheManager;
   private errorHandler: ErrorHandling;
+  private driveConfig: DriveConfig;
 
   private constructor() {
     this.initializeDrive();
     this.cacheManager = CacheManager.getInstance();
     this.errorHandler = ErrorHandling.getInstance();
+    this.driveConfig = DriveConfig.getInstance();
   }
 
   /**
@@ -24,10 +27,11 @@ class DriveCore {
    */
   private async initializeDrive() {
     try {
-      const auth = await google.auth.getClient({
-        scopes: ['https://www.googleapis.com/auth/drive']
-      });
-      this.Drive = google.drive({ version: 'v3', auth });
+      const driveAPI = this.driveConfig.getDriveAPI();
+      if (!driveAPI) {
+        throw new Error('Drive API non initialisée');
+      }
+      this.Drive = driveAPI;
     } catch (error) {
       this.errorHandler.handleError('DRIVE_INIT_ERROR', error);
     }
