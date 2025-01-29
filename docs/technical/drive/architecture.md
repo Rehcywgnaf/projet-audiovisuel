@@ -2,109 +2,128 @@
 
 ## Vue d'ensemble
 
-L'architecture Drive de SAPAV est organisée en modules distincts pour une meilleure séparation des responsabilités et une maintenance simplifiée.
+L'architecture Drive de SAPAV est organisée en modules distincts avec une séparation claire des responsabilités.
 
 ### Structure des dossiers
 ```
-/src/components/Drive/
-├── Core/
-│   ├── DriveCore.ts          # Point d'entrée des opérations
-│   ├── DriveConfig.ts        # Configuration et authentification
-│   └── DriveSync.ts          # Synchronisation temps réel
-├── Auth/
-│   ├── DriveAuth.tsx         # Interface d'authentification
-│   └── DriveAuthProvider.tsx # Gestion de l'état auth
-└── Integration/
-    └── DriveIntegration.tsx  # Point d'entrée unifié
+/src/
+├── core/
+│   └── permissions/           # Gestion centralisée des permissions
+│       ├── PermissionManager.ts
+│       └── types.ts
+├── components/Drive/
+│   ├── Core/
+│   │   ├── DriveCore.ts       # Point d'entrée des opérations
+│   │   ├── DriveConfig.ts     # Configuration Drive unifiée
+│   │   └── DriveSync.ts       # Synchronisation temps réel
+│   ├── Auth/
+│   │   ├── DriveAuth.tsx      # Interface d'authentification
+│   │   └── DriveAuthProvider.tsx
+│   └── Integration/
+│       ├── DriveIntegration.tsx
+│       └── DrivePermissionsUI.tsx
+└── services/
+    └── drive/
+        └── driveService.ts     # Interface simplifiée
 ```
 
 ## Composants Principaux
 
-### DriveConfig (Core)
-- Singleton pour la gestion de la configuration Drive
-- Gestion du cycle de vie de l'authentification
-- Support modes online/offline
-- Gestion automatique du refresh token
-- Intégration Google OAuth2
+### PermissionManager (Core)
+- Singleton pour la gestion centralisée des permissions
+- Gestion des droits utilisateurs
+- Vérification des opérations
+- Cache des permissions
+- Support des règles globales
 
-### DriveCore (Core)
+### DriveCore (Composant)
 - Interface unifiée pour les opérations Drive
 - Gestion intelligente du cache
-- Validation des opérations
+- Utilisation du PermissionManager
 - Support complet MIME types
 - Monitoring des performances
 
-### DriveSync (Core)
-- Synchronisation temps réel
-- Gestion des conflits
-- Queue d'opérations optimisée
-- Métriques de performance
-- Préchargement intelligent
+### DriveService (Service)
+- Interface simplifiée pour l'utilisation de Drive
+- Utilisation de DriveCore pour les opérations
+- Gestion de l'authentification
+
+### DrivePermissionsUI (Interface)
+- Gestion visuelle des permissions
+- Utilisation du PermissionManager
+- Support des règles globales
+- Interface utilisateur intuitive
 
 ## Flux d'authentification
 
 1. Initialisation :
-   - Instanciation DriveConfig
-   - Vérification des credentials
-   - Initialisation du contexte d'authentification
-   - Configuration DriveCore
+   - Config Drive centralisée
+   - Vérification credentials
+   - Initialisation auth context
 
 2. Authentification :
    - DriveAuthProvider gère l'état
-   - DriveAuth fournit l'interface utilisateur
+   - DriveAuth fournit l'UI
    - DriveConfig gère les tokens
-   - Intégration OAuth2 avec Google
-
-3. Utilisation :
-   - Vérification automatique d'expiration
-   - Refresh automatique si nécessaire
-   - Gestion des erreurs d'authentification
-   - Métriques et monitoring
+   - OAuth2 avec Google
 
 ## Sécurité
 
-### Gestion des Tokens
-- Gestion sécurisée via DriveConfig
-- Refresh automatique
-- Validation d'intégrité
-- Nettoyage automatique des tokens expirés
-
 ### Gestion des Permissions
-- Validation systématique des accès
-- Logging des opérations sensibles
-- Isolation des contextes utilisateur
-- Révocation automatique si nécessaire
+- Centralisée via PermissionManager
+- Vérification systématique
+- Cache intelligent
+- Validation multi-niveaux
+
+### Règles Globales
+- Héritage automatique
+- Restrictions de partage
+- Protection des versions
+- Configuration flexible
+
+## Gestion du Cache
+
+### Stratégie
+- Cache par composant
+- Priorités configurables
+- Préchargement intelligent
+- Invalidation ciblée
+
+### Métriques Cibles
+- Hit rate > 95%
+- Temps de validation < 200ms
+- Latence sync < 500ms
 
 ## Tests et Validation
 
 ### Tests Unitaires
-- Couverture > 90% sur les composants core
-- Tests d'intégration complets
-- Validation des scénarios d'erreur
+- Couverture > 90% core
+- Tests d'intégration
+- Scénarios d'erreur
 - Tests de sécurité
 
 ### Tests de Performance
-- Validation temps de réponse
-- Tests de charge (50 docs/60s)
+- Validation temps réponse
+- Tests charge (50 docs/60s)
 - Mesures hit rate cache
 - Validation latence sync
 
 ## Points d'attention
 
-### Sécurité
-- Validation stricte tokens et permissions
-- Audit trail complet
-- Encryption données sensibles
-- Circuit breakers configurés
-
 ### Performance
-- Cache stratifié (mémoire + persistant)
-- Optimisation des opérations batch
+- Cache stratifié
+- Optimisation batch
 - Préchargement intelligent
 - Métriques temps réel
+
+### Sécurité
+- Permissions centralisées
+- Audit complet
+- Validation stricte
+- Circuit breakers
 
 ### Maintenance
 - Documentation à jour
 - Logs structurés
-- Monitoring proactif
 - Tests automatisés
+- Monitoring proactif
