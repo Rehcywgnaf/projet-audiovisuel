@@ -1,6 +1,6 @@
 # Checklist Beta - SAPAV
 
-*Dernière mise à jour : 20/01/2025*
+*Dernière mise à jour : 28/01/2025*
 
 ## 🔍 Comment utiliser cette checklist
 - ✅ : Prêt et validé
@@ -17,12 +17,20 @@
 - ✅ Optimisations IA - *Performance tuning validé*
 
 ### Base
-- ✅ Authentification Google - *Stable selon audit*
+- ✅ Authentification Centralisée - *Migration AuthService complète*
+- ✅ Gestion des Permissions - *PermissionService implémenté*
+- ✅ Gestion des Tokens - *TokenStorage sécurisé*
 - ✅ Système d'Audit - *Logs et traçabilité*
 - ✅ EventSystem - *Centralisé et fonctionnel*
 - ✅ TemplateManager - *Tests intégration validés*
 - ✅ AIEnhancedEditor - *Tests complétés et intégrés*
 - ✅ Validation Documents - *Multi-formats supportés*
+
+### Système de Cache
+- 🟡 Cache Centralisé - *En cours d'unification*
+- 🟡 Stratégies de Cache - *Audit en cours*
+- ⚪ Monitoring Cache - *À implémenter*
+- ⚪ Optimisation Performance - *À commencer*
 
 ### RSS-IA
 - ✅ RSS-IA Core - *Intégré avec AIServiceManager*
@@ -35,214 +43,64 @@
 - ✅ Gestion des espaces - *Tests validés*
 - ✅ Gestion des membres - *Implémentée*
 
-## Environnement de Formation
-
-### Infrastructure Formation
-- ✅ Instance isolée - *Mirror de production*
-- ✅ Scripts d'initialisation - *7 scripts validés*
-- ✅ Jeux de données test - *Données AAP/AO types*
-- ✅ Monitoring dédié - *Dashboard temps réel*
-
-### Support Formation
-- ✅ Plan formation 5 jours - *Programme validé*
-- ✅ Supports formation - *Documentation complète*
-- ✅ Exercices pratiques - *Scénarios réels*
-- 🟡 Formation Support N1 - *Planification 8-12 mars*
-
-### Jeux de Données Formation
-- ✅ 50 AAP types - *Données structurées*
-- ✅ 30 AO types - *Données validées*
-- ✅ 25 scénarios incidents - *Tests validés*
-- ✅ Templates test - *Validés par type*
-
-## Gestion des Documents
-
-### Template System
-- ✅ Template Catalog - *Classification complète*
-- ✅ Règles de Validation - *Contrôles automatisés*
-- ✅ Version Manager - *Historique et comparaison*
-- ✅ PreviewSystem - *Rendu temps réel*
-- 🟡 Import/Export Handler - *Tests multi-formats*
-
 ## Intégration Google Workspace
 
 ### Drive
-- ✅ OAuth 2.0 - *Config et tests OK*
-- ✅ Drive API Core - *Fonctions de base*
-- 🟡 Drive Sync - *Optimisation requise*
+- ✅ OAuth 2.0 - *Migration vers AuthService*
+- ✅ Drive API Core - *Intégration complète*
+- ✅ Validation Permissions - *PermissionService intégré*
 - ✅ Backup Auto - *Système vérifié*
-- 🟡 Gestion Conflits Drive - *Tests en cours*
-- 🟡 Drive Permissions - *Audit en cours*
+- 🟡 Drive Sync - *Optimisation cache requise*
 
-## Performance & Monitoring
-
-### Performance
-- ✅ Cache System IA - *Optimisé par composant*
-- ✅ Monitoring Dashboard - *Implémenté et validé*
-- ✅ Tests de Charge - *4 scénarios validés*
+### Performance & Sécurité
+- ✅ Tests de Charge Base - *4 scénarios validés*
   - ✅ Validation Documents en Masse - *50 docs/60s*
   - ✅ Génération IA Intensive - *20 req/min*
-  - ✅ Mise à jour Cache - *100 entrées/30s*
   - ✅ Lecture Intensive - *200 req/min*
-- ✅ Alertes Coûts IA - *Seuils configurés*
-- ✅ Métriques RSS-IA - *Temps réponse <150ms, hit rate 98%*
-- ✅ Métriques AIEditor - *Temps réponse <80ms, hit rate 98%*
-- ✅ Métriques DocValidation - *Validation parallèle 150ms*
-- ✅ Métriques Templates - *Génération <200ms, hit rate 99%*
-- 🟡 Métriques Drive - *Composant DriveLoadTest implémenté, dashboard monitoring actif, tests préliminaires configurés*
-- ✅ Préchargement Documents - *Système intelligent implémenté*
-- ✅ Validation Parallèle - *Implémentée et testée*
-- ✅ Monitoring Temps Réel - *Dashboard complet avec seuils d'alerte*
-- ✅ Métriques Monitoring - *Validation complète*
-  - ✅ Temps réponse dashboard <200ms
-  - ✅ Latence alertes <100ms
-  - ✅ Hit rate cache >95%
-  - ✅ Historique 7 jours validé
+- 🟡 Cache System - *Unification nécessaire*
+  - ✅ Cache IA - *Optimisé par composant*
+  - ✅ Cache Auth - *TokenStorage validé*
+  - 🟡 Cache Drive - *Optimisation en cours*
+  - ⚪ Cache Centralisé - *À implémenter*
+- ✅ Métriques Base
+  - ✅ Auth Service - *<200ms validation*
+  - ✅ Permission Service - *95% hit rate*
+  - ✅ Token Storage - *Chiffrement validé*
 
-### Monitoring Avancé
-- ✅ Dashboard Files d'Attente - *Visualisation temps réel*
-  - ✅ État par priorité
-  - ✅ Seuils configurés
-  - ✅ Graphiques tendances
-- ✅ Système d'Alertes - *Implémenté et validé*
-  - ✅ Alertes taille de file
-  - ✅ Alertes temps d'attente
-  - ✅ Notifications temps réel
-- ✅ Historique des Erreurs - *Système complet*
-  - ✅ Suivi des reprises
-  - ✅ Analyse patterns
-  - ✅ Interface utilisateur
-- ✅ Documentation - *Complète et validée*
-  - ✅ Guide utilisateur
-  - ✅ Documentation technique
-  - ✅ Procédures d'urgence
+## Tests
 
-### Infrastructure
-- ✅ Load Balancer - *Configuration Nginx complète et validée*
-  - ✅ Configuration de base
-  - ✅ Cache optimisé
-  - ✅ Documentation complète
-  - ✅ Tests de charge
-  - ✅ Configuration failover
-  - ✅ Seuils optimisés coût/performance
-    - CPU > 70%
-    - Mémoire > 75%
-    - Latence > 1500ms
-    - Coût IA > 80% budget journalier
-  - ✅ Stratégie progressive 3 niveaux
-    - Niveau 1: Optimisation
-    - Niveau 2: Mode Économie
-    - Niveau 3: Failover
-  - ✅ Monitoring temps réel LoadTestMonitor
-- ✅ Monitoring System - *Dashboard implémenté*
-  - ✅ Temps de réponse
-  - ✅ Taux d'erreur
-  - ✅ Débit
-  - ✅ Seuils d'alerte configurés
-  - ✅ Monitoring coûts IA
+### Tests Unitaires
+- ✅ AuthService - *100% couverture*
+- ✅ PermissionService - *100% couverture*
+- ✅ TokenStorage - *100% couverture*
+- ✅ DriveCore - *Intégration complète*
+- 🟡 Système Cache - *En cours*
 
-### Gestion des Incidents
-- ✅ Procédures d'Urgence - *Documentation complète*
-- ✅ Système d'Escalade - *3 niveaux configurés*
-  - ✅ Support N1 - *15min SLA*
-  - ✅ Support Technique - *30min SLA*
-  - ✅ Direction Technique - *1h SLA*
-- ✅ Notifications Automatiques - *Email, SMS, Dashboard*
-- ✅ Dashboard Incidents - *Interface temps réel*
-- ✅ Workflows d'Intervention - *Standardisés et documentés*
-- 🟡 Formation Équipes - *En cours*
+### Tests E2E
+- ✅ Auth Flow - *Validé*
+- ✅ Drive Operations - *Validé*
+- 🟡 Cache Operations - *À implémenter*
 
-## Architecture & Tests
+### Tests Performance
+- ✅ Auth System - *Validé*
+- ✅ Permission Checks - *Validé*
+- 🟡 Cache System - *En attente unification*
 
-### Frontend
-- ✅ Dashboard Principal - *Framework complet implémenté*
-  - ✅ Système de veille avec scoring
-  - ✅ Métriques temps réel
-  - ✅ Points d'attention
-  - 🟡 Intégration API de veille
-- ✅ Tests unitaires Dashboard - *>80% couverture*
-  - ✅ Tests de rendu
-  - ✅ Tests des métriques
-  - ✅ Tests d'interaction
-  - 🟡 Tests d'intégration veille
-- ✅ Système de filtrage - *Composant validé*
-  - ✅ Filtres type projet
-  - ✅ Filtre score pertinence
-  - ✅ Filtres budget
-  - 🟡 Sauvegarde préférences
-- ✅ Composants UI partagés - *Bibliothèque complète*
-- ✅ Responsive Design - *Mobile & Desktop*
-- ✅ UI Performance - *Lazy loading OK*
+## Documentation
 
-### Backend
-- ✅ Services Email/RSS - *API stable*
-- ✅ API Gateway - *Routes validées*
-- 🟡 Queue System - *Optimisation*
-- ✅ Load Balancer - *Configuration complète et validée*
+### Architecture
+- ✅ Auth Service - *Complète*
+- ✅ Drive Integration - *Mise à jour*
+- 🟡 Cache System - *En cours*
 
-### Tests
-- ✅ Tests Unitaires Core - *Couverture >80%*
-- ✅ Tests AIServiceManager - *Couverture 100%*
-- ✅ Tests Cache System - *Performance validée*
-- ✅ Tests Templates - *Validation complète*
-- ✅ Tests RSS-IA - *Intégration validée*
-- ✅ Tests Multi-formats - *Import/Export OK*
-- 🟡 Tests UI/UX - *60% complétés*
-- 🟡 Tests E2E - *En cours de développement*
-  - ✅ Installation Cypress 
-  - ✅ Configuration environnement test
-  - ✅ Structure des tests définie
-  - ✅ Tests RSS-IA
-  - ✅ Tests TemplateManager
-  - ✅ Tests Intégration Drive
-  - ✅ Tests Notifications
-  - ✅ Tests Analytics & Reporting
-    - ✅ Tableaux de bord
-    - ✅ Métriques et indicateurs
-    - ✅ Rapports personnalisés
-    - ✅ Analyse AAP/AO
-    - ✅ Statistiques d'équipe
-    - ✅ Gestion des erreurs
-  - 🟡 Tests Performance - *À implémenter*
-- 🟡 Tests Charge Drive
-  - ✅ Architecture définie
-  - ✅ Composants de base créés
-    - ✅ DriveTestExecutor
-    - ✅ DriveTestService
-    - ✅ Interface monitoring
-  - ✅ Scénarios définis
-  - ✅ Système de simulation
-  - ❌ Intégration réelle Drive
-  - ❌ Validation finale
-- ⚪ Tests Beta Utilisateurs - *Planning à définir*
+### Technique
+- ✅ Guide Intégration Auth - *Complète*
+- ✅ Performance Auth/Drive - *Validée*
+- 🟡 Stratégies Cache - *En cours*
 
-## Workflow & Feedback
-
-### Scénarios Utilisateur
-- ✅ Scénario Nouvel AAP - *Validé avec IA*
-- 🟡 Scénario Suivi Projet - *Tests initiaux*
-- ⚪ Scénario Validation - *À implémenter*
-- 🟡 Documentation Scénarios - *À compléter*
-
-### Système Feedback
-- ✅ Circuit Report - *Bouton et formulaire*
-- 🟡 Système Ticket - *Tests en cours*
-- ✅ Capture Contextuelle - *Implémentée*
-- 🟡 Dashboard Analytics - *En développement*
-- ⚪ Analyse Hebdo - *À développer*
-
-## Support & Documentation
-- ✅ Documentation Technique - *Mise à jour avec IA*
-- ✅ Documentation Formation - *Matériel et exercices validés*
-- 🟡 Guide Utilisateur - *En rédaction*
-- ✅ Procédures Urgence - *Validées et testées*
-
-## Points Bloquants Prioritaires pour la Beta
-1. 🟡 Formation Support N1 (Prévu 8-12 mars)
-2. 🟡 Tests de charge Drive (Composant DriveLoadTest implémenté, tests préliminaires en cours)
-3. ✅ Configuration du Load Balancer (Configuration complète, tests validés, failover implémenté)
-4. ✅ Fine-tuning des performances IA - *Optimisations validées*
-5. 🟡 Formation aux procédures d'urgence
-6. 🟡 Environnement de formation (Scripts et données validés, formation planifiée)
+## Points Bloquants Prioritaires
+1. 🟡 Unification du système de cache
+2. ⚪ Implémentation des stratégies de cache
+3. ⚪ Monitoring des performances cache
 
 *Note : Cette checklist est maintenue par l'équipe de développement. Pour toute mise à jour, créer une pull request avec les modifications.*
