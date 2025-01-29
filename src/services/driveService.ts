@@ -1,3 +1,5 @@
+import PermissionManager from '../core/permissions/PermissionManager';
+
 interface DriveConfig {
   clientId: string;
   apiKey: string;
@@ -6,14 +8,15 @@ interface DriveConfig {
 
 class DriveService {
   private config: DriveConfig;
+  private permissionManager: PermissionManager;
 
   constructor(config: DriveConfig) {
     this.config = config;
+    this.permissionManager = PermissionManager.getInstance();
   }
 
   async initialiser(): Promise<void> {
     try {
-      // Initialisation de l'API Google Drive
       await this.chargerGoogleApi();
     } catch (erreur) {
       console.error('Erreur initialisation Drive:', erreur);
@@ -23,6 +26,12 @@ class DriveService {
 
   async chargerDocuments(dossier: string) {
     try {
+      // Vérifier les permissions avant de charger
+      await this.permissionManager.checkPermission({
+        fileId: dossier,
+        operation: 'read'
+      });
+
       const response = await gapi.client.drive.files.list({
         q: `'${dossier}' in parents`,
         fields: 'files(id, name, mimeType, modifiedTime)'
@@ -36,6 +45,13 @@ class DriveService {
 
   async mettreAJourPermissions(fileId: string, email: string, role: string) {
     try {
+      // Vérifier que l'utilisateur a les droits pour modifier les permissions
+      await this.permissionManager.checkPermission({
+        fileId,
+        operation: 'write'
+      });
+
+      // Créer la permission dans Drive
       await gapi.client.drive.permissions.create({
         fileId,
         requestBody: {
@@ -43,6 +59,14 @@ class DriveService {
           type: 'user',
           emailAddress: email
         }
+      });
+
+      // Ajouter la permission dans notre gestionnaire
+      await this.permissionManager.addPermission({
+        fileId,
+        role: role as any,
+        type: 'user',
+        emailAddress: email
       });
     } catch (erreur) {
       console.error('Erreur mise à jour permissions:', erreur);
