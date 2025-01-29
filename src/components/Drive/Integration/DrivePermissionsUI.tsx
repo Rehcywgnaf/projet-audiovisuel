@@ -6,17 +6,14 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Skeleton } from '@/components/ui/skeleton';
-import { DrivePerms } from '../Core/DrivePerms';
 import { useDriveAuth } from '../Auth/DriveAuthProvider';
+import PermissionManager from '../../../core/permissions/PermissionManager';
+import { Permission, PermissionRole } from '../../../core/permissions/types';
 
-interface FolderPermission {
+interface FolderPermissions {
   id: string;
   name: string;
-  permissions: {
-    admin: string[];
-    editor: string[];
-    viewer: string[];
-  };
+  permissions: Permission[];
   inherited: boolean;
   path: string;
 }
@@ -31,7 +28,7 @@ interface GlobalRule {
 
 const DrivePermissionsUI: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
-  const [permissions, setPermissions] = useState<FolderPermission[]>([]);
+  const [folderPermissions, setFolderPermissions] = useState<FolderPermissions[]>([]);
   const [globalRules, setGlobalRules] = useState<GlobalRule[]>([
     {
       id: '1',
@@ -57,7 +54,7 @@ const DrivePermissionsUI: React.FC = () => {
   ]);
 
   const { isAuthenticated } = useDriveAuth();
-  const drivePerms = DrivePerms.getInstance();
+  const permissionManager = PermissionManager.getInstance();
 
   const handleError = useCallback((error: Error) => {
     console.error('Erreur permissions:', error);
@@ -66,8 +63,22 @@ const DrivePermissionsUI: React.FC = () => {
   const loadPermissions = useCallback(async () => {
     try {
       setIsLoading(true);
-      const perms = await drivePerms.getFolderPermissions();
-      setPermissions(perms);
+      
+      // Pour chaque dossier, récupérer ses permissions
+      const permissions = await Promise.all(
+        ['root', 'projects', 'templates'].map(async (folderId) => {
+          const perms = await permissionManager.getFilePermissions(folderId);
+          return {
+            id: folderId,
+            name: folderId === 'root' ? 'Racine' : folderId,
+            permissions: perms,
+            inherited: false,
+            path: `/${folderId}`
+          };
+        })
+      );
+
+      setFolderPermissions(permissions);
     } catch (error) {
       handleError(error instanceof Error ? error : new Error('Erreur de chargement des permissions'));
     } finally {
@@ -84,7 +95,8 @@ const DrivePermissionsUI: React.FC = () => {
         r.id === ruleId ? { ...r, enabled: !r.enabled } : r
       );
 
-      await drivePerms.updateGlobalRule(rule.key, !rule.enabled);
+      // Mise à jour via PermissionManager si nécessaire
+      // await permissionManager.updateGlobalRule(rule.key, !rule.enabled);
       setGlobalRules(updatedRules);
     } catch (error) {
       handleError(error instanceof Error ? error : new Error('Erreur de mise à jour de la règle'));
@@ -93,14 +105,29 @@ const DrivePermissionsUI: React.FC = () => {
 
   const updatePermission = async (
     folderId: string,
-    userId: string,
-    newRole: 'admin' | 'editor' | 'viewer'
+    email: string,
+    role: PermissionRole
   ) => {
     try {
-      await drivePerms.updatePermission(folderId, userId, newRole);
+      await permissionManager.addPermission({
+        fileId: folderId,
+        role,
+        type: 'user',
+        emailAddress: email
+      });
+      
       await loadPermissions();
     } catch (error) {
       handleError(error instanceof Error ? error : new Error('Erreur de mise à jour des permissions'));
+    }
+  };
+
+  const removePermission = async (folderId: string, email: string) => {
+    try {
+      await permissionManager.removePermission(folderId, email);
+      await loadPermissions();
+    } catch (error) {
+      handleError(error instanceof Error ? error : new Error('Erreur de suppression de la permission'));
     }
   };
 
@@ -170,7 +197,7 @@ const DrivePermissionsUI: React.FC = () => {
         </CardHeader>
         <CardContent>
           <div className="space-y-6">
-            {permissions.map((folder) => (
+            {folderPermissions.map((folder) => (
               <div
                 key={folder.id}
                 className="border rounded-lg p-4 space-y-4"
@@ -197,22 +224,27 @@ const DrivePermissionsUI: React.FC = () => {
                 </div>
 
                 <div className="grid gap-4">
-                  {Object.entries(folder.permissions).map(([role, users]) => (
-                    <div key={role} className="flex items-center gap-4">
+                  {folder.permissions.map((perm) => (
+                    <div key={perm.emailAddress} className="flex items-center gap-4">
                       <div className="w-20 text-sm font-medium">
-                        {role.charAt(0).toUpperCase() + role.slice(1)}:
+                        {perm.role.charAt(0).toUpperCase() + perm.role.slice(1)}:
                       </div>
                       <div className="flex flex-wrap gap-2">
-                        {users.map((user) => (
-                          <Badge
-                            key={user}
-                            variant="outline"
-                            className="flex items-center gap-1"
+                        <Badge
+                          variant="outline"
+                          className="flex items-center gap-1"
+                        >
+                          <User className="w-3 h-3" />
+                          <span>{perm.emailAddress}</span>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-4 w-4 ml-1 hover:bg-red-100"
+                            onClick={() => removePermission(folder.id, perm.emailAddress)}
                           >
-                            <User className="w-3 h-3" />
-                            <span>{user}</span>
-                          </Badge>
-                        ))}
+                            ×
+                          </Button>
+                        </Badge>
                       </div>
                     </div>
                   ))}
@@ -224,11 +256,11 @@ const DrivePermissionsUI: React.FC = () => {
       </Card>
 
       <div className="flex justify-end space-x-4">
-        <Button variant="outline">
-          Réinitialiser
+        <Button variant="outline" onClick={loadPermissions}>
+          Actualiser
         </Button>
-        <Button>
-          Appliquer les changements
+        <Button onClick={loadPermissions}>
+          Appliquer
         </Button>
       </div>
     </div>
