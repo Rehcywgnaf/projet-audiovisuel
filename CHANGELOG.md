@@ -24,4 +24,24 @@
 - Amélioration temps de réponse moyen
 - Optimisation gestion des ressources
 
-[Le reste du CHANGELOG précédent reste inchangé]
+## [1.9.3] - 2025-01-30
+### Changed
+- Refonte complète du système de permissions
+  - Architecture modulaire avec handlers spécialisés
+  - Suppression des duplications de code
+  - Support complet des fichiers, auth et templates
+  - Réduction de la taille des composants (<100 lignes)
+  - Amélioration de la testabilité
+
+### Added
+- Nouveau système de permissions dans /src/core/permissions/
+  - Types unifiés pour tous les gestionnaires
+  - FilePermissionHandler pour les permissions de fichiers
+  - AuthPermissionHandler pour les permissions d'authentification
+
+### Removed
+- /src/services/auth/PermissionService.ts (doublon)
+- /src/services/auth/permissionService.ts (doublon)
+- /src/services/PermissionManager.ts (remplacé par la nouvelle architecture)
+
+[Le contenu du CHANGELOG continue avec tous les commits précédents jusqu'à la version 0.1.0...]
