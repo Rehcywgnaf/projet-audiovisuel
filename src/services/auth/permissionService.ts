@@ -1,7 +1,7 @@
 import { EventSystem } from '../../core/EventSystem';
-import { PermissionLevel } from '../../types';
+import { PermissionLevel, Permission, PermissionAction } from './types/Permission';
 
-interface Permission {
+interface PermissionEntry {
   userId: string;
   resourceId: string;
   level: PermissionLevel;
@@ -10,7 +10,7 @@ interface Permission {
 
 export class PermissionService {
   private static instance: PermissionService;
-  private permissions: Map<string, Permission>;
+  private permissions: Map<string, PermissionEntry>;
   private eventSystem: EventSystem;
 
   private constructor() {
@@ -32,7 +32,7 @@ export class PermissionService {
     teamId?: string
   ): Promise<void> {
     const permissionKey = `${resourceId}-${userId}`;
-    const permission: Permission = { userId, resourceId, level, teamId };
+    const permission: PermissionEntry = { userId, resourceId, level, teamId };
     
     this.permissions.set(permissionKey, permission);
     
@@ -48,15 +48,23 @@ export class PermissionService {
   async checkPermission(
     resourceId: string,
     userId: string,
-    level: PermissionLevel
+    requiredLevel: PermissionLevel
   ): Promise<boolean> {
     const permissionKey = `${resourceId}-${userId}`;
     const permission = this.permissions.get(permissionKey);
 
     if (!permission) return false;
 
-    // Comparaison des niveaux de permission
-    return permission.level >= level;
+    return permission.level >= requiredLevel;
+  }
+
+  async checkAction(
+    resourceId: string,
+    userId: string,
+    action: PermissionAction
+  ): Promise<boolean> {
+    const levelRequired = this.getRequiredLevelForAction(action);
+    return this.checkPermission(resourceId, userId, levelRequired);
   }
 
   async revokeAccess(resourceId: string, userId: string): Promise<void> {
@@ -75,8 +83,8 @@ export class PermissionService {
     }
   }
 
-  async getPermissions(resourceId: string): Promise<Permission[]> {
-    const resourcePermissions: Permission[] = [];
+  async getPermissions(resourceId: string): Promise<PermissionEntry[]> {
+    const resourcePermissions: PermissionEntry[] = [];
     
     this.permissions.forEach((permission) => {
       if (permission.resourceId === resourceId) {
@@ -87,8 +95,8 @@ export class PermissionService {
     return resourcePermissions;
   }
 
-  async getUserPermissions(userId: string): Promise<Permission[]> {
-    const userPermissions: Permission[] = [];
+  async getUserPermissions(userId: string): Promise<PermissionEntry[]> {
+    const userPermissions: PermissionEntry[] = [];
     
     this.permissions.forEach((permission) => {
       if (permission.userId === userId) {
@@ -97,5 +105,22 @@ export class PermissionService {
     });
 
     return userPermissions;
+  }
+
+  private getRequiredLevelForAction(action: PermissionAction): PermissionLevel {
+    switch (action) {
+      case 'read':
+        return PermissionLevel.READ;
+      case 'write':
+        return PermissionLevel.EDIT;
+      case 'delete':
+        return PermissionLevel.MANAGE;
+      case 'share':
+        return PermissionLevel.SHARE;
+      case 'manage':
+        return PermissionLevel.MANAGE;
+      default:
+        return PermissionLevel.NONE;
+    }
   }
 }
