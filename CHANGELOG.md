@@ -1,20 +1,12 @@
 # Changelog
 
 ## [1.9.2] - 2025-01-30
-### Added
-- Système de cache stratifié pour DriveCore
-  - CacheManager : Gestion intelligente du cache mémoire et persistant
-  - Configuration flexible avec TTL et patterns de préchargement
-  - Intégration dans DriveCore pour optimisation des performances
-  - Documentation technique complète
-
-### Technical
-- Cache mémoire : Limite 100 documents
-- Cache persistant : Limite 1000 documents
-- TTL configurable (défaut: 1h)
-- Préchargement intelligent des templates et documents récents
-
-# Changelog
+### Changed
+- Correction duplication CacheManager
+  - Suppression du CacheManager redondant dans src/components/Drive/Core/
+  - Utilisation du CacheManager existant dans src/cache/
+  - Mise à jour de la documentation technique
+  - Optimisation des imports
 
 ## [1.9.1] - 2025-01-28
 ### Auth & Drive Integration
@@ -34,4 +26,4 @@
   - Vue détaillée par module
   - Historique préservé et enrichi
 
-[Le reste du CHANGELOG reste inchangé]
+Le reste du CHANGELOG précédent reste inchangé...
