@@ -26,4 +26,17 @@
   - Vue détaillée par module
   - Historique préservé et enrichi
 
-Le reste du CHANGELOG précédent reste inchangé...
+# [v1.9.0] - 2025-01-25
+
+## Architecture Auth
+### Ajouté
+- Nouveau service AuthService dans /src/services/auth/
+- Gestionnaire de permissions avec PermissionService
+- Tests unitaires pour AuthService et PermissionService
+- Tests d'intégration TeamPermissions
+
+### Modifié
+- Migration du stockage des tokens vers /src/services/auth/tokenStorage
+- Centralisation de la gestion des permissions
+
+[Le contenu existant du CHANGELOG jusqu'à la version 0.1.0 se trouve ici...]
