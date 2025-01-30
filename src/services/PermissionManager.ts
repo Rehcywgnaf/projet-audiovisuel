@@ -1,14 +1,6 @@
 import { EventSystem } from '../core/EventSystem';
 import { PermissionService } from './auth/permissionService';
-import { PermissionLevel } from '../types';
-
-export interface VersionPermission {
-  resourceId: string;
-  versionId: string;
-  canEdit: boolean;
-  canDelete: boolean;
-  canShare: boolean;
-}
+import { PermissionLevel, PermissionAction, VersionPermission } from './auth/types/Permission';
 
 export class PermissionManager {
   private static instance: PermissionManager;
@@ -42,16 +34,21 @@ export class PermissionManager {
     });
   }
 
-  async setPermission(resourceId: string, userId: string, level: PermissionLevel, teamId?: string): Promise<void> {
+  async setPermissionWithInheritance(
+    resourceId: string,
+    userId: string,
+    level: PermissionLevel,
+    teamId?: string
+  ): Promise<void> {
     // Vérification des restrictions de partage
-    if (level === PermissionLevel.SHARE) {
+    if (level >= PermissionLevel.SHARE) {
       const canShare = await this.canShareResource(resourceId, userId);
       if (!canShare) {
         throw new Error('Sharing restriction: Not allowed to share this resource');
       }
     }
 
-    // Utilisation du permissionService existant
+    // Utilisation du permissionService pour la permission de base
     await this.permissionService.setPermission(resourceId, userId, level, teamId);
 
     // Si c'est un dossier, propager les permissions
@@ -86,39 +83,50 @@ export class PermissionManager {
 
   private async initializeVersionPermissions(
     documentId: string, 
-    versionId: string,
+    versionId: string, 
     userId: string
   ): Promise<void> {
-    // Vérifier les permissions sur le document
     const permissions = await this.permissionService.getUserPermissions(userId);
     const docPermission = permissions.find(p => p.resourceId === documentId);
 
     if (docPermission) {
-      const versionRule: VersionPermission = {
-        resourceId: documentId,
+      const versionPermission: VersionPermission = {
+        level: docPermission.level,
         versionId,
         canEdit: docPermission.level >= PermissionLevel.EDIT,
         canDelete: docPermission.level >= PermissionLevel.MANAGE,
         canShare: docPermission.level >= PermissionLevel.SHARE
       };
 
-      const existingRules = this.versionPermissions.get(versionId) || [];
-      this.versionPermissions.set(versionId, [...existingRules, versionRule]);
+      const existingPermissions = this.versionPermissions.get(versionId) || [];
+      this.versionPermissions.set(versionId, [...existingPermissions, versionPermission]);
     }
   }
 
-  async checkVersionPermission(versionId: string, userId: string, action: 'edit' | 'delete' | 'share'): Promise<boolean> {
-    const rules = this.versionPermissions.get(versionId) || [];
-    const rule = rules.find(r => r.resourceId === versionId);
+  async checkVersionPermission(
+    versionId: string,
+    userId: string,
+    action: 'edit' | 'delete' | 'share'
+  ): Promise<boolean> {
+    const permissions = this.versionPermissions.get(versionId) || [];
+    const permission = permissions.find(p => p.versionId === versionId);
     
-    if (!rule) return false;
+    if (!permission) return false;
 
     switch (action) {
-      case 'edit': return rule.canEdit;
-      case 'delete': return rule.canDelete;
-      case 'share': return rule.canShare;
+      case 'edit': return permission.canEdit;
+      case 'delete': return permission.canDelete;
+      case 'share': return permission.canShare;
       default: return false;
     }
+  }
+
+  async checkActionOnResource(
+    resourceId: string,
+    userId: string,
+    action: PermissionAction
+  ): Promise<boolean> {
+    return this.permissionService.checkAction(resourceId, userId, action);
   }
 
   // Méthodes utilitaires privées
@@ -133,8 +141,7 @@ export class PermissionManager {
   }
 
   private async canShareResource(resourceId: string, userId: string): Promise<boolean> {
-    // Vérifier si l'utilisateur a les permissions nécessaires pour partager
-    return await this.permissionService.checkPermission(
+    return this.permissionService.checkPermission(
       resourceId,
       userId,
       PermissionLevel.SHARE
