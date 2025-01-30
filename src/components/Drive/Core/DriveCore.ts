@@ -1,247 +1,66 @@
-import { drive_v3, google } from 'googleapis';
-import { DriveOperation, FileMetadata, DriveResponse } from '../types';
-import { ErrorHandling } from '../error/ErrorHandling';
-import { CacheManager } from '../cache/CacheManager';
-import { AuthService } from '../../../services/auth/AuthService';
-import PermissionManager from '../../../core/permissions/PermissionManager';
+import { CacheManager, CacheConfig } from './CacheManager';
+import { DriveDocument } from '../types';
 
-/**
- * Core component for Google Drive operations
- * Implements Singleton pattern and handles all direct Drive interactions
- */
-class DriveCore {
-  private static instance: DriveCore;
-  private drive: drive_v3.Drive;
+export class DriveCore {
   private cacheManager: CacheManager;
-  private errorHandler: ErrorHandling;
-  private authService: AuthService;
-  private permissionManager: PermissionManager;
 
-  private constructor() {
-    this.cacheManager = CacheManager.getInstance();
-    this.errorHandler = ErrorHandling.getInstance();
-    this.authService = AuthService.getInstance();
-    this.permissionManager = PermissionManager.getInstance();
+  constructor(cacheConfig?: CacheConfig) {
+    this.cacheManager = CacheManager.getInstance(cacheConfig);
   }
 
-  static getInstance(): DriveCore {
-    if (!DriveCore.instance) {
-      DriveCore.instance = new DriveCore();
+  async initialize(): Promise<void> {
+    await this.cacheManager.preload();
+  }
+
+  async getDocument(id: string): Promise<DriveDocument> {
+    // Essayer d'abord le cache
+    const cachedDoc = await this.cacheManager.get(id);
+    if (cachedDoc) {
+      return cachedDoc;
     }
-    return DriveCore.instance;
+
+    // Si pas en cache, récupérer depuis Drive
+    const doc = await this.fetchFromDrive(id);
+    await this.cacheManager.set(id, doc);
+    return doc;
   }
 
-  private async initializeDrive(): Promise<void> {
+  private async fetchFromDrive(id: string): Promise<DriveDocument> {
+    // Implémentation de la récupération depuis Google Drive
+    // À adapter selon l'API Google Drive utilisée
     try {
-      const token = await this.authService.authenticate();
-      const auth = new google.auth.OAuth2();
-      auth.setCredentials({ access_token: token });
-      
-      this.drive = google.drive({ version: 'v3', auth });
-    } catch (error) {
-      throw this.errorHandler.handleError('DRIVE_INIT_ERROR', error);
-    }
-  }
-
-  private async ensureDriveInitialized(): Promise<void> {
-    if (!this.drive) {
-      await this.initializeDrive();
-    }
-  }
-
-  private async checkPermission(fileId: string, operation: 'read' | 'write' | 'delete'): Promise<void> {
-    const hasPermission = await this.permissionManager.checkPermission({
-      fileId,
-      operation
-    });
-
-    if (!hasPermission) {
-      throw this.errorHandler.handleError(
-        'PERMISSION_DENIED',
-        new Error(`Permission denied for operation ${operation} on file ${fileId}`)
-      );
-    }
-  }
-
-  async sync(): Promise<void> {
-    try {
-      await this.ensureDriveInitialized();
-      await this.cacheManager.refreshCache();
-
-      const changes = await this.drive.changes.list({
-        pageToken: await this.getLatestChangeToken(),
-        spaces: 'drive'
-      });
-
-      for (const change of changes.data.changes || []) {
-        if (change.file) {
-          await this.cacheManager.invalidateFile(change.fileId);
-          if (change.removed || change.file.trashed) {
-            await this.cacheManager.removeFromCache(change.fileId);
-          }
+      const response = await fetch(`https://www.googleapis.com/drive/v3/files/${id}`, {
+        headers: {
+          'Authorization': `Bearer ${this.getAccessToken()}`
         }
-      }
-
-      if (changes.data.newStartPageToken) {
-        await this.saveChangeToken(changes.data.newStartPageToken);
-      }
-    } catch (error) {
-      throw this.errorHandler.handleError('SYNC_ERROR', error);
-    }
-  }
-
-  async getCacheMetrics(): Promise<{ hitRate: number; size: number; lastCleared: Date }> {
-    return this.cacheManager.getMetrics();
-  }
-
-  private async getLatestChangeToken(): Promise<string> {
-    try {
-      const response = await this.drive.changes.getStartPageToken({});
-      return response.data.startPageToken;
-    } catch (error) {
-      throw this.errorHandler.handleError('TOKEN_ERROR', error);
-    }
-  }
-
-  private async saveChangeToken(token: string): Promise<void> {
-    localStorage.setItem('driveChangeToken', token);
-  }
-
-  async createFile(name: string, content: any, folderId?: string): Promise<string> {
-    try {
-      await this.ensureDriveInitialized();
-      if (folderId) {
-        await this.checkPermission(folderId, 'write');
-      }
-
-      const metadata: FileMetadata = {
-        name,
-        mimeType: this.determineMimeType(name),
-        ...(folderId && { parents: [folderId] })
-      };
-
-      const response = await this.drive.files.create({
-        requestBody: metadata,
-        media: { body: content },
-        fields: 'id'
       });
-
-      await this.cacheManager.invalidateFolder(folderId);
-      return response.data.id;
-    } catch (error) {
-      throw this.errorHandler.handleError('FILE_CREATE_ERROR', error);
-    }
-  }
-
-  async readFile(fileId: string): Promise<DriveResponse> {
-    try {
-      await this.ensureDriveInitialized();
-      await this.checkPermission(fileId, 'read');
-
-      const cached = await this.cacheManager.getFile(fileId);
-      if (cached) return cached;
-
-      const response = await this.drive.files.get({
-        fileId,
-        alt: 'media'
-      });
-
-      await this.cacheManager.setFile(fileId, response.data);
-      return response.data;
-    } catch (error) {
-      throw this.errorHandler.handleError('FILE_READ_ERROR', error);
-    }
-  }
-
-  async updateFile(fileId: string, content: any): Promise<void> {
-    try {
-      await this.ensureDriveInitialized();
-      await this.checkPermission(fileId, 'write');
-
-      await this.drive.files.update({
-        fileId,
-        media: { body: content }
-      });
-
-      await this.cacheManager.invalidateFile(fileId);
-    } catch (error) {
-      throw this.errorHandler.handleError('FILE_UPDATE_ERROR', error);
-    }
-  }
-
-  async deleteFile(fileId: string): Promise<void> {
-    try {
-      await this.ensureDriveInitialized();
-      await this.checkPermission(fileId, 'delete');
-
-      await this.drive.files.delete({ fileId });
-      await this.cacheManager.invalidateFile(fileId);
-    } catch (error) {
-      throw this.errorHandler.handleError('FILE_DELETE_ERROR', error);
-    }
-  }
-
-  async getFileMetadata(fileId: string): Promise<FileMetadata> {
-    try {
-      await this.ensureDriveInitialized();
-      await this.checkPermission(fileId, 'read');
-
-      const cached = await this.cacheManager.getMetadata(fileId);
-      if (cached) return cached;
-
-      const response = await this.drive.files.get({
-        fileId,
-        fields: '*'
-      });
-
-      await this.cacheManager.setMetadata(fileId, response.data);
-      return response.data;
-    } catch (error) {
-      throw this.errorHandler.handleError('METADATA_ERROR', error);
-    }
-  }
-
-  async executeOperation(operation: DriveOperation): Promise<any> {
-    try {
-      await this.ensureDriveInitialized();
       
-      switch (operation.type) {
-        case 'create':
-          return await this.createFile(
-            operation.metadata.name,
-            operation.content,
-            operation.metadata.folderId
-          );
-        case 'read':
-          return await this.readFile(operation.fileId);
-        case 'update':
-          return await this.updateFile(operation.fileId, operation.content);
-        case 'delete':
-          return await this.deleteFile(operation.fileId);
-        default:
-          throw new Error(`Opération non supportée: ${operation.type}`);
+      if (!response.ok) {
+        throw new Error(`Erreur Drive: ${response.statusText}`);
       }
+
+      const data = await response.json();
+      return this.formatDriveDocument(data);
     } catch (error) {
-      throw this.errorHandler.handleError('OPERATION_ERROR', error);
+      console.error('Erreur lors de la récupération depuis Drive:', error);
+      throw error;
     }
   }
 
-  private determineMimeType(filename: string): string {
-    const ext = filename.split('.').pop()?.toLowerCase();
-    const mimeTypes: Record<string, string> = {
-      'pdf': 'application/pdf',
-      'doc': 'application/msword',
-      'docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-      'xls': 'application/vnd.ms-excel',
-      'xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-      'png': 'image/png',
-      'jpg': 'image/jpeg',
-      'jpeg': 'image/jpeg',
-      'gif': 'image/gif'
-    };
+  private getAccessToken(): string {
+    // À implémenter: récupération du token d'accès
+    return 'access_token';
+  }
 
-    return mimeTypes[ext] || 'application/octet-stream';
+  private formatDriveDocument(data: any): DriveDocument {
+    // Conversion des données Drive en format DriveDocument
+    return {
+      id: data.id,
+      name: data.name,
+      mimeType: data.mimeType,
+      modifiedTime: new Date(data.modifiedTime),
+      size: data.size,
+      // Autres champs pertinents...
+    };
   }
 }
-
-export default DriveCore;
