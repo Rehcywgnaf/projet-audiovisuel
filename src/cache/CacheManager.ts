@@ -1,196 +1,188 @@
-import { CacheConfig, FileMetadata, DriveResponse } from '../types';
-import { EventSystem } from '../core/EventSystem';
+import { CacheError, CacheErrorType } from '../core/errors/CacheError';
+import { CacheErrorHandler } from '../core/errors/CacheErrorHandler';
+import { DriveDocument } from '../types';
 
-interface CacheEntry<T> {
-  data: T;
-  timestamp: number;
-  size: number;
+export interface CacheConfig {
+  memorySize: number;
+  persistentSize: number;
+  ttl: number;
+  preloadPatterns: string[];
 }
 
-interface CacheStore {
-  files: Map<string, CacheEntry<DriveResponse>>;
-  metadata: Map<string, CacheEntry<FileMetadata>>;
-  folders: Map<string, CacheEntry<string[]>>;
-}
-
-class CacheManager {
+export class CacheManager {
   private static instance: CacheManager;
-  private eventSystem: EventSystem;
-  private store: CacheStore;
-  private config: CacheConfig = {
-    enabled: true,
-    ttl: 3600, // 1 hour default TTL
-    maxSize: 100 // 100MB default max size
-  };
+  private memoryCache: Map<string, {data: DriveDocument; timestamp: number}>;
+  private config: CacheConfig;
+  private errorHandler: CacheErrorHandler;
 
-  private constructor() {
-    this.eventSystem = EventSystem.getInstance();
-    this.store = {
-      files: new Map(),
-      metadata: new Map(),
-      folders: new Map()
-    };
-    this.initializeEventListeners();
+  private constructor(config: CacheConfig) {
+    this.memoryCache = new Map();
+    this.config = config;
+    this.errorHandler = CacheErrorHandler.getInstance();
   }
 
-  static getInstance(): CacheManager {
+  static getInstance(config?: CacheConfig): CacheManager {
     if (!CacheManager.instance) {
-      CacheManager.instance = new CacheManager();
+      CacheManager.instance = new CacheManager(config || {
+        memorySize: 100,
+        persistentSize: 1000,
+        ttl: 3600,
+        preloadPatterns: ['*/templates/*', '*/recent/*']
+      });
     }
     return CacheManager.instance;
   }
 
-  private initializeEventListeners(): void {
-    this.eventSystem.on('driveFileUpdated', ({ fileId }) => {
-      this.invalidateFile(fileId);
-    });
+  async get(key: string): Promise<DriveDocument | null> {
+    try {
+      const memoryItem = this.memoryCache.get(key);
+      if (memoryItem) {
+        if (this.isValid(memoryItem.timestamp)) {
+          return memoryItem.data;
+        }
+        this.memoryCache.delete(key);
+      }
 
-    this.eventSystem.on('driveFolderUpdated', ({ folderId }) => {
-      this.invalidateFolder(folderId);
-    });
-  }
+      // Essayer le cache persistant si pas en mémoire
+      try {
+        const persistentData = await localStorage.getItem(`drive_${key}`);
+        if (persistentData) {
+          const {data, timestamp} = JSON.parse(persistentData);
+          if (this.isValid(timestamp)) {
+            this.setMemoryCache(key, data);
+            return data;
+          }
+          await localStorage.removeItem(`drive_${key}`);
+          throw new CacheError(CacheErrorType.EXPIRED_DATA, { key });
+        }
+      } catch (error) {
+        throw new CacheError(CacheErrorType.READ_ERROR, { key, error });
+      }
 
-  configure(config: Partial<CacheConfig>): void {
-    this.config = { ...this.config, ...config };
-    this.cleanup();
-  }
-
-  async getFile(fileId: string): Promise<DriveResponse | null> {
-    if (!this.config.enabled) return null;
-
-    const cached = this.store.files.get(fileId);
-    if (!cached) return null;
-
-    if (this.isExpired(cached.timestamp)) {
-      this.store.files.delete(fileId);
+      return null;
+    } catch (error) {
+      await this.errorHandler.handleError(
+        error instanceof CacheError ? error : new CacheError(CacheErrorType.READ_ERROR, { key, error }),
+        `get_${key}`
+      );
       return null;
     }
-
-    return cached.data;
   }
 
-  async setFile(fileId: string, data: DriveResponse): Promise<void> {
-    if (!this.config.enabled) return;
-
-    const size = this.calculateSize(data);
-    if (size > this.config.maxSize) return;
-
-    await this.ensureSpace(size);
-    this.store.files.set(fileId, {
-      data,
-      timestamp: Date.now(),
-      size
-    });
-  }
-
-  async getMetadata(fileId: string): Promise<FileMetadata | null> {
-    if (!this.config.enabled) return null;
-
-    const cached = this.store.metadata.get(fileId);
-    if (!cached) return null;
-
-    if (this.isExpired(cached.timestamp)) {
-      this.store.metadata.delete(fileId);
-      return null;
+  async set(key: string, data: DriveDocument): Promise<void> {
+    try {
+      this.setMemoryCache(key, data);
+      await this.setPersistentCache(key, data);
+    } catch (error) {
+      await this.errorHandler.handleError(
+        error instanceof CacheError ? error : new CacheError(CacheErrorType.WRITE_ERROR, { key, error }),
+        `set_${key}`
+      );
     }
-
-    return cached.data;
   }
 
-  async setMetadata(fileId: string, data: FileMetadata): Promise<void> {
-    if (!this.config.enabled) return;
-
-    const size = this.calculateSize(data);
-    await this.ensureSpace(size);
-    
-    this.store.metadata.set(fileId, {
+  private setMemoryCache(key: string, data: DriveDocument): void {
+    if (this.memoryCache.size >= this.config.memorySize) {
+      const oldestKey = Array.from(this.memoryCache.entries())
+        .sort(([, a], [, b]) => a.timestamp - b.timestamp)[0][0];
+      this.memoryCache.delete(oldestKey);
+    }
+    this.memoryCache.set(key, {
       data,
-      timestamp: Date.now(),
-      size
+      timestamp: Date.now()
     });
   }
 
-  async invalidateFile(fileId: string): Promise<void> {
-    this.store.files.delete(fileId);
-    this.store.metadata.delete(fileId);
+  private async setPersistentCache(key: string, data: DriveDocument): Promise<void> {
+    try {
+      if (this.shouldPersist(key)) {
+        const storageData = JSON.stringify({
+          data,
+          timestamp: Date.now()
+        });
+
+        try {
+          await localStorage.setItem(`drive_${key}`, storageData);
+        } catch (error) {
+          if (error instanceof Error && error.name === 'QuotaExceededError') {
+            throw new CacheError(CacheErrorType.QUOTA_EXCEEDED, { key });
+          }
+          throw new CacheError(CacheErrorType.WRITE_ERROR, { key, error });
+        }
+      }
+    } catch (error) {
+      throw new CacheError(CacheErrorType.WRITE_ERROR, { key, error });
+    }
   }
 
-  async invalidateFolder(folderId: string): Promise<void> {
-    this.store.folders.delete(folderId);
+  private isValid(timestamp: number): boolean {
+    return Date.now() - timestamp < this.config.ttl * 1000;
+  }
+
+  private shouldPersist(key: string): boolean {
+    return this.config.preloadPatterns.some(pattern => 
+      new RegExp(pattern.replace('*', '.*')).test(key)
+    );
+  }
+
+  async preload(): Promise<void> {
+    try {
+      const keys = Object.keys(localStorage)
+        .filter(key => key.startsWith('drive_'))
+        .filter(key => 
+          this.config.preloadPatterns.some(pattern => 
+            new RegExp(pattern.replace('*', '.*')).test(key.slice(6))
+          )
+        );
+
+      for (const key of keys) {
+        try {
+          const data = await localStorage.getItem(key);
+          if (data) {
+            const {data: doc, timestamp} = JSON.parse(data);
+            if (this.isValid(timestamp)) {
+              this.setMemoryCache(key.slice(6), doc);
+            } else {
+              await localStorage.removeItem(key);
+            }
+          }
+        } catch (error) {
+          // Continuer avec les autres clés même si une échoue
+          console.warn('Error preloading key:', key, error);
+        }
+      }
+    } catch (error) {
+      throw new CacheError(
+        CacheErrorType.INITIALIZATION_FAILED,
+        { error }
+      );
+    }
   }
 
   clear(): void {
-    this.store.files.clear();
-    this.store.metadata.clear();
-    this.store.folders.clear();
-  }
-
-  private isExpired(timestamp: number): boolean {
-    const age = Date.now() - timestamp;
-    return age > this.config.ttl * 1000;
-  }
-
-  private calculateSize(data: any): number {
-    return new TextEncoder().encode(JSON.stringify(data)).length;
-  }
-
-  private async ensureSpace(requiredSize: number): Promise<void> {
-    let currentSize = 0;
-    const entries: [string, CacheEntry<any>][] = [];
-
-    for (const [store, map] of Object.entries(this.store)) {
-      for (const [key, entry] of map.entries()) {
-        currentSize += entry.size;
-        entries.push([key, entry]);
-      }
-    }
-
-    if (currentSize + requiredSize > this.config.maxSize * 1024 * 1024) {
-      entries.sort((a, b) => a[1].timestamp - b[1].timestamp);
-
-      while (currentSize + requiredSize > this.config.maxSize * 1024 * 1024 && entries.length > 0) {
-        const [key, entry] = entries.shift()!;
-        currentSize -= entry.size;
-        
-        for (const map of Object.values(this.store)) {
-          map.delete(key);
-        }
-      }
-    }
-  }
-
-  private cleanup(): void {
-    const now = Date.now();
-
-    for (const map of Object.values(this.store)) {
-      for (const [key, entry] of map.entries()) {
-        if (this.isExpired(entry.timestamp)) {
-          map.delete(key);
-        }
-      }
-    }
+    this.memoryCache.clear();
+    // Ne pas vider le localStorage ici car d'autres parties de l'app peuvent l'utiliser
   }
 
   getStats(): {
-    filesCount: number;
-    metadataCount: number;
-    foldersCount: number;
-    totalSize: number;
+    memoryCacheSize: number;
+    persistentCacheSize: number;
+    memoryUsage: number;
   } {
-    let totalSize = 0;
-    for (const map of Object.values(this.store)) {
-      for (const entry of map.values()) {
-        totalSize += entry.size;
-      }
-    }
-
     return {
-      filesCount: this.store.files.size,
-      metadataCount: this.store.metadata.size,
-      foldersCount: this.store.folders.size,
-      totalSize
+      memoryCacheSize: this.memoryCache.size,
+      persistentCacheSize: Object.keys(localStorage)
+        .filter(key => key.startsWith('drive_')).length,
+      memoryUsage: this.estimateMemoryUsage()
     };
   }
-}
 
-export default CacheManager;
+  private estimateMemoryUsage(): number {
+    // Estimation basique en octets
+    let usage = 0;
+    this.memoryCache.forEach((item) => {
+      usage += JSON.stringify(item).length * 2; // * 2 pour estimation UTF-16
+    });
+    return usage;
+  }
+}
