@@ -1,5 +1,16 @@
 # SAPAV - Historique des modifications
 
+## [1.9.5] - 2025-01-30
+### Amélioré
+- CacheManager : Ajout système de priorité pour optimisation performance
+- CacheManager : Implémentation stratégie LRU améliorée
+- CacheManager : Nouvelles métriques de performance détaillées
+
+### Technique
+- Réduction empreinte mémoire du cache
+- Amélioration temps de réponse moyen
+- Optimisation gestion des ressources
+
 ## [1.9.4] - 2025-01-30
 ### Changed
 - Refonte complète du système de permissions
