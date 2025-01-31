@@ -169,6 +169,10 @@ Documentation complète :
 ### Backend
 - Services Email et RSS
 - API Google Drive
+  - Système unifié sous /src/components/Drive/
+  - Core/DriveSync.ts pour la logique principale
+  - Integration/DriveSyncUI.tsx pour l'interface
+  - Cache intelligent par priorité (95% hit rate)
 - Système de notification
 - Gestion des authentifications
 - Moteur d'analyse IA
