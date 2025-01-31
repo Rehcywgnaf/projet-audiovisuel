@@ -1,5 +1,16 @@
 # SAPAV - Historique des modifications
 
+## [1.9.7] - 2025-01-31
+### Supprimé
+- Composants Drive dupliqués :
+  - /components/drive/DriveSync.jsx (ancienne version JSX)
+  - /src/services/DriveSync.ts (version dupliquée)
+
+### Architecture
+- Consolidation composants Drive sous /src/components/Drive/ :
+  - Core/DriveSync.ts : Logique principale avec CacheManager
+  - Integration/DriveSyncUI.tsx : Interface utilisateur
+
 ## [1.9.6] - 2025-01-30
 ### Optimisé
 - DriveSync: Intégration complète avec le nouveau CacheManager
