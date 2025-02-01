@@ -225,10 +225,15 @@ Documentation complète :
   - Lecture (200 req/min)
 
 ### Frontend
+-### Frontend
 - Dashboard principal (React/Tailwind)
 - Modules RSS & Alertes
 - Interface Google Drive
 - Système de suivi des équipes
+  - Architecture modulaire et maintenable (/components/team/)
+  - Séparation claire UI/Core
+  - Tests unitaires complets (>90% coverage)
+  - Documentation technique à jour
 - Générateur de documents IA
 - Monitoring performances temps réel
   - Dashboard de métriques en temps réel

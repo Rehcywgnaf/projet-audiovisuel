@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Navigation } from './Navigation';
 import { KPIs } from './KPIs';
-import { TeamManager } from '../Teams/TeamManager';
-import { useTeamTracking } from '../TeamTracking/hooks';
+import { TeamManager } from '@/components/team/core/TeamManager';
+import { useTeamTracking } from '@/components/team/ui/tracking/hooks';
 
 interface DashboardProps {
   teamManager: TeamManager;

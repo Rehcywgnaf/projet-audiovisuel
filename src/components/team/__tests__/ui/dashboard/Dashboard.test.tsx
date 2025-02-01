@@ -1,9 +1,9 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
-import Dashboard from '../Dashboard';
-import { TeamManager } from '../../Teams/TeamManager';
+import Dashboard from '../../../ui/dashboard/Dashboard';
+import { TeamManager } from '../../../core/TeamManager';
 
-jest.mock('../../Teams/TeamManager');
+jest.mock('../../../core/TeamManager');
 
 describe('Dashboard', () => {
   const mockTeams = [

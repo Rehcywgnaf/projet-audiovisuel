@@ -1,5 +1,20 @@
 # SAPAV - Historique des modifications
 
+## [1.9.8] - 2025-01-31
+### Remanié
+- Architecture des composants Teams réorganisée
+  - Nouvelle structure modulaire (/components/team/)
+  - Séparation claire UI/logique métier
+  - Migration des tests (>90% coverage)
+  - Documentation mise à jour
+  - Nettoyage des anciens composants
+
+### Optimisé
+- Réduction taille des composants
+- Extraction logique de validation
+- Amélioration réutilisabilité
+- Centralisation des types partagés
+
 ## [1.9.7] - 2025-01-31
 ### Supprimé
 - Composants Drive dupliqués :

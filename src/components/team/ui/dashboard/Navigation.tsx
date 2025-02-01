@@ -1,6 +1,6 @@
 import React from 'react';
 import { Users, Settings, PlusCircle } from 'lucide-react';
-import { Team } from '../Teams/types';
+import { Team } from '../../core/types';
 
 interface NavigationProps {
   teams: Team[];

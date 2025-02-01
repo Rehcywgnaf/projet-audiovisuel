@@ -1,9 +1,9 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
-import TeamTracking from '../TeamTracking';
-import { TeamManager } from '../../Teams/TeamManager';
+import { TeamTracking } from '../../../ui/tracking/TeamTracking';
+import { TeamManager } from '../../../core/TeamManager';
 
-jest.mock('../../Teams/TeamManager');
+jest.mock('../../../core/TeamManager');
 
 describe('TeamTracking', () => {
   const mockTeam = {

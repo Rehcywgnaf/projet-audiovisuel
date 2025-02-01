@@ -2,13 +2,13 @@ import React from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Users, Film, Calendar, AlertTriangle } from 'lucide-react';
 import { useTeamTracking, useTeamMetrics } from './hooks';
-import { TeamManager } from '../Teams/TeamManager';
+import { TeamManager } from '../../core/TeamManager';
 
 interface TeamTrackingProps {
   teamManager: TeamManager;
 }
 
-export default function TeamTracking({ teamManager }: TeamTrackingProps) {
+export const TeamTracking = ({ teamManager }: TeamTrackingProps) => {
   const { teams, loading, error, updateMemberAvailability } = useTeamTracking(teamManager);
 
   if (loading) {
@@ -125,4 +125,4 @@ export default function TeamTracking({ teamManager }: TeamTrackingProps) {
       })}
     </div>
   );
-}
+};

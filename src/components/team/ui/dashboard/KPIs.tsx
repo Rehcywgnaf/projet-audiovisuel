@@ -1,7 +1,7 @@
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Users, FileText, Clock, AlertTriangle } from 'lucide-react';
-import { Team } from '../Teams/types';
+import { Team } from '../../core/types';
 
 interface KPIsProps {
   teams: Team[];

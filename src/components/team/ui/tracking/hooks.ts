@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { TeamManager } from '../Teams/TeamManager';
-import { TeamState, Team, TeamMember } from '../Teams/types';
+import { TeamManager } from '../../core/TeamManager';
+import { TeamState, Team, TeamMember } from '../../core/types';
 
 export const useTeamTracking = (teamManager: TeamManager) => {
   const [state, setState] = useState<TeamState>({

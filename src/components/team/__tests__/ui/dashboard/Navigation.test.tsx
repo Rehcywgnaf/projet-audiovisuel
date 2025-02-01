@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { Navigation } from '../Navigation';
+import { Navigation } from '../../../ui/dashboard/Navigation';
 
 describe('Navigation', () => {
   const mockTeams = [
