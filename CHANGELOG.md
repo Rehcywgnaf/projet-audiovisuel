@@ -1,5 +1,28 @@
 # SAPAV - Historique des modifications
 
+# [Version 2.0.0] - 2024-02-02
+
+### Ajouté
+- Nouvelle architecture monitoring avec système de métriques long terme
+  - BaseMetricsManager : Gestionnaire de base avec support de rétention
+  - LongTermMetricsManager : Gestion des métriques sur 7 jours
+  - Nouveau MonitoringDashboard avec visualisation temps réel
+  - Support multi-période (heure/jour/semaine)
+  - Documentation technique complète
+
+### Performance
+- Cache métriques optimisé par composant
+  * Données temps réel : 1 minute TTL
+  * Données horaires : 1 heure TTL
+  * Données quotidiennes : 24 heures TTL
+
+### Migration
+- Phase 1 de la réorganisation du monitoring complétée :
+  * Nouvelle structure modulaire
+  * Types et interfaces unifiés
+  * Services de métriques centralisés
+  * Documentation de migration
+
 # [Version 1.9.9] - 2024-02-02
 
 ### Ajouté
