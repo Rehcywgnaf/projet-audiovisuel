@@ -26,12 +26,29 @@ src/monitoring/
 ✅ MonitoringDashboard principal
 ✅ Documentation technique Phase 1
 
-### Phases Suivantes
+## Phase 2 - Dashboards Spécifiques (Terminé)
+✅ Nouvelle architecture pour les pages monitoring
+  - MonitoringOverviewPage.tsx
+  - AIMonitoringPage.tsx
+  - ProjectsMonitoringPage.tsx
+✅ Système de navigation dynamique 
+✅ Layout unifié avec routage
+✅ Tests unitaires complets
+✅ Documentation mise à jour
+✅ Nommage et structure clarifiés
 
-#### Phase 2 - Dashboards Spécifiques
-- Migration AIPerformanceDashboard
-- Migration ProjectDashboard
-- Adaptation tests et documentation
+### Structure Actuelle des Pages
+```
+src/app/monitoring/
+├── MonitoringOverviewPage.tsx   # Dashboard principal
+├── layout.tsx                   # Layout commun avec navigation
+├── ai/
+│   └── AIMonitoringPage.tsx    # Vue performance IA
+└── projects/
+    └── ProjectsMonitoringPage.tsx # Vue projets
+```
+
+### Phases Suivantes
 
 #### Phase 3 - Système de Priorité
 - Migration PriorityManager
@@ -49,13 +66,42 @@ src/monitoring/
 - fix(monitoring): Corrections
 - docs(monitoring): Documentation
 
+## Conventions de Nommage
+- Pages : `[Section]MonitoringPage.tsx`
+- Composants : `[Feature]View.tsx`
+- Tests : `[Component].test.tsx`
+- Types : `[Feature].types.ts`
+
 ## Tests
 - Chaque composant migré doit avoir ses tests
 - Maintenir >90% de couverture
 - Tests d'intégration pour les workflows critiques
+- Validation des routes et navigation
 
-## Points d'Attention
+## Points d'Attention Spécifiques
+1. Compatibilité
+   - Maintenir compatibilité descendante
+   - Vérifier imports dans les composants existants
+   - Tester toutes les routes
+
+2. Performance
+   - Temps de réponse <100ms pour les vues
+   - Optimisation des états et renders
+   - Lazy loading quand approprié
+
+3. Sécurité
+   - Validation des routes
+   - Gestion des permissions
+   - Logs de navigation
+
+4. Documentation
+   - Mise à jour README
+   - Documentation composants
+   - Guide de nommage
+   - Historique des migrations
+
+## Validation et Déploiement
 - Vérifier intégrité après chaque push
-- Maintenir compatibilité descendante
+- Tests complets avant/après migration
 - Documenter chaque étape
-- Tests avant/après chaque migration
+- Plan de rollback disponible
