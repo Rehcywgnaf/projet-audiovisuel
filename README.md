@@ -80,6 +80,15 @@ Le projet utilise Claude-3 Sonnet d'Anthropic via une architecture centralisée 
      * Hit rate >95% sur les métriques
      * Rafraîchissement configurable
      * Historique de 7 jours
+   - Monitoring Long Terme
+     * Historisation sur 7 jours
+     * Agrégation multi-période (heure/jour/semaine)
+     * Visualisation tendances
+     * Alertes configurables
+   - Architecture Modulaire
+     * Services de métriques séparés
+     * Types et interfaces unifiés
+     * Documentation complète
 
 6. **ChatIntegration**
    - Espaces de discussion par projet
