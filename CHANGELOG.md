@@ -1,5 +1,21 @@
 # SAPAV - Historique des modifications
 
+## [Version 2.0.1] - 2025-02-02
+
+### Refactoring
+- Migration complète du système de monitoring vers une nouvelle architecture
+- Renommage et restructuration des composants pour plus de clarté
+  - MonitoringDashboard -> MonitoringOverviewPage
+  - AIPerformanceDashboard -> AIMonitoringPage
+  - ProjectDashboard -> ProjectsMonitoringPage
+- Mise en place d'une nouvelle navigation dynamique entre les pages de monitoring
+- Ajout de métadonnées pour chaque page de monitoring
+
+### Améliorations
+- Meilleure structuration des fichiers pour faciliter le débogage
+- Mise en place d'un système de routage plus robuste
+- Navigation par onglets avec état synchronisé
+
 # [Version 2.0.0] - 2024-02-02
 
 ### Ajouté
