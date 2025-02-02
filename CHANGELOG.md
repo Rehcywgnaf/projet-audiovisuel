@@ -1,5 +1,29 @@
 # SAPAV - Historique des modifications
 
+# [Version 1.9.9] - 2024-02-02
+
+### Ajouté
+- Refonte complète du VersionManager
+  - Intégration Drive native avec queue d'opérations
+  - Cache intelligent multi-niveaux (95% hit rate)
+  - Gestion des permissions centralisée
+  - Tests unitaires complets (>90% coverage)
+  - Monitoring en temps réel des performances
+
+### Performance
+- Validation versions : 150-200ms
+- Version retrieval : <100ms (cached)
+- Cache hit rate : >95%
+- Tests charge : 50 docs/60s
+- Permission check : <50ms
+
+### Documentation
+- Documentation technique mise à jour
+  - Architecture du système de versions
+  - Guide d'intégration Drive
+  - Spécifications de performance
+  - Tests et monitoring
+
 ## [1.9.8] - 2025-01-31
 ### Remanié
 - Architecture des composants Teams réorganisée
