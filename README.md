@@ -55,41 +55,44 @@ Le projet utilise Claude-3 Sonnet d'Anthropic via une architecture centralisée 
    - Documentation détaillée
    - Cache 24h, priorité basse (99% hit rate)
 
-5. **Système de Monitoring**
-   - Dashboard de performance temps réel
-     * État des files d'attente par priorité
-     * Seuils d'alerte configurables
-     * Visualisations graphiques
-   - Gestion des Alertes
-     * Alertes de taille de file
-     * Alertes de temps d'attente
-     * Notifications temps réel
-   - Historique des Erreurs
-     * Suivi des reprises
-     * Tentatives de récupération
-     * Analyse des patterns d'erreur
-   - Monitoring Proactif
-     * Détection précoce des problèmes
-     * Backoff exponentiel intégré
-     * Métriques de performance
-   - Documentation Complète
-     * Guide utilisateur détaillé
-     * Procédures d'urgence
-     * Best practices
-   - Cache optimisé pour les performances
-     * Hit rate >95% sur les métriques
-     * Rafraîchissement configurable
-     * Historique de 7 jours
-   - Monitoring Long Terme
-     * Historisation sur 7 jours
-     * Agrégation multi-période (heure/jour/semaine)
-     * Visualisation tendances
-     * Alertes configurables
-   - Architecture Modulaire
-     * Services de métriques séparés
-     * Types et interfaces unifiés
-     * Documentation complète
+5. ### Système de Monitoring
 
+Le système de monitoring offre une vue complète et centralisée des performances et de l'état du système :
+
+#### Vue Générale (`/monitoring`)
+- Dashboard principal avec métriques temps réel
+- Suivi des performances globales
+- Système d'alertes intelligent
+- Métriques de validation (<200ms)
+- Statut des composants core
+
+#### Performance IA (`/monitoring/ai`)
+- Suivi en temps réel des performances IA
+- Analyse des coûts et optimisations
+- Métriques de cache par composant
+  - RSS-IA : 95% hit rate (1h TTL)
+  - AI Editor : 98% hit rate (2min TTL)
+  - Templates : 99% hit rate (24h TTL)
+- Validation parallélisée (50 docs/min)
+
+#### Monitoring Projets (`/monitoring/projects`)
+- Suivi temps réel des documents
+- Gestion des deadlines
+- État des validations
+- Métriques de performance
+
+#### Caractéristiques Techniques
+- Architecture restructurée et optimisée
+- Navigation dynamique entre les vues
+- Nommage explicite des composants
+- Tests >90% couverture
+- Performance optimisée (<100ms)
+
+#### Intégrations
+- Connexion directe avec AIServiceManager
+- Synchronisation Google Drive
+- Système d'alertes unifié
+- Tableau de bord temps réel
 6. **ChatIntegration**
    - Espaces de discussion par projet
    - Gestion des membres intégrée
