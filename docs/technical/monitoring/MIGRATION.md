@@ -55,4 +55,42 @@ src/components/monitoring/
 - fix(monitoring): Corrections
 - docs(monitoring): Documentation
 
-[Le reste du fichier reste inchangé à partir de "## Tests"]
+## Conventions de Nommage
+- Pages : `[Section]MonitoringPage.tsx`
+- Composants : `[Feature]View.tsx`
+- Tests : `[Component].test.tsx`
+- Types : `[Feature].types.ts`
+
+## Tests
+- Chaque composant migré doit avoir ses tests
+- Maintenir >90% de couverture
+- Tests d'intégration pour les workflows critiques
+- Validation des routes et navigation
+
+## Points d'Attention Spécifiques
+1. Compatibilité
+   - Maintenir compatibilité descendante
+   - Vérifier imports dans les composants existants
+   - Tester toutes les routes
+
+2. Performance
+   - Temps de réponse <100ms pour les vues
+   - Optimisation des états et renders
+   - Lazy loading quand approprié
+
+3. Sécurité
+   - Validation des routes
+   - Gestion des permissions
+   - Logs de navigation
+
+4. Documentation
+   - Mise à jour README
+   - Documentation composants
+   - Guide de nommage
+   - Historique des migrations
+
+## Validation et Déploiement
+- Vérifier intégrité après chaque push
+- Tests complets avant/après migration
+- Documenter chaque étape
+- Plan de rollback disponible
