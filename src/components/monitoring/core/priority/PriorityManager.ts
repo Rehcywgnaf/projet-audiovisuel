@@ -1,4 +1,4 @@
-import { TaskPriority, TaskType, Task } from '@/types';
+import { TaskPriority, TaskType, Task } from '../../types/priority.types';
 
 export class PriorityManager {
   private readonly SUPER_URGENT_THRESHOLD = 24; // heures
