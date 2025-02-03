@@ -1,5 +1,5 @@
 import { PriorityManager } from '../PriorityManager';
-import { TaskPriority, TaskType, Task } from '@/types';
+import { TaskPriority, TaskType, Task } from '../../../types/priority.types';
 
 describe('PriorityManager', () => {
   let priorityManager: PriorityManager;
