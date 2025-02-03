@@ -1,4 +1,4 @@
-import { MonitoringDashboard } from '@/monitoring/components/dashboard/MonitoringDashboard';
+import { MonitoringDashboard } from '@/components/monitoring/dashboard/MonitoringDashboard';
 
 export const metadata = {
   title: 'Vue Générale du Monitoring - SAPAV',
