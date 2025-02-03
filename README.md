@@ -17,6 +17,28 @@ Le projet utilise Claude-3 Sonnet d'Anthropic via une architecture centralisée 
 - Monitoring en temps réel des coûts et des performances
 - Système de préchargement intelligent
 
+### Structure du Projet
+Le projet suit une architecture modulaire standardisée sous /src :
+/src
+├── app/                              # Pages et layouts Next.js
+│   ├── globals.css                   # Styles globaux
+│   ├── layout.tsx                    # Layout racine
+│   ├── page.tsx                      # Page d'accueil
+│   └── monitoring/                   # Module monitoring
+│       └── MonitoringOverviewPage.tsx
+└── components/                       # Composants React
+├── Drive/                        # Module Drive
+│   ├── Auth/                     # Authentification Drive
+│   ├── Core/                     # Opérations Drive de base
+│   └── Integration/              # Integration avec l'application
+├── ui/                           # Composants shadcn
+└── monitoring/                   # Module monitoring
+├── dashboard/                # Interface monitoring
+├── core/                     # Logique métier monitoring
+│   └── priority/             # Système de priorités
+├── metrics/                  # Gestion des métriques
+└── types/                    # Types et interfaces
+
 ### Composants Principaux
 1. **Système RSS-IA** [Doc](/docs/project/architecture/core.md#rss-ia)
    - Veille automatisée des opportunités
@@ -61,6 +83,10 @@ Le système de monitoring offre une vue complète et centralisée des performanc
 
 #### Vue Générale (`/monitoring`)
 - Dashboard principal avec métriques temps réel
+- Système de priorités avancé
+  - Score numérique (0-100)
+  - Niveaux CRITICAL, HIGH, STANDARD, LOW
+  - Tracking des changements de priorité
 - Suivi des performances globales
 - Système d'alertes intelligent
 - Métriques de validation (<200ms)
@@ -173,6 +199,13 @@ Documentation complète :
 ## 🛠 Architecture Technique
 
 ### Core
+- Drive
+  - Architecture modulaire sous /src/components/Drive/
+  - Auth : Gestion de l'authentification Google
+  - Core : Opérations Drive de base avec cache optimisé
+  - Integration : Intégration sécurisée avec l'application
+  - Support complet des types MIME
+  - Performance optimisée (>95% hit rate)
 - Système de permissions modulaire
   - Gestionnaires spécialisés (<100 lignes)
   - Types unifiés pour l'authentification et les fichiers
