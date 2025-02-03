@@ -1,3 +1,5 @@
+'use client';
+
 import { DriveAuth, DriveAuthProvider, DriveIntegration } from '@/components/Drive';
 import React from 'react';
 
