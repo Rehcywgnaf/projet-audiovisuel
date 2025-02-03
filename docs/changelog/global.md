@@ -1,5 +1,38 @@
 # SAPAV - Historique des modifications
 
+## [Version 2.0.2] - 2025-02-03
+
+### Refactoring
+- Migration de la structure de l'application vers /src/
+  - Déplacement de tous les composants dans une structure standardisée
+  - Réorganisation des modules sous /src/components/
+  - Migration des pages Next.js sous /src/app/
+  - Unification des imports avec alias @/*
+
+### Système de Priorités
+- Migration du système de priorités vers la nouvelle architecture
+  - Déplacement sous src/components/monitoring/core/priority/
+  - Implémentation du PriorityManager avec support CRITICAL
+  - Ajout d'un système de scoring numérique (0-100)
+  - Optimisation du tracking des changements de priorité
+  - Tests unitaires complets 
+  - Cache et performance optimisés
+  - Support des deadlines et budgets
+  - Nouveaux niveaux de priorité :
+    * CRITICAL : Tâches super urgentes (<24h) ou urgentes à haute valeur
+    * HIGH : Tâches urgentes ou haute valeur
+    * STANDARD : Opérations AAP/AO normales
+    * LOW : Tâches non critiques
+
+### Drive Integration
+- Suppression du composant DriveManagerTest obsolète
+- Migration vers DriveIntegration standardisé
+- Utilisation des composants officiels Drive selon l'architecture documentée
+
+### Documentation 
+- Mise à jour de la structure du projet dans la documentation technique
+- Clarification des composants Drive selon l'architecture officielle
+
 ## [Version 2.0.1] - 2025-02-02
 
 ### Refactoring
