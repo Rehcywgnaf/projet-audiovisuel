@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * @file DriveIntegration.tsx
  * @description Point d'entrée unifié pour l'intégration Google Drive.
