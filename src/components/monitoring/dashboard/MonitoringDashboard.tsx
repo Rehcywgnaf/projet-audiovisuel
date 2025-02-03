@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { Activity, AlertTriangle, Clock, Database } from 'lucide-react';
+import { Activity, AlertTriangle, Database } from 'lucide-react';
 
 const MonitoringDashboard = () => {
   const [metrics, setMetrics] = useState({
