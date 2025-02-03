@@ -2,8 +2,9 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { Activity } from 'lucide-react';
+import { ChartComponentProps } from './MonitoringDashboardTypes';
 
-const ChartComponent = React.memo(({ data, avgTime }) => (
+const ChartComponent = React.memo(({ data, avgTime }: ChartComponentProps) => (
   <Card>
     <CardHeader>
       <CardTitle className="flex items-center gap-2">

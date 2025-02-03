@@ -1,8 +1,9 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Database } from 'lucide-react';
+import { CacheMetricProps } from './MonitoringDashboardTypes';
 
-const CacheMetrics = React.memo(({ components }) => (
+const CacheMetrics = React.memo(({ components }: CacheMetricProps) => (
   <Card>
     <CardHeader>
       <CardTitle className="flex items-center gap-2">

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo, Suspense } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Activity, AlertTriangle, Database } from 'lucide-react';
+import { MetricsData } from './MonitoringDashboardTypes';
 
 // Lazy loading des composants lourds
 const ChartComponent = React.lazy(() => import('./ChartComponent'));
@@ -9,20 +10,18 @@ const CacheMetrics = React.lazy(() => import('./CacheMetrics'));
 
 // Cache pour les données
 const useMetricsCache = () => {
-  const [metrics, setMetrics] = useState(null);
-  const [lastUpdate, setLastUpdate] = useState(null);
+  const [metrics, setMetrics] = useState<MetricsData | null>(null);
+  const [lastUpdate, setLastUpdate] = useState<number | null>(null);
   const CACHE_DURATION = 5000; // 5 secondes
 
   useEffect(() => {
     const fetchMetrics = async () => {
       const currentTime = Date.now();
-      // Si les données sont récentes, on ne refetch pas
       if (lastUpdate && currentTime - lastUpdate < CACHE_DURATION) {
         return;
       }
 
-      // Simulation fetch données
-      const newMetrics = {
+      const newMetrics: MetricsData = {
         validation: {
           avgTime: Math.floor(Math.random() * 50 + 150),
           threshold: 200,
@@ -58,8 +57,11 @@ const useMetricsCache = () => {
   return metrics;
 };
 
-// Composant memoizé pour les alertes
-const AlertSection = React.memo(({ alerts }) => (
+interface AlertSectionProps {
+  alerts: MetricsData['alerts'];
+}
+
+const AlertSection = React.memo(({ alerts }: AlertSectionProps) => (
   <Card>
     <CardHeader>
       <CardTitle className="flex items-center gap-2">
@@ -84,7 +86,6 @@ const AlertSection = React.memo(({ alerts }) => (
   </Card>
 ));
 
-// Fallback pour le lazy loading
 const LoadingComponent = () => (
   <div className="w-full h-64 flex items-center justify-center">
     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
@@ -94,7 +95,6 @@ const LoadingComponent = () => (
 const OptimizedDashboard = () => {
   const metrics = useMetricsCache();
 
-  // Memoization des props pour les composants
   const chartProps = useMemo(() => ({
     data: metrics?.validation.history || [],
     avgTime: metrics?.validation.avgTime
