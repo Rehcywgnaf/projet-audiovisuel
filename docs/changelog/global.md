@@ -1,5 +1,14 @@
 # SAPAV - Historique des modifications
 
+### [Version 2.0.3]  - 2025-02-03
+
+#### Added
+- Optimisation du dashboard temps réel :
+  - Implémentation du système de cache avec TTL de 5 secondes
+  - Lazy loading des composants ChartComponent et CacheMetrics
+  - Memoization des composants pour éviter les re-renders inutiles
+  - Amélioration des performances UI (<100ms pour les mises à jour)
+
 ## [Version 2.0.2] - 2025-02-03
 
 ### Refactoring
