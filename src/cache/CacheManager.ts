@@ -1,13 +1,36 @@
-export class CacheManager {
+import { CacheConfig, FileMetadata, DriveResponse } from '../types';
+import { EventSystem } from '../core/EventSystem';
+
+interface CacheEntry<T> {
+  data: T;
+  timestamp: number;
+  size: number;
+}
+
+interface CacheStore {
+  files: Map<string, CacheEntry<DriveResponse>>;
+  metadata: Map<string, CacheEntry<FileMetadata>>;
+  folders: Map<string, CacheEntry<string[]>>;
+}
+
+class CacheManager {
   private static instance: CacheManager;
-  private cache: Map<string, any>;
-  private metadata: Map<string, number>;
-  private maxSize: number;
+  private eventSystem: EventSystem;
+  private store: CacheStore;
+  private config: CacheConfig = {
+    enabled: true,
+    ttl: 3600, // 1 hour default TTL
+    maxSize: 100 // 100MB default max size
+  };
 
   private constructor() {
-    this.cache = new Map();
-    this.metadata = new Map();
-    this.maxSize = 100;
+    this.eventSystem = EventSystem.getInstance();
+    this.store = {
+      files: new Map(),
+      metadata: new Map(),
+      folders: new Map()
+    };
+    this.initializeEventListeners();
   }
 
   static getInstance(): CacheManager {
@@ -17,63 +40,156 @@ export class CacheManager {
     return CacheManager.instance;
   }
 
-  async getFile(fileId: string): Promise<any> {
-    const now = Date.now();
-    const meta = this.metadata.get(fileId);
-    
-    if (meta && now - meta < 3600000) { // 1 heure
-      return this.cache.get(fileId);
-    }
-    
-    return null;
-  }
+  private initializeEventListeners(): void {
+    this.eventSystem.on('driveFileUpdated', ({ fileId }) => {
+      this.invalidateFile(fileId);
+    });
 
-  async setFile(fileId: string, data: any): Promise<void> {
-    this.cleanupIfNeeded();
-    this.cache.set(fileId, data);
-    this.metadata.set(fileId, Date.now());
-  }
-
-  async getMetadata(fileId: string): Promise<any> {
-    return this.getFile(`meta_${fileId}`);
-  }
-
-  async setMetadata(fileId: string, data: any): Promise<void> {
-    await this.setFile(`meta_${fileId}`, data);
-  }
-
-  async invalidateFile(fileId: string): Promise<void> {
-    this.cache.delete(fileId);
-    this.metadata.delete(fileId);
-  }
-
-  async invalidateFolder(folderId?: string): Promise<void> {
-    if (!folderId) return;
-    
-    // Invalider tous les fichiers liés à ce dossier
-    const keysToDelete = [];
-    for (const [key, value] of this.cache.entries()) {
-      if (value?.parents?.includes(folderId)) {
-        keysToDelete.push(key);
-      }
-    }
-    
-    keysToDelete.forEach(key => {
-      this.invalidateFile(key);
+    this.eventSystem.on('driveFolderUpdated', ({ folderId }) => {
+      this.invalidateFolder(folderId);
     });
   }
 
-  private cleanupIfNeeded(): void {
-    if (this.cache.size >= this.maxSize) {
-      // Supprimer les entrées les plus anciennes
-      const sortedEntries = Array.from(this.metadata.entries())
-        .sort(([, a], [, b]) => a - b);
-      
-      const toDelete = sortedEntries.slice(0, Math.floor(this.maxSize * 0.2));
-      toDelete.forEach(([key]) => {
-        this.invalidateFile(key);
-      });
+  configure(config: Partial<CacheConfig>): void {
+    this.config = { ...this.config, ...config };
+    this.cleanup();
+  }
+
+  async getFile(fileId: string): Promise<DriveResponse | null> {
+    if (!this.config.enabled) return null;
+
+    const cached = this.store.files.get(fileId);
+    if (!cached) return null;
+
+    if (this.isExpired(cached.timestamp)) {
+      this.store.files.delete(fileId);
+      return null;
     }
+
+    return cached.data;
+  }
+
+  async setFile(fileId: string, data: DriveResponse): Promise<void> {
+    if (!this.config.enabled) return;
+
+    const size = this.calculateSize(data);
+    if (size > this.config.maxSize) return;
+
+    await this.ensureSpace(size);
+    this.store.files.set(fileId, {
+      data,
+      timestamp: Date.now(),
+      size
+    });
+  }
+
+  async getMetadata(fileId: string): Promise<FileMetadata | null> {
+    if (!this.config.enabled) return null;
+
+    const cached = this.store.metadata.get(fileId);
+    if (!cached) return null;
+
+    if (this.isExpired(cached.timestamp)) {
+      this.store.metadata.delete(fileId);
+      return null;
+    }
+
+    return cached.data;
+  }
+
+  async setMetadata(fileId: string, data: FileMetadata): Promise<void> {
+    if (!this.config.enabled) return;
+
+    const size = this.calculateSize(data);
+    await this.ensureSpace(size);
+    
+    this.store.metadata.set(fileId, {
+      data,
+      timestamp: Date.now(),
+      size
+    });
+  }
+
+  async invalidateFile(fileId: string): Promise<void> {
+    this.store.files.delete(fileId);
+    this.store.metadata.delete(fileId);
+  }
+
+  async invalidateFolder(folderId: string): Promise<void> {
+    this.store.folders.delete(folderId);
+  }
+
+  clear(): void {
+    this.store.files.clear();
+    this.store.metadata.clear();
+    this.store.folders.clear();
+  }
+
+  private isExpired(timestamp: number): boolean {
+    const age = Date.now() - timestamp;
+    return age > this.config.ttl * 1000;
+  }
+
+  private calculateSize(data: any): number {
+    return new TextEncoder().encode(JSON.stringify(data)).length;
+  }
+
+  private async ensureSpace(requiredSize: number): Promise<void> {
+    let currentSize = 0;
+    const entries: [string, CacheEntry<any>][] = [];
+
+    for (const [store, map] of Object.entries(this.store)) {
+      for (const [key, entry] of map.entries()) {
+        currentSize += entry.size;
+        entries.push([key, entry]);
+      }
+    }
+
+    if (currentSize + requiredSize > this.config.maxSize * 1024 * 1024) {
+      entries.sort((a, b) => a[1].timestamp - b[1].timestamp);
+
+      while (currentSize + requiredSize > this.config.maxSize * 1024 * 1024 && entries.length > 0) {
+        const [key, entry] = entries.shift()!;
+        currentSize -= entry.size;
+        
+        for (const map of Object.values(this.store)) {
+          map.delete(key);
+        }
+      }
+    }
+  }
+
+  private cleanup(): void {
+    const now = Date.now();
+
+    for (const map of Object.values(this.store)) {
+      for (const [key, entry] of map.entries()) {
+        if (this.isExpired(entry.timestamp)) {
+          map.delete(key);
+        }
+      }
+    }
+  }
+
+  getStats(): {
+    filesCount: number;
+    metadataCount: number;
+    foldersCount: number;
+    totalSize: number;
+  } {
+    let totalSize = 0;
+    for (const map of Object.values(this.store)) {
+      for (const entry of map.values()) {
+        totalSize += entry.size;
+      }
+    }
+
+    return {
+      filesCount: this.store.files.size,
+      metadataCount: this.store.metadata.size,
+      foldersCount: this.store.folders.size,
+      totalSize
+    };
   }
 }
 
