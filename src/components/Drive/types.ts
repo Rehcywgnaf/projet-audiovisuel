@@ -23,3 +23,15 @@ export interface CacheConfig {
   ttl: number;
   maxSize: number;
 }
+
+export enum PermissionLevel {
+  READ = 'read',
+  WRITE = 'write',
+  ADMIN = 'admin'
+}
+
+export interface Permission {
+  userId: string;
+  level: PermissionLevel;
+  teamId?: string;
+}
