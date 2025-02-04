@@ -1,14 +1,13 @@
 import { google } from 'googleapis';
 import { DriveOperation, FileMetadata, DriveResponse, CacheConfig } from '../types';
-import { ErrorHandling } from '../../../error/ErrorHandling';
-import { CacheManager } from '../../../cache/CacheManager';
+import { ErrorHandling } from '../error/ErrorHandling';
+import { CacheManager } from '../cache/CacheManager';
 
 class DriveCore {
   private static instance: DriveCore;
   private drive: any;
   private cacheManager: CacheManager;
   private errorHandler: ErrorHandling;
-  private lastSync: Date | null = null;
 
   private constructor() {
     this.initializeDrive();
@@ -141,24 +140,6 @@ class DriveCore {
     }
   }
 
-  async sync(): Promise<void> {
-    try {
-      // Simulation de synchronisation
-      await new Promise(resolve => setTimeout(resolve, 500));
-      this.lastSync = new Date();
-    } catch (error) {
-      throw this.errorHandler.handleError('SYNC_ERROR', error);
-    }
-  }
-
-  async getCacheMetrics(): Promise<{ hitRate: number; size: number; lastCleared: Date }> {
-    return {
-      hitRate: 98.5, // Valeur simulée
-      size: this.cacheManager.getListenerCount('size'),
-      lastCleared: new Date()
-    };
-  }
-
   private determineMimeType(filename: string): string {
     const ext = filename.split('.').pop()?.toLowerCase();
     const mimeTypes = {
@@ -176,5 +157,3 @@ class DriveCore {
     return mimeTypes[ext] || 'application/octet-stream';
   }
 }
-
-export default DriveCore;
