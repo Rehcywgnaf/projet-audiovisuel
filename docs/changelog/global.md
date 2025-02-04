@@ -1,5 +1,27 @@
 # SAPAV - Historique des modifications
 
+### [Version 2.0.4] - 2025-02-04
+
+#### Added
+- AIServiceManager : Nouveau composant pour la gestion centralisée de l'IA
+  - Point d'entrée unique pour l'API Claude-3 Sonnet
+  - Système de cache intelligent par composant avec TTL configurables
+  - Monitoring des coûts (max 15$/mois)
+  - Gestion des priorités et performances optimisées
+  - Tests unitaires complets
+
+#### Changed
+- DriveIntegration : Intégration avec AIServiceManager
+  - Validation IA des documents synchronisés
+  - Monitoring des performances IA dans le dashboard
+  - Gestion optimisée des erreurs
+  - Mise à jour des métriques de cache
+
+#### Removed
+- Service IA incomplet dans src/services/ai/
+  - Suppression de l'ancien AIServiceManager
+  - Consolidation vers la nouvelle architecture
+
 ### [Version 2.0.3]  - 2025-02-03
 
 #### Added
