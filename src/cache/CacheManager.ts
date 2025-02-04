@@ -1,25 +1,13 @@
-interface CacheConfig {
-  enabled: boolean;
-  ttl: number; // Time To Live en secondes
-  maxSize: number; // Nombre maximum d'entrées
-}
-
-interface CacheEntry {
-  value: any;
-  timestamp: number;
-}
-
-class CacheManager {
+export class CacheManager {
   private static instance: CacheManager;
-  private cache: Map<string, CacheEntry>;
-  private config: CacheConfig = {
-    enabled: true,
-    ttl: 3600,
-    maxSize: 100
-  };
+  private cache: Map<string, any>;
+  private metadata: Map<string, number>;
+  private maxSize: number;
 
   private constructor() {
     this.cache = new Map();
+    this.metadata = new Map();
+    this.maxSize = 100;
   }
 
   static getInstance(): CacheManager {
@@ -29,78 +17,63 @@ class CacheManager {
     return CacheManager.instance;
   }
 
-  configure(config: Partial<CacheConfig>): void {
-    this.config = { ...this.config, ...config };
-  }
-
-  async getFile(key: string): Promise<any | null> {
-    if (!this.config.enabled) {
-      return null;
-    }
-
-    const entry = this.cache.get(key);
-    if (!entry) {
-      return null;
-    }
-
+  async getFile(fileId: string): Promise<any> {
     const now = Date.now();
-    if (now - entry.timestamp > this.config.ttl * 1000) {
-      this.cache.delete(key);
-      return null;
+    const meta = this.metadata.get(fileId);
+    
+    if (meta && now - meta < 3600000) { // 1 heure
+      return this.cache.get(fileId);
     }
-
-    return entry.value;
+    
+    return null;
   }
 
-  async setFile(key: string, value: any): Promise<void> {
-    if (!this.config.enabled) {
-      return;
-    }
+  async setFile(fileId: string, data: any): Promise<void> {
+    this.cleanupIfNeeded();
+    this.cache.set(fileId, data);
+    this.metadata.set(fileId, Date.now());
+  }
 
-    if (this.cache.size >= this.config.maxSize) {
-      const oldestKey = this.findOldestEntry();
-      if (oldestKey) {
-        this.cache.delete(oldestKey);
+  async getMetadata(fileId: string): Promise<any> {
+    return this.getFile(`meta_${fileId}`);
+  }
+
+  async setMetadata(fileId: string, data: any): Promise<void> {
+    await this.setFile(`meta_${fileId}`, data);
+  }
+
+  async invalidateFile(fileId: string): Promise<void> {
+    this.cache.delete(fileId);
+    this.metadata.delete(fileId);
+  }
+
+  async invalidateFolder(folderId?: string): Promise<void> {
+    if (!folderId) return;
+    
+    // Invalider tous les fichiers liés à ce dossier
+    const keysToDelete = [];
+    for (const [key, value] of this.cache.entries()) {
+      if (value?.parents?.includes(folderId)) {
+        keysToDelete.push(key);
       }
     }
-
-    this.cache.set(key, {
-      value,
-      timestamp: Date.now()
+    
+    keysToDelete.forEach(key => {
+      this.invalidateFile(key);
     });
   }
 
-  async getCacheMetrics() {
-    const now = Date.now();
-    let hitCount = 0;
-    let totalCount = 0;
-
-    this.cache.forEach((entry) => {
-      totalCount++;
-      if (now - entry.timestamp <= this.config.ttl * 1000) {
-        hitCount++;
-      }
-    });
-
-    return {
-      hitRate: totalCount > 0 ? (hitCount / totalCount) * 100 : 100,
-      size: this.cache.size,
-      lastCleared: new Date(this.findOldestEntry() || Date.now())
-    };
-  }
-
-  private findOldestEntry(): string | null {
-    let oldestKey: string | null = null;
-    let oldestTime = Infinity;
-
-    this.cache.forEach((entry, key) => {
-      if (entry.timestamp < oldestTime) {
-        oldestTime = entry.timestamp;
-        oldestKey = key;
-      }
-    });
-
-    return oldestKey;
+  private cleanupIfNeeded(): void {
+    if (this.cache.size >= this.maxSize) {
+      // Supprimer les entrées les plus anciennes
+      const sortedEntries = Array.from(this.metadata.entries())
+        .sort(([, a], [, b]) => a - b);
+      
+      const toDelete = sortedEntries.slice(0, Math.floor(this.maxSize * 0.2));
+      toDelete.forEach(([key]) => {
+        this.invalidateFile(key);
+      });
+    }
   }
 }
 
