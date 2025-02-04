@@ -12,10 +12,15 @@ SAPAV est une plateforme innovante dédiée au soutien et à l'accompagnement de
 ### Architecture IA
 Le projet utilise Claude-3 Sonnet d'Anthropic via une architecture centralisée :
 - AIServiceManager : Point d'entrée unique pour l'IA
-- Budget optimisé (max 15$/mois)
-- Cache intelligent par composant avec monitoring des performances
-- Monitoring en temps réel des coûts et des performances
-- Système de préchargement intelligent
+  * Gestion des coûts (max 15$/mois)
+  * Cache intelligent par composant :
+    - RSS-IA : 1h, priorité haute (95% hit rate)
+    - Editor : 5min, priorité moyenne (98%)
+    - Validation : 10min, priorité moyenne (95%)
+    - Templates : 24h, priorité basse (99%)
+  * Monitoring performances temps réel
+  * Tests unitaires complets
+  * Intégration DriveCore pour validation des synchronisations
 
 ### Structure du Projet
 Le projet suit une architecture modulaire standardisée sous /src :
