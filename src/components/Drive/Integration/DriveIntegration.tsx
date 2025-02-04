@@ -19,6 +19,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '../../../components/ui
 import { Alert, AlertDescription } from '../../../components/ui/alert';
 import { Loader2, CloudOff, CheckCircle, AlertTriangle } from 'lucide-react';
 import DriveCore from '../Core/DriveCore';
+import AIServiceManager from '../../../lib/AIServiceManager';
 
 // Types
 interface SyncStatus {
@@ -53,21 +54,29 @@ const DriveIntegration: React.FC<DriveIntegrationProps> = ({
     lastCleared: new Date()
   });
 
-  // Instance DriveCore
+  // Instances
   const driveCore = DriveCore.getInstance();
+  const aiService = AIServiceManager.getInstance();
 
   // Gestion de la synchronisation
   const handleSync = async () => {
     try {
       setSyncStatus({ status: 'syncing' });
       
-      // Appel à DriveCore pour la synchronisation
+      // Synchronisation Drive
       await driveCore.sync();
+      
+      // Validation IA des documents
+      const validationResult = await aiService.processRequest(
+        'validator',
+        'validate_sync',
+        { priority: 'medium' }
+      );
       
       setSyncStatus({ 
         status: 'success',
         lastSync: new Date(),
-        message: 'Synchronisation terminée'
+        message: validationResult.success ? 'Synchronisation validée' : 'Synchronisation terminée'
       });
       
       onSyncComplete?.();
@@ -83,8 +92,14 @@ const DriveIntegration: React.FC<DriveIntegrationProps> = ({
   // Monitoring des métriques du cache
   useEffect(() => {
     const updateMetrics = async () => {
-      const metrics = await driveCore.getCacheMetrics();
-      setCacheMetrics(metrics);
+      const driveMetrics = await driveCore.getCacheMetrics();
+      const aiMetrics = await aiService.getStats('validator');
+      
+      setCacheMetrics({
+        hitRate: (driveMetrics.hitRate + (aiMetrics?.cacheHits || 0)) / 2,
+        size: driveMetrics.size,
+        lastCleared: driveMetrics.lastCleared
+      });
     };
 
     const interval = setInterval(updateMetrics, 60000); // Mise à jour toutes les minutes
