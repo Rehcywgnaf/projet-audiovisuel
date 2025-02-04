@@ -1,13 +1,14 @@
-'use client';
+"use client";
+
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import DriveConfig from '../Core/DriveConfig';
+import { DriveConfig } from '@/services/drive';
 
 interface DriveAuthContextType {
   isAuthenticated: boolean;
   isInitializing: boolean;
   error: string | null;
-  login: () => Promise<void>;
-  logout: () => Promise<void>;
+  login: () => void;
+  logout: () => void;
   driveInstance: DriveConfig | null;
 }
 
@@ -33,12 +34,14 @@ export function DriveAuthProvider({ children }: { children: React.ReactNode }) {
       });
       setDriveInstance(driveConfig);
       
+      // Vérifier si un code d'authentification est présent dans l'URL
       const urlParams = new URLSearchParams(window.location.search);
       const authCode = urlParams.get('code');
       
       if (authCode) {
         await driveConfig.authenticate(authCode);
         setIsAuthenticated(true);
+        // Nettoyer l'URL
         window.history.replaceState({}, document.title, window.location.pathname);
       }
     } catch (err) {
@@ -48,7 +51,7 @@ export function DriveAuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const login = async () => {
+  const login = () => {
     try {
       if (!driveInstance) {
         throw new Error('Drive non initialisé');
@@ -60,7 +63,7 @@ export function DriveAuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const logout = async () => {
+  const logout = () => {
     try {
       if (!driveInstance) {
         throw new Error('Drive non initialisé');
