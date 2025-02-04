@@ -1,12 +1,17 @@
 import { DriveCore } from './DriveCore';
+import { ErrorHandling } from '../error/ErrorHandling';
+import { DriveOperation } from '../types';
 
 export class DriveSync {
   private static instance: DriveSync;
-  private syncQueue: Array<any> = [];
+  private syncQueue: DriveOperation[] = [];
+  private processing: boolean = false;
   private driveCore: DriveCore;
-  
+  private errorHandler: ErrorHandling;
+
   private constructor() {
-    this.driveCore = new DriveCore();
+    this.driveCore = DriveCore.getInstance();
+    this.errorHandler = ErrorHandling.getInstance();
   }
 
   public static getInstance(): DriveSync {
@@ -16,39 +21,58 @@ export class DriveSync {
     return DriveSync.instance;
   }
 
-  async addToQueue(operation: any) {
+  async addToQueue(operation: DriveOperation): Promise<void> {
     this.syncQueue.push(operation);
-    await this.processQueue();
+    if (!this.processing) {
+      await this.processQueue();
+    }
   }
 
-  private async processQueue() {
-    while (this.syncQueue.length > 0) {
-      const operation = this.syncQueue[0];
-      try {
+  private async processQueue(): Promise<void> {
+    if (this.processing || this.syncQueue.length === 0) {
+      return;
+    }
+
+    this.processing = true;
+
+    try {
+      while (this.syncQueue.length > 0) {
+        const operation = this.syncQueue[0];
         await this.executeOperation(operation);
         this.syncQueue.shift();
-      } catch (error) {
-        console.error('Sync error:', error);
-        break;
       }
+    } catch (error) {
+      this.errorHandler.handleError('SYNC_PROCESS_ERROR', error);
+    } finally {
+      this.processing = false;
     }
   }
 
-  private async executeOperation(operation: any) {
-    switch(operation.type) {
-      case 'upload':
-        return await this.driveCore.uploadFile(operation.data);
-      case 'update':
-        return await this.driveCore.updateFile(operation.data);
-      case 'delete':
-        return await this.driveCore.deleteFile(operation.data);
-      default:
-        throw new Error('Unknown operation type');
+  private async executeOperation(operation: DriveOperation): Promise<any> {
+    try {
+      return await this.driveCore.executeOperation(operation);
+    } catch (error) {
+      throw this.errorHandler.handleError('SYNC_OPERATION_ERROR', error);
     }
   }
 
-  async synchronize() {
-    return this.processQueue();
+  async synchronize(): Promise<void> {
+    if (this.syncQueue.length > 0) {
+      await this.processQueue();
+    }
+  }
+
+  getQueueLength(): number {
+    return this.syncQueue.length;
+  }
+
+  isProcessing(): boolean {
+    return this.processing;
+  }
+
+  clearQueue(): void {
+    this.syncQueue = [];
+    this.processing = false;
   }
 }
 
