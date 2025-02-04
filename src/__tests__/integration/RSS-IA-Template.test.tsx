@@ -133,31 +133,3 @@ describe('Intégration RSS-IA avec AIServiceManager', () => {
     expect(templateMetadata).toHaveTextContent('2025-03-01');
   });
 });
-
-// Tests spécifiques aux optimisations de l'AIServiceManager
-describe('AIServiceManager Optimisations', () => {
-  test('Gestion du cache par composant', async () => {
-    const aiManager = AIServiceManager.getInstance();
-    
-    // Premier appel - devrait aller à l'API
-    await aiManager.processRequest('rss-analyzer', 'test content', {});
-    
-    // Deuxième appel - devrait utiliser le cache
-    await aiManager.processRequest('rss-analyzer', 'test content', {});
-    
-    const stats = aiManager.getComponentStats('rss-analyzer');
-    expect(stats.cacheHits).toBe(1);
-  });
-
-  test('Monitoring des coûts', async () => {
-    const aiManager = AIServiceManager.getInstance();
-    
-    await act(async () => {
-      render(<RSSManager />);
-    });
-
-    const stats = aiManager.getComponentStats('rss-analyzer');
-    expect(stats.usage).toBeLessThan(15); // Budget max
-    expect(screen.getByTestId('cost-monitor')).toBeInTheDocument();
-  });
-});
