@@ -8,6 +8,7 @@ class DriveCore {
   private drive: any;
   private cacheManager: CacheManager;
   private errorHandler: ErrorHandling;
+  private lastSync: Date | null = null;
 
   private constructor() {
     this.initializeDrive();
@@ -138,6 +139,24 @@ class DriveCore {
     } catch (error) {
       throw this.errorHandler.handleError('OPERATION_ERROR', error);
     }
+  }
+
+  async sync(): Promise<void> {
+    try {
+      // Simulation de synchronisation
+      await new Promise(resolve => setTimeout(resolve, 500));
+      this.lastSync = new Date();
+    } catch (error) {
+      throw this.errorHandler.handleError('SYNC_ERROR', error);
+    }
+  }
+
+  async getCacheMetrics(): Promise<{ hitRate: number; size: number; lastCleared: Date }> {
+    return {
+      hitRate: 98.5, // Valeur simulée
+      size: this.cacheManager.getListenerCount('size'),
+      lastCleared: new Date()
+    };
   }
 
   private determineMimeType(filename: string): string {
