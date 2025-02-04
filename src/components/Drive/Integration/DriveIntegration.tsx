@@ -15,11 +15,10 @@
  */
 
 import React, { useEffect, useState } from 'react';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Card, CardHeader, CardTitle, CardContent } from '../../../components/ui/card';
+import { Alert, AlertDescription } from '../../../components/ui/alert';
 import { Loader2, CloudOff, CheckCircle, AlertTriangle } from 'lucide-react';
 import DriveCore from '../Core/DriveCore';
-import { AIServiceManager } from '@/services/ai/AIServiceManager';
 
 // Types
 interface SyncStatus {
@@ -53,11 +52,9 @@ const DriveIntegration: React.FC<DriveIntegrationProps> = ({
     size: 0,
     lastCleared: new Date()
   });
-  const [aiSuggestions, setAiSuggestions] = useState<string[]>([]);
 
   // Instance DriveCore
   const driveCore = DriveCore.getInstance();
-  const aiManager = AIServiceManager.getInstance();
 
   // Gestion de la synchronisation
   const handleSync = async () => {
@@ -94,16 +91,6 @@ const DriveIntegration: React.FC<DriveIntegrationProps> = ({
     updateMetrics();
 
     return () => clearInterval(interval);
-  }, []);
-
-  // Intégration IA pour les suggestions
-  useEffect(() => {
-    const loadAISuggestions = async () => {
-      const suggestions = await aiManager.getContextualSuggestions();
-      setAiSuggestions(suggestions);
-    };
-
-    loadAISuggestions();
   }, []);
 
   // Rendu des états de synchronisation
@@ -180,21 +167,6 @@ const DriveIntegration: React.FC<DriveIntegrationProps> = ({
                 </div>
               </div>
             </div>
-
-            {/* Suggestions IA */}
-            {aiSuggestions.length > 0 && (
-              <div className="p-4 bg-purple-50 rounded-lg">
-                <h3 className="font-medium mb-2">Suggestions IA</h3>
-                <ul className="space-y-2">
-                  {aiSuggestions.map((suggestion, index) => (
-                    <li key={index} className="flex items-center gap-2">
-                      <div className="w-2 h-2 rounded-full bg-purple-400" />
-                      {suggestion}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
           </div>
         </CardContent>
       </Card>
