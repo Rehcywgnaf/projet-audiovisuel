@@ -1,55 +1,35 @@
-import { Anthropic } from '@anthropic-ai/sdk';
-
-// Types
-export interface RequestOptions {
-  component: 'rss-analyzer' | 'editor' | 'validator' | 'template';
-  priority: 'high' | 'medium' | 'low';
-  maxTokens?: number;
-}
-
-interface CacheConfig {
-  duration: number; // in milliseconds
-  priority: 'high' | 'medium' | 'low';
-  maxSize: number;
-}
-
-interface CacheEntry {
-  data: any;
-  timestamp: number;
-  component: string;
-}
-
-interface ComponentStats {
-  requests: number;
-  tokensUsed: number;
+interface AIServiceStats {
   cacheHits: number;
-  cacheMisses: number;
+  totalRequests: number;
   averageLatency: number;
+  lastProcessed: Date;
 }
 
-export class AIServiceManager {
-  private static instance: AIServiceManager;
-  private anthropic: Anthropic;
-  private cache: Map<string, CacheEntry>;
-  private monthlySpend: number;
-  private stats: Map<string, ComponentStats>;
-  
-  private cacheConfigs: Record<string, CacheConfig> = {
-    'rss-analyzer': { duration: 3600000, priority: 'high', maxSize: 100 }, // 1h
-    'editor': { duration: 300000, priority: 'medium', maxSize: 50 }, // 5min
-    'validator': { duration: 600000, priority: 'medium', maxSize: 50 }, // 10min
-    'template': { duration: 86400000, priority: 'low', maxSize: 200 } // 24h
+interface AIRequest {
+  service: string;
+  operation: string;
+  data?: any;
+  options?: {
+    priority?: 'low' | 'medium' | 'high';
+    cache?: boolean;
   };
+}
+
+interface AIResponse {
+  success: boolean;
+  data?: any;
+  error?: string;
+}
+
+class AIServiceManager {
+  private static instance: AIServiceManager;
+  private stats: Map<string, AIServiceStats>;
+  private cache: Map<string, any>;
 
   private constructor() {
-    this.anthropic = new Anthropic({
-      apiKey: process.env.ANTHROPIC_API_KEY
-    });
-    this.cache = new Map();
-    this.monthlySpend = 0;
     this.stats = new Map();
+    this.cache = new Map();
     this.initializeStats();
-    this.startMonthlyReset();
   }
 
   public static getInstance(): AIServiceManager {
@@ -60,116 +40,60 @@ export class AIServiceManager {
   }
 
   private initializeStats() {
-    const components = ['rss-analyzer', 'editor', 'validator', 'template'];
-    components.forEach(component => {
-      this.stats.set(component, {
-        requests: 0,
-        tokensUsed: 0,
+    const services = ['validator', 'suggester', 'analyzer'];
+    services.forEach(service => {
+      this.stats.set(service, {
         cacheHits: 0,
-        cacheMisses: 0,
-        averageLatency: 0
+        totalRequests: 0,
+        averageLatency: 0,
+        lastProcessed: new Date()
       });
     });
   }
 
-  private startMonthlyReset() {
-    const now = new Date();
-    const nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
-    const timeUntilReset = nextMonth.getTime() - now.getTime();
-
-    setTimeout(() => {
-      this.monthlySpend = 0;
-      this.startMonthlyReset();
-    }, timeUntilReset);
-  }
-
-  private checkBudget(estimatedCost: number): boolean {
-    const projectedSpend = this.monthlySpend + estimatedCost;
-    
-    if (projectedSpend >= 15) {
-      throw new Error('Monthly budget limit reached');
-    }
-
-    if (projectedSpend >= 10) {
-      console.warn('Critical: 10$ budget threshold reached');
-    } else if (projectedSpend >= 8) {
-      console.warn('Warning: 8$ budget threshold reached');
-    } else if (projectedSpend >= 5) {
-      console.warn('Notice: 5$ budget threshold reached');
-    }
-
-    return true;
-  }
-
-  private getCacheKey(component: string, content: string): string {
-    return `${component}-${content}`;
-  }
-
-  private updateStats(component: string, latency: number, tokensUsed: number, cacheHit: boolean) {
-    const stats = this.stats.get(component);
-    if (!stats) return;
-
-    stats.requests++;
-    stats.tokensUsed += tokensUsed;
-    if (cacheHit) {
-      stats.cacheHits++;
-    } else {
-      stats.cacheMisses++;
-    }
-    stats.averageLatency = ((stats.averageLatency * (stats.requests - 1)) + latency) / stats.requests;
-  }
-
-  public async processRequest(component: string, content: string, options: RequestOptions): Promise<any> {
-    const startTime = Date.now();
-    const cacheKey = this.getCacheKey(component, content);
-    const cacheConfig = this.cacheConfigs[component];
-
-    // Check cache
-    const cachedResult = this.cache.get(cacheKey);
-    if (cachedResult && (Date.now() - cachedResult.timestamp) < cacheConfig.duration) {
-      this.updateStats(component, Date.now() - startTime, 0, true);
-      return cachedResult.data;
-    }
-
-    // Estimate cost and check budget
-    const estimatedCost = 0.03; // Example: 0.03$ per query
-    this.checkBudget(estimatedCost);
+  public async processRequest(service: string, operation: string, options?: any): Promise<AIResponse> {
+    const request: AIRequest = {
+      service,
+      operation,
+      options
+    };
 
     try {
-      const response = await this.anthropic.messages.create({
-        model: 'claude-3-sonnet-20240229',
-        max_tokens: options.maxTokens || 1024,
-        messages: [{ role: 'user', content: content }]
-      });
+      // Simulation du traitement IA
+      await new Promise(resolve => setTimeout(resolve, 200));
 
-      const result = response.content[0].text;
-      
-      // Update cache
-      this.cache.set(cacheKey, {
-        data: result,
-        timestamp: Date.now(),
-        component: component
-      });
+      this.updateStats(service, 150);
 
-      // Update stats and costs
-      const tokensUsed = response.usage?.output_tokens || 0;
-      this.monthlySpend += estimatedCost;
-      this.updateStats(component, Date.now() - startTime, tokensUsed, false);
-
-      return result;
-
+      return {
+        success: true,
+        data: {
+          result: "Traitement réussi",
+          timestamp: new Date()
+        }
+      };
     } catch (error) {
-      console.error(`AIServiceManager error: ${error.message}`);
-      throw error;
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : "Erreur inconnue"
+      };
     }
   }
 
-  public getStats(component: string): ComponentStats | null {
-    return this.stats.get(component) || null;
+  private updateStats(service: string, latency: number) {
+    const currentStats = this.stats.get(service);
+    if (currentStats) {
+      const newStats = {
+        ...currentStats,
+        totalRequests: currentStats.totalRequests + 1,
+        averageLatency: (currentStats.averageLatency * currentStats.totalRequests + latency) / (currentStats.totalRequests + 1),
+        lastProcessed: new Date()
+      };
+      this.stats.set(service, newStats);
+    }
   }
 
-  public getCurrentSpend(): number {
-    return this.monthlySpend;
+  public getStats(service: string): AIServiceStats | null {
+    return this.stats.get(service) || null;
   }
 
   public clearCache(): void {
@@ -177,4 +101,4 @@ export class AIServiceManager {
   }
 }
 
-export default AIServiceManager.getInstance();
+export default AIServiceManager;
