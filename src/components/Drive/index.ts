@@ -1,3 +1,3 @@
 export * from './Auth';
-export * from './Core';
+export * from './Core/coreExports';
 export { default as DriveIntegration } from './Integration/DriveIntegration';
