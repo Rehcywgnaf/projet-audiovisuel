@@ -1,6 +1,8 @@
 'use client';
 
-import { DriveAuth, DriveAuthProvider, DriveIntegration } from '@/components/Drive';
+import DriveAuth from '@/components/Drive/Auth/DriveAuth';
+import { DriveAuthProvider } from '@/components/Drive/Auth/DriveAuthProvider';
+import { DriveIntegration } from '@/components/Drive/Integration/DriveIntegration';
 import React from 'react';
 
 export default function Home() {
