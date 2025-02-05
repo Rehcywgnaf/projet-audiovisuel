@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { DriveConfig } from '@/components/Drive/Core/DriveConfig';
+import DriveConfig from '@/services/auth/DriveConfig';
 
 export async function POST(request: Request) {
   try {
