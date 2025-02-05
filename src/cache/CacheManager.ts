@@ -1,5 +1,5 @@
 import { CacheConfig, FileMetadata, DriveResponse } from '../types';
-import { EventSystem } from '../core/EventSystem';
+import  EventSystem  from '../core/EventSystem';
 
 interface CacheEntry<T> {
   data: T;

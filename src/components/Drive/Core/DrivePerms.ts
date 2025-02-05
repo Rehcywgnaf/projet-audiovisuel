@@ -1,4 +1,4 @@
-import { EventSystem } from '../../../core/EventSystem';
+import  EventSystem from '../../../core/EventSystem';
 import { Permission, PermissionLevel } from '../types';
 
 export class DrivePerms {

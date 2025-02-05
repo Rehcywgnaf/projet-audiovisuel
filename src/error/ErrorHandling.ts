@@ -1,4 +1,4 @@
-import { EventSystem } from '../core/EventSystem';
+import  EventSystem  from '../core/EventSystem';
 
 type ErrorCode = 
   | 'DRIVE_INIT_ERROR' 

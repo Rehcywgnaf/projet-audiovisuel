@@ -1,7 +1,8 @@
 import { google } from 'googleapis';
 import { DriveOperation, FileMetadata, DriveResponse, CacheConfig } from '../types';
-import { ErrorHandling } from '../../../error/ErrorHandling';
-import { CacheManager } from '../../../cache/CacheManager';
+import  ErrorHandling  from '../../../error/ErrorHandling';
+import  CacheManager  from '../../../cache/CacheManager';
+import EventSystem from '../../../core/EventSystem';
 
 class DriveCore {
   private static instance: DriveCore;
@@ -155,5 +156,7 @@ class DriveCore {
     };
 
     return mimeTypes[ext] || 'application/octet-stream';
+
   }
 }
+export default DriveCore;
