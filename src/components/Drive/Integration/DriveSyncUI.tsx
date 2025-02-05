@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { Clock, RotateCw, Activity, Calendar, Settings, AlertCircle } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -5,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Skeleton } from '@/components/ui/skeleton';
-import { DriveSync } from '../Core/DriveSync';
+import driveSyncClient from '../Core/driveSyncClient';
 
 interface SyncLog {
   id: string;
@@ -47,8 +49,6 @@ const DriveSyncUI: React.FC = () => {
     syncPermissions: true,
     syncMetadata: true
   });
-
-  const driveSync = DriveSync.getInstance();
 
   const formatDateTime = (date: Date): string => {
     return new Intl.DateTimeFormat('fr-FR', {
@@ -98,7 +98,7 @@ const DriveSyncUI: React.FC = () => {
     try {
       setSyncStatus(prev => ({ ...prev, status: 'active', currentOperation: 'complète' }));
       
-      await driveSync.addToQueue({
+      const response = await driveSyncClient.addToQueue({
         type: 'FULL_SYNC',
         settings: {
           includeVersions: settings.syncVersions,
@@ -106,6 +106,10 @@ const DriveSyncUI: React.FC = () => {
           includeMetadata: settings.syncMetadata
         }
       });
+
+      if (!response.success) {
+        throw new Error(response.error || 'Erreur inconnue');
+      }
 
       updateSyncStatus('complète');
     } catch (error) {
@@ -123,7 +127,7 @@ const DriveSyncUI: React.FC = () => {
   useEffect(() => {
     const initializeSync = async () => {
       try {
-        const status = await driveSync.getStatus();
+        const status = await driveSyncClient.getStatus();
         setSyncStatus(prevStatus => ({
           ...prevStatus,
           ...status
