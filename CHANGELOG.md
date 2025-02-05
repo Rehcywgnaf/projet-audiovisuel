@@ -1,5 +1,28 @@
 # SAPAV - Historique des modifications
 
+# [v2.0.7] - 2025-02-05
+
+### Architecture
+- Déplacement de DriveConfig vers services/auth pour une meilleure séparation des responsabilités
+- Passage de l'authentification Drive via des routes API dédiées
+- Interface d'authentification uniformisée pour tous les composants Drive
+
+### Ajout
+- Route API GET /api/drive/operation/auth-url
+- Route API POST /api/drive/operation/auth
+- Route API POST /api/drive/operation/init
+- Route API POST /api/drive/operation/logout
+
+### Modifications
+- Suppression de l'export public de DriveConfig depuis Drive/Core/index.ts
+- Mise à jour des chemins d'imports dans les composants d'authentification
+- Protection de l'accès direct à DriveConfig
+
+### Sécurité
+- Centralisation de l'authentification Drive au niveau des routes API
+- Validation systématique des paramètres de configuration
+- Gestion sécurisée des tokens d'authentification
+
 ## [2.0.6] - 2025-02-05
 
 ### Changed
