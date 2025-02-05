@@ -1,5 +1,21 @@
 # SAPAV - Historique des modifications
 
+## [2.0.6] - 2025-02-05
+
+### Changed
+- Déplacement des routes API Drive vers /src/app/api/
+- Séparation client/serveur des composants Drive
+- Suppression du dossier /app à la racine
+
+### Added
+- Nouveau client Drive pour les composants UI
+- Routes API : operation, sync, metrics
+- Documentation architecture client/serveur
+
+### Fixed
+- Correction imports inutilisés dans operation/route.ts
+- Résolution problème HTTP2 avec les APIs Google
+
 ## [2.0.5] - 2025-02-05
 
 ### Documentation
