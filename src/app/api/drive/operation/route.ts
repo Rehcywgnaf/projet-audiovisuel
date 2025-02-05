@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server';
-import DriveCore from '@/components/Drive/Core/DriveCore';
 import DriveSync from '@/components/Drive/Core/DriveSync';
 
 export async function POST(request: Request) {
