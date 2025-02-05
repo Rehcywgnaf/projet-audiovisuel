@@ -1,7 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { DriveConfig } from '../Core/DriveConfig';
+import authClient from './authClient';
 
 interface DriveAuthContextType {
   isAuthenticated: boolean;
@@ -9,7 +9,6 @@ interface DriveAuthContextType {
   error: string | null;
   login: () => void;
   logout: () => void;
-  driveInstance: DriveConfig | null;
 }
 
 const DriveAuthContext = createContext<DriveAuthContextType | null>(null);
@@ -18,7 +17,6 @@ export function DriveAuthProvider({ children }: { children: React.ReactNode }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isInitializing, setIsInitializing] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [driveInstance, setDriveInstance] = useState<DriveConfig | null>(null);
 
   useEffect(() => {
     initializeDrive();
@@ -26,21 +24,22 @@ export function DriveAuthProvider({ children }: { children: React.ReactNode }) {
 
   const initializeDrive = async () => {
     try {
-      const driveConfig = DriveConfig.getInstance();
-      await driveConfig.initialize({
+      await authClient.initialize({
         clientId: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID!,
         clientSecret: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_SECRET!,
         redirectUri: process.env.NEXT_PUBLIC_GOOGLE_REDIRECT_URI!
       });
-      setDriveInstance(driveConfig);
       
       // Vérifier si un code d'authentification est présent dans l'URL
       const urlParams = new URLSearchParams(window.location.search);
       const authCode = urlParams.get('code');
       
       if (authCode) {
-        await driveConfig.authenticate(authCode);
-        setIsAuthenticated(true);
+        const authStatus = await authClient.authenticate(authCode);
+        setIsAuthenticated(authStatus.isAuthenticated);
+        if (authStatus.error) {
+          setError(authStatus.error);
+        }
         // Nettoyer l'URL
         window.history.replaceState({}, document.title, window.location.pathname);
       }
@@ -51,24 +50,18 @@ export function DriveAuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const login = () => {
+  const login = async () => {
     try {
-      if (!driveInstance) {
-        throw new Error('Drive non initialisé');
-      }
-      const authUrl = driveInstance.getAuthUrl();
+      const authUrl = await authClient.getAuthUrl();
       window.location.href = authUrl;
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erreur de connexion');
     }
   };
 
-  const logout = () => {
+  const logout = async () => {
     try {
-      if (!driveInstance) {
-        throw new Error('Drive non initialisé');
-      }
-      driveInstance.logout();
+      await authClient.logout();
       setIsAuthenticated(false);
       setError(null);
     } catch (err) {
@@ -83,8 +76,7 @@ export function DriveAuthProvider({ children }: { children: React.ReactNode }) {
         isInitializing,
         error,
         login,
-        logout,
-        driveInstance
+        logout
       }}
     >
       {children}
