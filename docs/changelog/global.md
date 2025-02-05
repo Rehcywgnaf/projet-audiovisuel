@@ -1,5 +1,18 @@
 # SAPAV - Historique des modifications
 
+## [2.0.5] - 2025-02-05
+
+### Documentation
+- Mise à jour de architecture.md avec structure détaillée des imports Drive
+- Ajout du guide de développement Drive (/docs/technical/drive/development-guide.md)
+- Clarification des relations entre composants et leurs emplacements
+- Documentation des chemins d'imports corrects entre composants
+
+### Infrastructure
+- Migration des composants Drive vers leurs sous-dossiers respectifs
+- Suppression des duplications de composants
+- Correction des chemins d'imports dans les composants Drive
+
 ### [Version 2.0.4] - 2025-02-04
 
 #### Added
