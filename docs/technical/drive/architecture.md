@@ -2,7 +2,7 @@
 
 ## Vue d'ensemble
 
-L'architecture Drive de SAPAV est organisée en modules distincts avec une séparation claire client/serveur.
+L'architecture Drive de SAPAV est organisée en modules distincts avec une séparation claire des responsabilités entre services, API et composants.
 
 ### Structure des dossiers
 ```
@@ -10,9 +10,12 @@ L'architecture Drive de SAPAV est organisée en modules distincts avec une sépa
 ├── app/
 │   └── api/
 │       └── drive/              # Routes API Drive
-│           ├── operation/
-│           ├── sync/
-│           └── metrics/
+│           ├── operation/      # Opérations Drive (CRUD, auth)
+│           ├── sync/          # Synchronisation
+│           └── metrics/       # Métriques et monitoring
+├── services/
+│   └── auth/
+│       └── DriveConfig.ts     # Service authentification Drive
 ├── core/
 │   ├── EventSystem.ts         # Système d'événements global
 │   └── permissions/           # Gestion centralisée des permissions
@@ -22,125 +25,146 @@ L'architecture Drive de SAPAV est organisée en modules distincts avec une sépa
 │   └── ErrorHandling.ts
 ├── cache/                     # Système de cache
 │   └── CacheManager.ts
-├── components/Drive/
-│   ├── types.ts              # Types partagés Drive
-│   ├── Core/
-│   │   ├── DriveCore.ts      # Point d'entrée des opérations serveur
-│   │   ├── DriveConfig.ts    # Configuration Drive unifiée
-│   │   ├── DriveSync.ts      # Synchronisation temps réel
-│   │   ├── DrivePerms.ts     # Gestion permissions Drive
-│   │   └── index.ts          # Export unifié
-│   ├── Auth/
-│   │   ├── DriveAuth.tsx     # Interface d'authentification
-│   │   └── DriveAuthProvider.tsx
-│   └── Integration/
-│       ├── DriveIntegration.tsx   # Composant client principal
-│       ├── driveClient.ts        # Client API pour composants UI
-│       ├── DrivePermissionsUI.tsx
-│       └── DriveSyncUI.tsx
-### Relations et imports
-```typescript
-// Depuis DriveCore.ts
-import { ErrorHandling } from '../../../error/ErrorHandling';
-import { CacheManager } from '../../../cache/CacheManager';
-import { DriveOperation, FileMetadata } from '../types';
-// Depuis DrivePerms.ts
-import { EventSystem } from '../../../core/EventSystem';
-import { Permission, PermissionLevel } from '../types';
+└── components/Drive/
+    ├── types.ts              # Types partagés Drive
+    ├── Core/
+    │   ├── DriveCore.ts      # Point d'entrée des opérations serveur
+    │   ├── DriveSync.ts      # Synchronisation temps réel
+    │   ├── DrivePerms.ts     # Gestion permissions Drive
+    │   └── index.ts          # Export unifié
+    ├── Auth/
+    │   ├── DriveAuth.tsx     # Interface d'authentification
+    │   └── DriveAuthProvider.tsx
+    └── Integration/
+        ├── DriveIntegration.tsx   # Composant client principal
+        ├── driveClient.ts        # Client API pour composants UI
+        ├── DrivePermissionsUI.tsx
+        └── DriveSyncUI.tsx
 ```
-## Composants Principaux
+
+### Communication entre composants
+```mermaid
+graph TD
+    UI[Composants UI] -->|Appels API| API[Routes API]
+    API -->|Utilise| Auth[Services Auth]
+    API -->|Opérations| Core[Composants Core]
+    Core -->|Gestion erreurs| Error[ErrorHandling]
+    Core -->|Cache| Cache[CacheManager]
+    Core -->|Events| Events[EventSystem]
+```
+
+## Routes API
+
+### Authentication
+- `GET /api/drive/operation/auth-url` : Récupération URL d'authentification
+- `POST /api/drive/operation/auth` : Authentification avec code
+- `POST /api/drive/operation/init` : Initialisation configuration
+- `POST /api/drive/operation/logout` : Déconnexion
+
+### Synchronisation
+- `POST /api/drive/sync` : Démarrage synchronisation
+- `GET /api/drive/sync/status` : État synchronisation
+
+### Métriques
+- `GET /api/drive/metrics` : Métriques globales
+- `GET /api/drive/metrics/cache` : État du cache
+
+## Composants Core
+
 ### EventSystem (/core/EventSystem.ts)
-- Singleton pour la gestion des événements
-- Types d'événements:
-  - roleChanged
-  - permissionChanged
-  - driveFileUpdated
-  - driveFolderUpdated
+- Singleton gestionnaire d'événements
+- Types d'événements supportés :
+  - roleChanged : Changement de rôle utilisateur
+  - permissionChanged : Modification permissions
+  - driveFileUpdated : Mise à jour fichier
+  - driveFolderUpdated : Mise à jour dossier
+
 ### ErrorHandling (/error/ErrorHandling.ts)
 - Gestion centralisée des erreurs
-- Support de retry automatique
-- Logging structuré
-- Types d'erreurs spécifiques
+- Support retry automatique
+- Types d'erreurs :
+  - AUTH_ERROR : Erreurs authentification
+  - DRIVE_ERROR : Erreurs opérations Drive
+  - SYNC_ERROR : Erreurs synchronisation
+  - PERMISSION_ERROR : Erreurs permissions
+
 ### CacheManager (/cache/CacheManager.ts)
-- Gestion du cache pour les fichiers et métadonnées
-- Invalidation intelligente
-- Métriques de performance
-- Cache hiérarchique (fichiers, dossiers, métadonnées)
-### DriveCore (Composant)
-- Interface unifiée pour les opérations Drive
-- Gestion intelligente du cache via CacheManager
-- Gestion des erreurs via ErrorHandling
+- Cache hiérarchique :
+  - L1 : Métadonnées (TTL: 5min)
+  - L2 : Fichiers (TTL: 30min)
+  - L3 : Dossiers (TTL: 1h)
+- Métriques de performance :
+  - Hit rate cible > 95%
+  - Latence < 200ms
+  - Taille max 100MB
+
+### DriveCore (/components/Drive/Core/DriveCore.ts)
+- Interface unifiée opérations Drive
+- Gestion cache via CacheManager
 - Support complet MIME types
-- Monitoring des performances
-### DrivePerms (Composant)
-- Gestion des permissions Drive
-- Intégration avec EventSystem
-- Support des rôles et équipes
-- Héritage des permissions
-### DriveService (Service)
-- Interface simplifiée pour l'utilisation de Drive
-- Utilisation de DriveCore pour les opérations
-- Gestion de l'authentification
-### DrivePermissionsUI (Interface)
-- Gestion visuelle des permissions
-- Utilisation de DrivePerms
-- Support des règles globales
-- Interface utilisateur intuitive
-## Flux d'authentification
-1. Initialisation :
-   - Config Drive centralisée
-   - Vérification credentials
-   - Initialisation auth context
-2. Authentification :
-   - DriveAuthProvider gère l'état
-   - DriveAuth fournit l'UI
-   - DriveConfig gère les tokens
-   - OAuth2 avec Google
+- Monitoring performances :
+  - Latence opérations
+  - Utilisation cache
+  - Erreurs
+
+## Composants UI
+
+### DriveAuth
+- Interface authentification
+- Gestion état connexion
+- Affichage erreurs
+- Support multi-comptes
+
+### DriveIntegration
+- Vue principale intégration Drive
+- Monitoring temps réel :
+  - État synchronisation
+  - Métriques cache
+  - Performances
+
+### DrivePermissionsUI
+- Interface gestion permissions
+- Validation temps réel
+- Support rôles personnalisés
+- Historique modifications
+
 ## Sécurité
-### Gestion des Permissions
-- Centralisée via DrivePerms
-- Vérification systématique
-- Cache intelligent
-- Validation multi-niveaux
-### Règles Globales
-- Héritage automatique
-- Restrictions de partage
-- Protection des versions
-- Configuration flexible
-## Gestion du Cache
-### Stratégie
-- Cache par composant via CacheManager
-- Priorités configurables
-- Préchargement intelligent
-- Invalidation ciblée
-### Métriques Cibles
-- Hit rate > 95%
-- Temps de validation < 200ms
+
+### Circuit Breakers
+- Max 3 tentatives par opération
+- Cooldown 5sec entre tentatives
+- Reset auto après 1min sans erreur
+
+### Monitoring
+- Alertes temps réel
+- Seuils configurables :
+  - Erreurs : max 5% requêtes
+  - Latence : max 500ms
+  - Cache : min 90% hit rate
+
+### Validation
+- Requêtes API :
+  - Paramètres obligatoires
+  - Types corrects
+  - Valeurs autorisées
+- Fichiers :
+  - MIME types autorisés
+  - Taille max 100MB
+  - Nommage sécurisé
+
+## Métriques
+
+### Performances
+- Temps réponse < 200ms (95%)
 - Latence sync < 500ms
-## Tests et Validation
-### Tests Unitaires
-- Couverture > 90% core
-- Tests d'intégration
-- Scénarios d'erreur
-- Tests de sécurité
-### Tests de Performance
-- Validation temps réponse
-- Tests charge (50 docs/60s)
-- Mesures hit rate cache
-- Validation latence sync
-## Points d'attention
-### Performance
-- Cache stratifié
-- Optimisation batch
-- Préchargement intelligent
-- Métriques temps réel
-### Sécurité
-- Permissions centralisées
-- Audit complet
-- Validation stricte
-- Circuit breakers
-### Maintenance
-- Documentation à jour
-- Logs structurés
-- Tests automatisés
-- Monitoring proactif
+- Hit rate cache > 95%
+
+### Capacité
+- 50 opérations/min
+- 100MB cache max
+- 20 sync simultanées
+
+### Fiabilité
+- Disponibilité 99.9%
+- Max 1% erreurs
+- Recovery auto < 5sec
