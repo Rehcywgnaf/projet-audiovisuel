@@ -1,25 +1,11 @@
 'use client';
 
-/**
- * @file DriveIntegration.tsx
- * @description Point d'entrée unifié pour l'intégration Google Drive.
- * Gère la synchronisation bidirectionnelle, le cache intelligent et l'intégration IA.
- * 
- * Métriques cibles :
- * - Cache hit rate : 98%
- * - Temps de validation : 150-200ms
- * - Latence synchronisation : <500ms
- * 
- * @version 1.0.0
- * @since 2025-01-27
- */
-
 import React, { useEffect, useState } from 'react';
-import { Card, CardHeader, CardTitle, CardContent } from '../../../components/ui/card';
-import { Alert, AlertDescription } from '../../../components/ui/alert';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Loader2, CloudOff, CheckCircle, AlertTriangle } from 'lucide-react';
-import DriveCore from '../Core/DriveCore';
-import AIServiceManager from '../../../lib/AIServiceManager';
+import driveClient from './driveClient';
+import { AIServiceManager } from '@/lib/AIServiceManager';
 
 // Types
 interface SyncStatus {
@@ -39,7 +25,6 @@ interface DriveIntegrationProps {
   onError?: (error: Error) => void;
 }
 
-// Composant principal
 const DriveIntegration: React.FC<DriveIntegrationProps> = ({ 
   onSyncComplete, 
   onError 
@@ -54,8 +39,6 @@ const DriveIntegration: React.FC<DriveIntegrationProps> = ({
     lastCleared: new Date()
   });
 
-  // Instances
-  const driveCore = DriveCore.getInstance();
   const aiService = AIServiceManager.getInstance();
 
   // Gestion de la synchronisation
@@ -63,8 +46,8 @@ const DriveIntegration: React.FC<DriveIntegrationProps> = ({
     try {
       setSyncStatus({ status: 'syncing' });
       
-      // Synchronisation Drive
-      await driveCore.sync();
+      // Utilisation du client au lieu de DriveCore directement
+      const syncResult = await driveClient.sync();
       
       // Validation IA des documents
       const validationResult = await aiService.processRequest(
@@ -92,13 +75,13 @@ const DriveIntegration: React.FC<DriveIntegrationProps> = ({
   // Monitoring des métriques du cache
   useEffect(() => {
     const updateMetrics = async () => {
-      const driveMetrics = await driveCore.getCacheMetrics();
+      const metrics = await driveClient.getCacheMetrics();
       const aiMetrics = await aiService.getStats('validator');
       
       setCacheMetrics({
-        hitRate: (driveMetrics.hitRate + (aiMetrics?.cacheHits || 0)) / 2,
-        size: driveMetrics.size,
-        lastCleared: driveMetrics.lastCleared
+        hitRate: (metrics.hitRate + (aiMetrics?.cacheHits || 0)) / 2,
+        size: metrics.size,
+        lastCleared: metrics.lastCleared
       });
     };
 
