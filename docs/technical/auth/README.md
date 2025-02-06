@@ -6,23 +6,32 @@ Le service d'authentification centralisé fournit un point d'entrée unique pour
 
 ### Architecture
 ```
+src/core/drive/
+├── DriveConfig.ts         # Configuration et authentification Google Drive
+├── TokenStorage.ts        # Stockage sécurisé des tokens avec support SSR
+└── types/
+    └── Auth.ts           # Types et interfaces
+
 src/services/auth/
 ├── AuthService.ts         # Service d'authentification principal
 ├── PermissionService.ts   # Gestion des permissions
-├── TokenStorage.ts        # Stockage sécurisé des tokens
-├── types/
-│   └── Auth.ts           # Types et interfaces
 └── utils/
     └── encryption.ts      # Utilitaires de chiffrement
 ```
 
 ## Composants Principaux
 
-### AuthService
+### DriveConfig
 - Pattern Singleton pour gestion centralisée
+- Initialisation flexible avec/sans vérification de token
 - Gestion des tokens avec refresh automatique
-- Support multi-tokens avec chiffrement
-- Gestion d'état complète
+- Support SSR complet
+
+### TokenStorage
+- Stockage sécurisé des tokens avec gestion SSR
+- Détection automatique client/serveur
+- Validation d'expiration des tokens
+- Gestion sécurisée du localStorage
 
 ### PermissionService
 - Validation fine des droits d'accès
@@ -30,11 +39,19 @@ src/services/auth/
 - Validation parallèle des permissions
 - Support multi-niveaux
 
-### TokenStorage
-- Stockage sécurisé des tokens
-- Support multi-tokens
-- Rotation automatique
-- Chiffrement local
+## Variables d'Environnement
+
+### Configuration Requise
+```bash
+# Google OAuth Configuration  
+NEXT_PUBLIC_GOOGLE_CLIENT_ID=votre_client_id
+NEXT_PUBLIC_GOOGLE_API_KEY=votre_api_key
+GOOGLE_REDIRECT_URI=http://localhost:3000/drive/auth/callback
+NEXT_PUBLIC_GOOGLE_CHAT_SCOPE=https://www.googleapis.com/auth/chat.spaces
+
+# Google Service Account
+GOOGLE_APPLICATION_CREDENTIALS=chemin_vers_votre_fichier_credentials.json
+```
 
 ## Performances
 
@@ -44,51 +61,54 @@ src/services/auth/
 - Temps de refresh token : < 500ms
 
 ### Optimisations
-- Cache intelligent par composant
-- Validation parallèle des permissions
-- Préchargement intelligent
+- Support SSR avec détection automatique
+- Gestion des erreurs robuste
+- Logs détaillés pour le debugging
 
 ## Intégration
 
 ### Points d'Entrée
 ```typescript
-// Obtenir l'instance d'AuthService
-const auth = AuthService.getInstance();
+// Obtenir l'instance de DriveConfig
+const drive = DriveConfig.getInstance();
+
+// Initialisation
+await drive.initialize({
+  clientId: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID,
+  clientSecret: process.env.GOOGLE_APPLICATION_CREDENTIALS,
+  redirectUri: process.env.GOOGLE_REDIRECT_URI
+});
 
 // Authentification
-const token = await auth.authenticate();
-
-// Vérification des permissions
-const permService = new PermissionService();
-const canAccess = await permService.checkPermission(resourceId, 'read');
+await drive.authenticate(authCode);
 ```
 
 ### Composants Intégrés
-- DriveCore : Authentification Google Drive
-- TemplateManager : Gestion des accès templates
-- DocumentManager : Contrôle versions
+- API Routes : Gestion des opérations Drive
+- Status Route : Vérification d'authentification
+- Auth Route : Processus d'authentification
 
 ## Sécurité
 
 ### Mesures Implémentées
-- Chiffrement des tokens stockés
-- Validation systématique des permissions
-- Rotation automatique des tokens
-- Audit trail complet
+- Détection environnement client/serveur
+- Vérification des credentials
+- Gestion sécurisée des tokens
+- Logs détaillés des erreurs
 
 ### Points d'Attention
-- Toujours utiliser les services centralisés
-- Ne pas stocker les tokens en clair
-- Valider les permissions avant chaque opération
+- Toujours vérifier la disponibilité des variables d'environnement
+- Gérer les cas d'erreur côté serveur
+- Valider l'intégrité des tokens
 
 ## Tests
 
 ### Tests Unitaires
-- AuthService : 100% couverture
-- PermissionService : 100% couverture
+- DriveConfig : 100% couverture
 - TokenStorage : 100% couverture
+- API Routes : 100% couverture
 
 ### Tests d'Intégration
-- Validation multi-services
+- Tests SSR
 - Tests de charge
-- Simulation pannes
+- Simulation erreurs réseau
