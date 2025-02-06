@@ -10,47 +10,33 @@ L'architecture Drive de SAPAV est organisée en modules distincts avec une sépa
 ├── app/
 │   └── api/
 │       └── drive/              # Routes API Drive
-│           ├── operation/      # Opérations Drive (CRUD, auth)
-│           ├── sync/          # Synchronisation
-│           └── metrics/       # Métriques et monitoring
-├── services/
-│   └── auth/
-│       └── DriveConfig.ts     # Service authentification Drive
+│           └── operation/      # Opérations Drive
+│               ├── auth/      # Routes d'authentification
+│               ├── status/    # Vérification statut
+│               └── init/      # Initialisation
 ├── core/
-│   ├── EventSystem.ts         # Système d'événements global
-│   └── permissions/           # Gestion centralisée des permissions
-│       ├── PermissionManager.ts
-│       └── types.ts
-├── error/                     # Gestion des erreurs
-│   └── ErrorHandling.ts
-├── cache/                     # Système de cache
-│   └── CacheManager.ts
+│   └── drive/
+│       ├── DriveConfig.ts     # Configuration et authentification Drive
+│       ├── TokenStorage.ts    # Gestion sécurisée des tokens
+│       └── types/           # Types et interfaces
 └── components/Drive/
     ├── types.ts              # Types partagés Drive
-    ├── Core/
-    │   ├── DriveCore.ts      # Point d'entrée des opérations serveur
-    │   ├── DriveSync.ts      # Synchronisation temps réel
-    │   ├── DrivePerms.ts     # Gestion permissions Drive
-    │   └── index.ts          # Export unifié
     ├── Auth/
-    │   ├── DriveAuth.tsx     # Interface d'authentification
-    │   └── DriveAuthProvider.tsx
+    │   ├── DriveAuthPage.tsx  # Page d'authentification
+    │   └── DriveProvider.tsx  # Contexte d'authentification
     └── Integration/
-        ├── DriveIntegration.tsx   # Composant client principal
-        ├── driveClient.ts        # Client API pour composants UI
-        ├── DrivePermissionsUI.tsx
-        └── DriveSyncUI.tsx
+        └── DriveIntegrationPage.tsx   # Page d'intégration principale
 ```
 
 ### Communication entre composants
 ```mermaid
 graph TD
     UI[Composants UI] -->|Appels API| API[Routes API]
-    API -->|Utilise| Auth[Services Auth]
-    API -->|Opérations| Core[Composants Core]
-    Core -->|Gestion erreurs| Error[ErrorHandling]
-    Core -->|Cache| Cache[CacheManager]
-    Core -->|Events| Events[EventSystem]
+    API -->|Utilise| DC[DriveConfig]
+    DC -->|Stockage| TS[TokenStorage]
+    DC -->|OAuth| GA[Google Auth]
+    UI -->|Context| DP[DriveProvider]
+    DP -->|État| UI
 ```
 
 ## Routes API
@@ -58,113 +44,88 @@ graph TD
 ### Authentication
 - `GET /api/drive/operation/auth-url` : Récupération URL d'authentification
 - `POST /api/drive/operation/auth` : Authentification avec code
-- `POST /api/drive/operation/init` : Initialisation configuration
-- `POST /api/drive/operation/logout` : Déconnexion
+- `GET /api/drive/operation/status` : Vérification statut authentification
 
-### Synchronisation
-- `POST /api/drive/sync` : Démarrage synchronisation
-- `GET /api/drive/sync/status` : État synchronisation
-
-### Métriques
-- `GET /api/drive/metrics` : Métriques globales
-- `GET /api/drive/metrics/cache` : État du cache
+### Configuration
+```typescript
+# Variables d'environnement requises
+NEXT_PUBLIC_GOOGLE_CLIENT_ID=votre_client_id
+NEXT_PUBLIC_GOOGLE_API_KEY=votre_api_key
+GOOGLE_REDIRECT_URI=http://localhost:3000/drive/auth/callback
+GOOGLE_APPLICATION_CREDENTIALS=chemin_vers_credentials.json
+```
 
 ## Composants Core
 
-### EventSystem (/core/EventSystem.ts)
-- Singleton gestionnaire d'événements
-- Types d'événements supportés :
-  - roleChanged : Changement de rôle utilisateur
-  - permissionChanged : Modification permissions
-  - driveFileUpdated : Mise à jour fichier
-  - driveFolderUpdated : Mise à jour dossier
+### DriveConfig (/core/drive/DriveConfig.ts)
+- Pattern Singleton pour une instance unique
+- Initialisation flexible avec ou sans vérification token
+- Gestion complète de l'authentification OAuth2
+- Types d'opérations :
+  - Initialisation avec credentials
+  - Génération URL d'authentification
+  - Authentification avec code
+  - Refresh des tokens
+  - Déconnexion
 
-### ErrorHandling (/error/ErrorHandling.ts)
-- Gestion centralisée des erreurs
-- Support retry automatique
-- Types d'erreurs :
-  - AUTH_ERROR : Erreurs authentification
-  - DRIVE_ERROR : Erreurs opérations Drive
-  - SYNC_ERROR : Erreurs synchronisation
-  - PERMISSION_ERROR : Erreurs permissions
-
-### CacheManager (/cache/CacheManager.ts)
-- Cache hiérarchique :
-  - L1 : Métadonnées (TTL: 5min)
-  - L2 : Fichiers (TTL: 30min)
-  - L3 : Dossiers (TTL: 1h)
-- Métriques de performance :
-  - Hit rate cible > 95%
-  - Latence < 200ms
-  - Taille max 100MB
-
-### DriveCore (/components/Drive/Core/DriveCore.ts)
-- Interface unifiée opérations Drive
-- Gestion cache via CacheManager
-- Support complet MIME types
-- Monitoring performances :
-  - Latence opérations
-  - Utilisation cache
-  - Erreurs
+### TokenStorage (/core/drive/TokenStorage.ts)
+- Gestion sécurisée des tokens
+- Support complet SSR avec détection d'environnement
+- Fonctionnalités :
+  - Stockage sécurisé
+  - Récupération des tokens
+  - Vérification d'expiration
+  - Suppression des tokens
 
 ## Composants UI
 
-### DriveAuth
-- Interface authentification
-- Gestion état connexion
-- Affichage erreurs
-- Support multi-comptes
+### DriveAuthPage
+- Interface utilisateur d'authentification
+- Gestion des états :
+  - Non authentifié
+  - En cours d'authentification
+  - Authentifié
+  - Erreur
+- Affichage des erreurs
+- Support multi-étapes
 
-### DriveIntegration
-- Vue principale intégration Drive
-- Monitoring temps réel :
-  - État synchronisation
-  - Métriques cache
-  - Performances
-
-### DrivePermissionsUI
-- Interface gestion permissions
-- Validation temps réel
-- Support rôles personnalisés
-- Historique modifications
+### DriveProvider
+- Contexte d'authentification global
+- État partagé entre composants
+- Vérification initiale du statut
+- Propagation des mises à jour
 
 ## Sécurité
 
-### Circuit Breakers
-- Max 3 tentatives par opération
-- Cooldown 5sec entre tentatives
-- Reset auto après 1min sans erreur
-
-### Monitoring
-- Alertes temps réel
-- Seuils configurables :
-  - Erreurs : max 5% requêtes
-  - Latence : max 500ms
-  - Cache : min 90% hit rate
+### Gestion des Erreurs
+- Validation des credentials
+- Détection environnement serveur/client
+- Gestion des timeouts
+- Logs détaillés
 
 ### Validation
-- Requêtes API :
-  - Paramètres obligatoires
-  - Types corrects
-  - Valeurs autorisées
-- Fichiers :
-  - MIME types autorisés
-  - Taille max 100MB
-  - Nommage sécurisé
+- Variables d'environnement :
+  - Présence des credentials
+  - Format des variables
+  - URIs valides
+- Tokens :
+  - Stockage sécurisé
+  - Vérification d'expiration
+  - Nettoyage automatique
 
-## Métriques
+## Performances
 
-### Performances
-- Temps réponse < 200ms (95%)
-- Latence sync < 500ms
-- Hit rate cache > 95%
+### Client-Side
+- Temps de chargement < 200ms
+- Rendu des composants < 100ms
+- Gestion d'état optimisée
 
-### Capacité
-- 50 opérations/min
-- 100MB cache max
-- 20 sync simultanées
+### Server-Side
+- Détection rapide < 5ms
+- Validation token < 100ms
+- Redirection < 300ms
 
 ### Fiabilité
 - Disponibilité 99.9%
-- Max 1% erreurs
-- Recovery auto < 5sec
+- Recovery automatique
+- Gestion des erreurs réseau
