@@ -8,10 +8,11 @@ interface DriveConfigOptions {
 
 export class DriveConfig {
   private static instance: DriveConfig;
-  private clientId: string = '';
-  private clientSecret: string = '';
-  private redirectUri: string = '';
+  private clientId: string = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || '';
+  private clientSecret: string = process.env.GOOGLE_CLIENT_SECRET || '';
+  private redirectUri: string = process.env.NEXT_PUBLIC_GOOGLE_REDIRECT_URI || '';
   private accessToken: string | null = null;
+  private initialized: boolean = false;
 
   private constructor() {}
 
@@ -22,13 +23,29 @@ export class DriveConfig {
     return DriveConfig.instance;
   }
 
-  async initialize(options: DriveConfigOptions): Promise<void> {
-    this.clientId = options.clientId;
-    this.clientSecret = options.clientSecret;
-    this.redirectUri = options.redirectUri;
+  async initialize(options?: DriveConfigOptions): Promise<void> {
+    if (options) {
+      this.clientId = options.clientId;
+      this.clientSecret = options.clientSecret;
+      this.redirectUri = options.redirectUri;
+    }
+
+    if (!this.clientId || !this.clientSecret || !this.redirectUri) {
+      throw new Error('Client configuration is missing or incomplete');
+    }
+
+    this.initialized = true;
+  }
+
+  private checkInitialized() {
+    if (!this.initialized) {
+      throw new Error('DriveConfig not initialized. Call initialize() first.');
+    }
   }
 
   getAuthUrl(): string {
+    this.checkInitialized();
+
     const scopes = [
       'https://www.googleapis.com/auth/drive.file',
       'https://www.googleapis.com/auth/drive.metadata.readonly'
@@ -47,6 +64,8 @@ export class DriveConfig {
   }
 
   async authenticate(code: string): Promise<void> {
+    this.checkInitialized();
+
     try {
       const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
         method: 'POST',
@@ -63,13 +82,13 @@ export class DriveConfig {
       });
 
       if (!tokenResponse.ok) {
-        throw new Error('Erreur d\'authentification');
+        throw new Error('Authentication error');
       }
 
       const tokenData = await tokenResponse.json();
       this.accessToken = tokenData.access_token;
     } catch (error) {
-      console.error('Erreur d\'authentification:', error);
+      console.error('Authentication error:', error);
       throw error;
     }
   }
@@ -79,8 +98,19 @@ export class DriveConfig {
   }
 
   getAccessToken(): string | null {
+    this.checkInitialized();
     return this.accessToken;
+  }
+
+  isInitialized(): boolean {
+    return this.initialized;
   }
 }
 
-export default DriveConfig.getInstance();
+// Initialise l'instance avec les valeurs par défaut
+const instance = DriveConfig.getInstance();
+if (!instance.isInitialized()) {
+  instance.initialize().catch(console.error);
+}
+
+export default instance;
