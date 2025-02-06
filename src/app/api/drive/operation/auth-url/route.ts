@@ -4,14 +4,13 @@ import { DriveConfig } from '@/core/drive/DriveConfig';
 export async function GET() {
   try {
     const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
-    // Le secret sera maintenant extrait des credentials du compte de service
-    const clientSecret = process.env.GOOGLE_APPLICATION_CREDENTIALS;
+    const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
     const redirectUri = process.env.GOOGLE_REDIRECT_URI || 'http://localhost:3000/drive/auth/callback';
 
     if (!clientId || !clientSecret) {
       console.error('Variables d\'environnement manquantes:', {
         hasClientId: !!clientId,
-        hasApplicationCredentials: !!clientSecret,
+        hasClientSecret: !!clientSecret,
         redirectUri
       });
       return NextResponse.json(
@@ -40,7 +39,7 @@ export async function GET() {
         details: error instanceof Error ? error.stack : undefined,
         env: {
           hasClientId: !!process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID,
-          hasApplicationCredentials: !!process.env.GOOGLE_APPLICATION_CREDENTIALS,
+          hasClientSecret: !!process.env.GOOGLE_CLIENT_SECRET,
           redirectUri: process.env.GOOGLE_REDIRECT_URI
         }
       },
