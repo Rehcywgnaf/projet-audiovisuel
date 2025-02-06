@@ -3,7 +3,6 @@ import { DriveConfig } from '@/core/drive/DriveConfig';
 
 export async function GET(request: Request) {
   try {
-    // Récupération du code d'autorisation depuis l'URL
     const url = new URL(request.url);
     const code = url.searchParams.get('code');
     
@@ -12,8 +11,26 @@ export async function GET(request: Request) {
       return NextResponse.redirect(new URL('/?error=no_code', request.url));
     }
 
-    // Initialisation et authentification
+    // Récupération des credentials
+    const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
+    const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
+    const redirectUri = process.env.GOOGLE_REDIRECT_URI || 'http://localhost:3000/drive/auth/callback';
+
+    // Vérification des credentials
+    if (!clientId || !clientSecret) {
+      console.error('Missing credentials:', { hasClientId: !!clientId, hasClientSecret: !!clientSecret });
+      return NextResponse.redirect(new URL('/?error=missing_credentials', request.url));
+    }
+
+    // Initialisation du DriveConfig
     const driveConfig = DriveConfig.getInstance();
+    await driveConfig.initialize({
+      clientId,
+      clientSecret,
+      redirectUri
+    }, false);
+
+    // Authentification avec le code
     await driveConfig.authenticate(code);
     
     // Redirection vers la page principale en cas de succès
