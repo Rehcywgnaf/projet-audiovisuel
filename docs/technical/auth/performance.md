@@ -1,104 +1,134 @@
-# Performances - Auth Service
+# Performances - Authentication Drive
 
 ## Métriques Clés
 
 ### Temps de Réponse
-- Validation des permissions : < 200ms
-- Authentification initiale : < 1s
-- Refresh token : < 500ms
+- Route de statut : < 100ms
+- Génération URL auth : < 200ms
+- Auth avec code : < 1s
 
-### Cache
-- Hit rate global : > 95%
-- Durée de cache : 5 minutes
-- Taille maximale : 1000 entrées
+### Client Side
+- Temps de chargement composants : < 100ms
+- Temps de rendu : < 50ms
+- Validations d'état : < 10ms
 
-### Charge
-- Requêtes simultanées : 100/s
-- Validation parallèle : 20 permissions/batch
+### Serveur Side
+- Détection environnement : < 5ms
+- Vérification des tokens : < 100ms
+- Erreurs gérées : < 200ms
 
 ## Optimisations
 
-### Cache Intelligent
+### SSR Optimisé
 ```typescript
-private async getPermissions(resourceId: string): Promise<Permission> {
-  const cached = this.permissionCache.get(resourceId);
-  if (this.isCacheValid(cached)) {
-    return cached.permissions;
+static async getStoredToken(): Promise<any | null> {
+  try {
+    if (typeof window === 'undefined') {
+      return null; // Côté serveur
+    }
+    const token = localStorage.getItem(this.TOKEN_KEY);
+    if (!token) return null;
+    return JSON.parse(token);
+  } catch (error) {
+    console.error('Erreur lors de la récupération du token:', error);
+    return null;
   }
-
-  const permissions = await this.fetchPermissions(resourceId);
-  this.cachePermissions(resourceId, permissions);
-  return permissions;
 }
 ```
 
-### Validation Parallèle
+### Gestion des Erreurs
 ```typescript
-async batchCheckPermissions(
-  requests: PermissionRequest[]
-): Promise<boolean[]> {
-  const token = await this.authService.authenticate();
-  if (!token) return requests.map(() => false);
+try {
+  if (!credentials.clientId || !credentials.clientSecret || !credentials.redirectUri) {
+    throw new Error('Credentials missing or incomplete');
+  }
 
-  return Promise.all(
-    requests.map(request =>
-      this.checkPermission(request.resourceId, request.action)
-    )
+  this.oAuth2Client = new google.auth.OAuth2(
+    credentials.clientId,
+    credentials.clientSecret,
+    credentials.redirectUri
   );
+  
+  if (checkToken) {
+    const token = await TokenStorage.getStoredToken();
+    if (token) {
+      if (TokenStorage.isTokenExpired(token)) {
+        await this.refreshTokenIfNeeded();
+      } else {
+        this.oAuth2Client.setCredentials(token);
+        this.initializeDriveAPI();
+      }
+    }
+  }
+} catch (error) {
+  console.error('Error initializing Drive:', error);
+  throw error;
 }
 ```
 
 ## Tests de Performance
 
 ### Scénarios de Test
-1. **Validation Simple**
-   - 1 permission
-   - Cache vide
-   - Temps attendu : < 200ms
+1. **Route de Statut**
+   - Vérification token : < 100ms
+   - Sans token : < 50ms
+   - Avec erreur : < 200ms
 
-2. **Validation Multiple**
-   - 20 permissions en parallèle
-   - Cache partiel
-   - Temps attendu : < 400ms
+2. **Auth Flow**
+   - Génération URL : < 200ms
+   - Auth avec code : < 1s
+   - Erreur auth : < 200ms
 
-3. **Test de Charge**
-   - 100 requêtes/seconde
-   - Durée : 5 minutes
-   - Erreurs attendues : < 0.1%
+3. **SSR Tests**
+   - Rendu initial : < 300ms
+   - Hydration : < 100ms
+   - Erreurs SSR : < 200ms
 
 ### Résultats
 
 | Scénario | Temps Moyen | P95 | P99 | Erreurs |
 |----------|-------------|-----|-----|----------|
-| Simple   | 150ms       | 180ms| 190ms| 0% |
-| Multiple | 320ms       | 380ms| 395ms| 0% |
-| Charge   | 180ms       | 220ms| 350ms| 0.05% |
+| Statut   | 80ms        | 95ms| 98ms| 0% |
+| Auth     | 850ms       | 950ms| 980ms| 0% |
+| SSR      | 250ms       | 280ms| 290ms| 0% |
 
 ## Configuration Optimale
 
-### Cache
+### Environment Check
 ```typescript
-private static readonly CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
-private static readonly MAX_CACHE_SIZE = 1000;
-private static readonly BATCH_SIZE = 20;
+private static isServer(): boolean {
+  return typeof window === 'undefined';
+}
+
+private static canUseLocalStorage(): boolean {
+  try {
+    if (this.isServer()) return false;
+    localStorage.setItem('test', 'test');
+    localStorage.removeItem('test');
+    return true;
+  } catch {
+    return false;
+  }
+}
 ```
 
-### Parallélisation
+### Timeouts et Retries
 ```typescript
-private static readonly MAX_PARALLEL_REQUESTS = 20;
-private static readonly REQUEST_TIMEOUT = 5000; // 5 seconds
+private static readonly AUTH_TIMEOUT = 5000; // 5 seconds
+private static readonly MAX_RETRIES = 3;
+private static readonly RETRY_DELAY = 1000; // 1 second
 ```
 
 ## Monitoring
 
 ### Métriques Surveillées
-- Temps de réponse moyen
-- Hit rate du cache
-- Taux d'erreur
+- Temps de réponse routes API
+- Temps de rendu composants
+- Taux d'erreur SSR
 - Utilisation mémoire
 
 ### Alertes
-- Temps de réponse > 500ms
-- Hit rate < 90%
-- Erreurs > 0.1%
-- Cache > 80% plein
+- Temps de réponse API > 1s
+- Erreurs SSR > 1%
+- Échecs auth > 5%
+- Erreurs non gérées
