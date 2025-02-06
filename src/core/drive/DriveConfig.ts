@@ -2,14 +2,14 @@ import { google, drive_v3 } from 'googleapis';
 import { OAuth2Client } from 'google-auth-library';
 import { TokenStorage } from './TokenStorage';
 
-class DriveConfig {
+export class DriveConfig {
   private static instance: DriveConfig;
   private oAuth2Client: OAuth2Client | null = null;
   private driveAPI: drive_v3.Drive | null = null;
 
   private constructor() {}
 
-  static getInstance(): DriveConfig {
+  public static getInstance(): DriveConfig {
     if (!DriveConfig.instance) {
       DriveConfig.instance = new DriveConfig();
     }
@@ -123,6 +123,3 @@ class DriveConfig {
     this.driveAPI = null;
   }
 }
-
-const driveConfig = DriveConfig.getInstance();
-export default driveConfig;
