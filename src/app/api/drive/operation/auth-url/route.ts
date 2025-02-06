@@ -1,9 +1,7 @@
 import { NextResponse } from 'next/server';
-import DriveConfig from '@/core/drive/DriveConfig';
+import { DriveConfig } from '@/core/drive/DriveConfig';
 
 export async function GET() {
-  const driveConfig = DriveConfig.getInstance();
-
   try {
     const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
     const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
@@ -17,12 +15,14 @@ export async function GET() {
       );
     }
 
+    const driveConfig = DriveConfig.getInstance();
+
     // Initialisation sans vérification du token pour obtenir juste l'URL d'auth
     await driveConfig.initialize({
       clientId,
       clientSecret,
       redirectUri
-    }, false); // false = ne pas vérifier/rafraîchir le token
+    }, false);
 
     const authUrl = driveConfig.getAuthUrl();
     return NextResponse.json({ url: authUrl });
