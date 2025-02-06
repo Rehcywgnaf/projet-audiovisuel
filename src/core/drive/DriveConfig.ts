@@ -53,13 +53,17 @@ export class DriveConfig {
     if (!this.oAuth2Client) {
       throw new Error('OAuth2Client not initialized');
     }
+
+    const scopes = [
+      'https://www.googleapis.com/auth/drive.file',
+      'https://www.googleapis.com/auth/drive.metadata'
+    ];
+
     return this.oAuth2Client.generateAuthUrl({
       access_type: 'offline',
-      scope: [
-        'https://www.googleapis.com/auth/drive.file',
-        'https://www.googleapis.com/auth/drive.metadata'
-      ],
-      prompt: 'consent'
+      scope: scopes,
+      prompt: 'consent',
+      include_granted_scopes: true
     });
   }
 
