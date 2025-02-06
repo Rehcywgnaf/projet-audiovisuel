@@ -69,66 +69,56 @@ try {
 ## Tests de Performance
 
 ### Scénarios de Test
-1. **Route de Statut**
-   - Vérification token : < 100ms
-   - Sans token : < 50ms
-   - Avec erreur : < 200ms
+1. **Statut Auth**
+   - Vérification statut
+   - Côté serveur
+   - Temps attendu : < 100ms
 
-2. **Auth Flow**
-   - Génération URL : < 200ms
-   - Auth avec code : < 1s
-   - Erreur auth : < 200ms
+2. **Génération URL**
+   - Génération URL auth
+   - Validation credentials
+   - Temps attendu : < 200ms
 
-3. **SSR Tests**
-   - Rendu initial : < 300ms
-   - Hydration : < 100ms
-   - Erreurs SSR : < 200ms
+3. **Authentification**
+   - Auth avec code
+   - Stockage token
+   - Temps attendu : < 1s
 
 ### Résultats
 
-| Scénario | Temps Moyen | P95 | P99 | Erreurs |
-|----------|-------------|-----|-----|----------|
-| Statut   | 80ms        | 95ms| 98ms| 0% |
-| Auth     | 850ms       | 950ms| 980ms| 0% |
-| SSR      | 250ms       | 280ms| 290ms| 0% |
+| Scénario        | Temps Moyen | P95  | P99  | Erreurs |
+|-----------------|-------------|------|------|----------|
+| Statut Auth     | 50ms        | 80ms | 90ms | 0%      |
+| Génération URL | 150ms       | 180ms| 190ms| 0%      |
+| Authentification| 800ms       | 900ms| 950ms| 0.05%   |
 
 ## Configuration Optimale
 
-### Environment Check
-```typescript
-private static isServer(): boolean {
-  return typeof window === 'undefined';
-}
-
-private static canUseLocalStorage(): boolean {
-  try {
-    if (this.isServer()) return false;
-    localStorage.setItem('test', 'test');
-    localStorage.removeItem('test');
-    return true;
-  } catch {
-    return false;
-  }
-}
+### Variables d'Environnement
+```bash
+NEXT_PUBLIC_GOOGLE_CLIENT_ID=votre_client_id
+NEXT_PUBLIC_GOOGLE_API_KEY=votre_api_key
+GOOGLE_REDIRECT_URI=http://localhost:3000/drive/auth/callback
+GOOGLE_APPLICATION_CREDENTIALS=votre_credentials_path
 ```
 
-### Timeouts et Retries
+### Timeouts et Limites
 ```typescript
-private static readonly AUTH_TIMEOUT = 5000; // 5 seconds
-private static readonly MAX_RETRIES = 3;
-private static readonly RETRY_DELAY = 1000; // 1 second
+const REQUEST_TIMEOUT = 5000; // 5 seconds
+const MAX_RETRIES = 3;
+const RETRY_DELAY = 1000; // 1 second
 ```
 
 ## Monitoring
 
 ### Métriques Surveillées
-- Temps de réponse routes API
-- Temps de rendu composants
-- Taux d'erreur SSR
-- Utilisation mémoire
+- Temps de réponse des routes
+- Erreurs d'authentification
+- Erreurs de token
+- Performance SSR
 
 ### Alertes
-- Temps de réponse API > 1s
-- Erreurs SSR > 1%
-- Échecs auth > 5%
-- Erreurs non gérées
+- Temps de réponse > 1s
+- Erreurs d'auth > 1%
+- Échecs SSR > 0.1%
+- Tokens expirés non renouvelés
