@@ -1,5 +1,20 @@
 # SAPAV - Historique des modifications
 
+## [2.0.8] - 2025-02-06
+
+### Fixed
+- Correction des erreurs 500 sur les routes d'authentification Drive
+  - Gestion de localStorage côté serveur dans TokenStorage
+  - Adaptation aux variables d'environnement existantes
+  - Initialisation de DriveConfig avant authentification
+  - Meilleure gestion et journalisation des erreurs
+
+### Changed
+- Migration des composants d'authentification Drive vers core/drive/
+  - Déplacement de DriveConfig et TokenStorage
+  - Amélioration de la gestion des erreurs et des logs
+  - Adaptation à l'environnement serveur de Next.js
+
 # [2.0.7] - 2025-02-05
 
 ### Architecture
