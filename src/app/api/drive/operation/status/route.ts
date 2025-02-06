@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import DriveConfig from '@/services/auth/DriveConfig';
+import DriveConfig from '@/core/drive/DriveConfig';
 
 export async function GET() {
   try {
