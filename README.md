@@ -329,15 +329,20 @@ cd sapav
 npm install
 ```
 
-3. Configurer les variables d'environnement
+3. Configuration des Variables d'Environnement
 ```bash
-cp .env.example .env
-# Éditer .env avec vos paramètres
-# - NEXT_PUBLIC_GOOGLE_CLIENT_ID pour OAuth
-# - NEXT_PUBLIC_GOOGLE_API_KEY pour Drive
-# - NEXT_PUBLIC_GOOGLE_CHAT_SCOPE pour Chat
-```
+# Google OAuth Configuration  
+NEXT_PUBLIC_GOOGLE_CLIENT_ID=votre_client_id
+NEXT_PUBLIC_GOOGLE_API_KEY=votre_api_key
+GOOGLE_REDIRECT_URI=http://localhost:3000/drive/auth/callback
+NEXT_PUBLIC_GOOGLE_CHAT_SCOPE=https://www.googleapis.com/auth/chat.spaces
 
+# Application Configuration 
+NODE_ENV=development 
+PORT=3000
+
+# Google Service Account
+GOOGLE_APPLICATION_CREDENTIALS=chemin_vers_votre_fichier_credentials.json
 4. Lancer l'application
 ```bash
 npm run dev
