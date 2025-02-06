@@ -1,34 +1,14 @@
-import CryptoJS from 'crypto-js';
-
 export class TokenStorage {
   private static readonly TOKEN_KEY = 'drive_oauth_token';
-  private static readonly ENCRYPTION_KEY = process.env.TOKEN_ENCRYPTION_KEY || 'default-key';
-
-  static async storeToken(token: any): Promise<void> {
-    try {
-      const encryptedToken = CryptoJS.AES.encrypt(
-        JSON.stringify(token),
-        this.ENCRYPTION_KEY
-      ).toString();
-      
-      localStorage.setItem(this.TOKEN_KEY, encryptedToken);
-    } catch (error) {
-      console.error('Erreur lors du stockage du token:', error);
-      throw error;
-    }
-  }
 
   static async getStoredToken(): Promise<any | null> {
     try {
-      const encryptedToken = localStorage.getItem(this.TOKEN_KEY);
-      if (!encryptedToken) return null;
-
-      const decryptedToken = CryptoJS.AES.decrypt(
-        encryptedToken,
-        this.ENCRYPTION_KEY
-      ).toString(CryptoJS.enc.Utf8);
-
-      return JSON.parse(decryptedToken);
+      if (typeof window === 'undefined') {
+        return null; // Côté serveur
+      }
+      const token = localStorage.getItem(this.TOKEN_KEY);
+      if (!token) return null;
+      return JSON.parse(token);
     } catch (error) {
       console.error('Erreur lors de la récupération du token:', error);
       return null;
@@ -37,11 +17,22 @@ export class TokenStorage {
 
   static isTokenExpired(token: any): boolean {
     if (!token || !token.expiry_date) return true;
-    return new Date().getTime() > token.expiry_date;
+    return Date.now() > token.expiry_date;
+  }
+
+  static async storeToken(token: any): Promise<void> {
+    try {
+      if (typeof window === 'undefined') return; // Côté serveur
+      localStorage.setItem(this.TOKEN_KEY, JSON.stringify(token));
+    } catch (error) {
+      console.error('Erreur lors du stockage du token:', error);
+      throw error;
+    }
   }
 
   static removeToken(): void {
     try {
+      if (typeof window === 'undefined') return; // Côté serveur
       localStorage.removeItem(this.TOKEN_KEY);
     } catch (error) {
       console.error('Erreur lors de la suppression du token:', error);
