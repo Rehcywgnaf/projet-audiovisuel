@@ -20,32 +20,40 @@ export class DriveConfig {
     clientId: string;
     clientSecret: string;
     redirectUri: string;
-  }): Promise<void> {
+  }, checkToken: boolean = true): Promise<void> {
     try {
+      if (!credentials.clientId || !credentials.clientSecret || !credentials.redirectUri) {
+        throw new Error('Credentials missing or incomplete');
+      }
+
+      console.log('Initializing OAuth2Client with credentials...');
       this.oAuth2Client = new google.auth.OAuth2(
         credentials.clientId,
         credentials.clientSecret,
         credentials.redirectUri
       );
       
-      const token = await TokenStorage.getStoredToken();
-      if (token) {
-        if (TokenStorage.isTokenExpired(token)) {
-          await this.refreshTokenIfNeeded();
-        } else {
-          this.oAuth2Client.setCredentials(token);
-          this.initializeDriveAPI();
+      if (checkToken) {
+        console.log('Checking stored token...');
+        const token = await TokenStorage.getStoredToken();
+        if (token) {
+          if (TokenStorage.isTokenExpired(token)) {
+            await this.refreshTokenIfNeeded();
+          } else {
+            this.oAuth2Client.setCredentials(token);
+            this.initializeDriveAPI();
+          }
         }
       }
     } catch (error) {
-      console.error('Erreur lors de l\'initialisation de Drive:', error);
-      throw new Error('Échec de l\'initialisation de Drive');
+      console.error('Error initializing Drive:', error);
+      throw error;
     }
   }
 
   async authenticate(authCode: string): Promise<void> {
     if (!this.oAuth2Client) {
-      throw new Error('OAuth2Client non initialisé');
+      throw new Error('OAuth2Client not initialized');
     }
     try {
       const { tokens } = await this.oAuth2Client.getToken(authCode);
@@ -53,21 +61,21 @@ export class DriveConfig {
       await TokenStorage.storeToken(tokens);
       this.initializeDriveAPI();
     } catch (error) {
-      console.error('Erreur lors de l\'authentification:', error);
-      throw new Error('Échec de l\'authentification');
+      console.error('Authentication error:', error);
+      throw error;
     }
   }
 
   getDriveAPI(): drive_v3.Drive {
     if (!this.driveAPI) {
-      throw new Error('API Drive non initialisée');
+      throw new Error('Drive API not initialized');
     }
     return this.driveAPI;
   }
 
   getAuthUrl(): string {
     if (!this.oAuth2Client) {
-      throw new Error('OAuth2Client non initialisé');
+      throw new Error('OAuth2Client not initialized');
     }
     return this.oAuth2Client.generateAuthUrl({
       access_type: 'offline',
@@ -81,7 +89,7 @@ export class DriveConfig {
 
   private initializeDriveAPI(): void {
     if (!this.oAuth2Client) {
-      throw new Error('OAuth2Client non initialisé');
+      throw new Error('OAuth2Client not initialized');
     }
     this.driveAPI = google.drive({
       version: 'v3',
@@ -91,12 +99,12 @@ export class DriveConfig {
 
   async refreshTokenIfNeeded(): Promise<void> {
     if (!this.oAuth2Client) {
-      throw new Error('OAuth2Client non initialisé');
+      throw new Error('OAuth2Client not initialized');
     }
     const credentials = this.oAuth2Client.credentials;
     
     if (!credentials.refresh_token) {
-      throw new Error('Refresh token non disponible');
+      throw new Error('Refresh token not available');
     }
 
     try {
@@ -106,7 +114,7 @@ export class DriveConfig {
       this.oAuth2Client.setCredentials(newCredentials);
       await TokenStorage.storeToken(newCredentials);
     } catch (error) {
-      console.error('Erreur lors du rafraîchissement du token:', error);
+      console.error('Token refresh error:', error);
       throw error;
     }
   }
