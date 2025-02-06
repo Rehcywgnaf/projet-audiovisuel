@@ -7,6 +7,12 @@ export async function GET() {
     const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
     const redirectUri = process.env.GOOGLE_REDIRECT_URI || 'http://localhost:3000/drive/auth/callback';
 
+    console.log('Configuration d\'authentification :', {
+      clientIdExists: !!clientId,
+      clientSecretExists: !!clientSecret,
+      redirectUri
+    });
+
     if (!clientId || !clientSecret) {
       console.error('Variables d\'environnement manquantes:', {
         hasClientId: !!clientId,
@@ -29,6 +35,8 @@ export async function GET() {
     }, false);
 
     const authUrl = driveConfig.getAuthUrl();
+    console.log('URL d\'authentification générée:', authUrl);
+    
     return NextResponse.json({ url: authUrl });
 
   } catch (error) {
