@@ -2,7 +2,7 @@ import { google, drive_v3 } from 'googleapis';
 import { OAuth2Client } from 'google-auth-library';
 import { TokenStorage } from './TokenStorage';
 
-export class DriveConfig {
+class DriveConfig {
   private static instance: DriveConfig;
   private oAuth2Client: OAuth2Client | null = null;
   private driveAPI: drive_v3.Drive | null = null;
@@ -26,7 +26,6 @@ export class DriveConfig {
         throw new Error('Credentials missing or incomplete');
       }
 
-      console.log('Initializing OAuth2Client with credentials...');
       this.oAuth2Client = new google.auth.OAuth2(
         credentials.clientId,
         credentials.clientSecret,
@@ -34,7 +33,6 @@ export class DriveConfig {
       );
       
       if (checkToken) {
-        console.log('Checking stored token...');
         const token = await TokenStorage.getStoredToken();
         if (token) {
           if (TokenStorage.isTokenExpired(token)) {
@@ -49,6 +47,20 @@ export class DriveConfig {
       console.error('Error initializing Drive:', error);
       throw error;
     }
+  }
+
+  getAuthUrl(): string {
+    if (!this.oAuth2Client) {
+      throw new Error('OAuth2Client not initialized');
+    }
+    return this.oAuth2Client.generateAuthUrl({
+      access_type: 'offline',
+      scope: [
+        'https://www.googleapis.com/auth/drive.file',
+        'https://www.googleapis.com/auth/drive.metadata'
+      ],
+      prompt: 'consent'
+    });
   }
 
   async authenticate(authCode: string): Promise<void> {
@@ -71,20 +83,6 @@ export class DriveConfig {
       throw new Error('Drive API not initialized');
     }
     return this.driveAPI;
-  }
-
-  getAuthUrl(): string {
-    if (!this.oAuth2Client) {
-      throw new Error('OAuth2Client not initialized');
-    }
-    return this.oAuth2Client.generateAuthUrl({
-      access_type: 'offline',
-      scope: [
-        'https://www.googleapis.com/auth/drive.file',
-        'https://www.googleapis.com/auth/drive.metadata'
-      ],
-      prompt: 'consent'
-    });
   }
 
   private initializeDriveAPI(): void {
@@ -125,3 +123,6 @@ export class DriveConfig {
     this.driveAPI = null;
   }
 }
+
+const driveConfig = DriveConfig.getInstance();
+export default driveConfig;
