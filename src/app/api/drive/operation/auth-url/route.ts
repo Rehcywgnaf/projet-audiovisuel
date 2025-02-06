@@ -4,11 +4,16 @@ import { DriveConfig } from '@/core/drive/DriveConfig';
 export async function GET() {
   try {
     const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
-    const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
-    const redirectUri = process.env.NEXT_PUBLIC_GOOGLE_REDIRECT_URI;
+    // Le secret sera maintenant extrait des credentials du compte de service
+    const clientSecret = process.env.GOOGLE_APPLICATION_CREDENTIALS;
+    const redirectUri = process.env.GOOGLE_REDIRECT_URI || 'http://localhost:3000/drive/auth/callback';
 
-    if (!clientId || !clientSecret || !redirectUri) {
-      console.error('Missing credentials in environment variables');
+    if (!clientId || !clientSecret) {
+      console.error('Variables d\'environnement manquantes:', {
+        hasClientId: !!clientId,
+        hasApplicationCredentials: !!clientSecret,
+        redirectUri
+      });
       return NextResponse.json(
         { error: 'Configuration error - missing credentials' },
         { status: 500 }
@@ -17,7 +22,7 @@ export async function GET() {
 
     const driveConfig = DriveConfig.getInstance();
 
-    // Initialisation sans vérification du token pour obtenir juste l'URL d'auth
+    // Initialisation sans vérification du token
     await driveConfig.initialize({
       clientId,
       clientSecret,
@@ -32,7 +37,12 @@ export async function GET() {
     return NextResponse.json(
       { 
         error: error instanceof Error ? error.message : 'Error generating auth URL',
-        details: error instanceof Error ? error.stack : undefined
+        details: error instanceof Error ? error.stack : undefined,
+        env: {
+          hasClientId: !!process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID,
+          hasApplicationCredentials: !!process.env.GOOGLE_APPLICATION_CREDENTIALS,
+          redirectUri: process.env.GOOGLE_REDIRECT_URI
+        }
       },
       { status: 500 }
     );
