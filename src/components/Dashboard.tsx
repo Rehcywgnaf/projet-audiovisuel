@@ -1,15 +1,8 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
-import ProjectList from './ProjectList';
+import EnhancedProjectList, { Project } from './EnhancedProjectList';
 
-type Project = {
-  id: string;
-  title: string;
-  organization: string;
-  status: 'active' | 'pending' | 'completed';
-  updatedAt: string;
-};
-
+// Type pour les statistiques du dashboard
 type DashboardStats = {
   totalProjects: number;
   activeProjects: number;
@@ -28,7 +21,7 @@ export default function Dashboard({
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card>
           <CardHeader>
-            <CardTitle>Total Projects</CardTitle>
+            <CardTitle>Total Projets</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-3xl font-bold">{stats.totalProjects}</p>
@@ -36,7 +29,7 @@ export default function Dashboard({
         </Card>
         <Card>
           <CardHeader>
-            <CardTitle>Active Projects</CardTitle>
+            <CardTitle>Projets Actifs</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-3xl font-bold text-green-600">{stats.activeProjects}</p>
@@ -44,7 +37,7 @@ export default function Dashboard({
         </Card>
         <Card>
           <CardHeader>
-            <CardTitle>Completed Projects</CardTitle>
+            <CardTitle>Projets Terminés</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-3xl font-bold text-blue-600">{stats.completedProjects}</p>
@@ -52,14 +45,8 @@ export default function Dashboard({
         </Card>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Recent Projects</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <ProjectList projects={projects} />
-        </CardContent>
-      </Card>
+      {/* Remplacement de ProjectList par EnhancedProjectList */}
+      <EnhancedProjectList projects={projects} />
     </div>
   );
 }
