@@ -1,6 +1,5 @@
 import { google, drive_v3 } from 'googleapis';
 import { OAuth2Client } from 'google-auth-library';
-import { TokenStorage } from './TokenStorage';
 
 export class DriveConfig {
   private static instance: DriveConfig;
@@ -39,24 +38,6 @@ export class DriveConfig {
       );
       
       console.log('OAuth2Client initialized successfully');
-      
-      if (checkToken) {
-        console.log('Checking existing token...');
-        const token = await TokenStorage.getStoredToken();
-        if (token) {
-          console.log('Token found in storage');
-          if (TokenStorage.isTokenExpired(token)) {
-            console.log('Token expired, refreshing...');
-            await this.refreshTokenIfNeeded();
-          } else {
-            console.log('Token valid, setting credentials');
-            this.oAuth2Client.setCredentials(token);
-            this.initializeDriveAPI();
-          }
-        } else {
-          console.log('No token found in storage');
-        }
-      }
     } catch (error) {
       console.error('Error initializing Drive:', error);
       throw error;
@@ -87,8 +68,7 @@ export class DriveConfig {
     return url;
   }
 
-  async authenticate(authCode: string): Promise<void> {
-    console.log('Starting authentication with code');
+  async authenticateAndGetToken(authCode: string): Promise<any> {
     if (!this.oAuth2Client) {
       throw new Error('OAuth2Client not initialized');
     }
@@ -100,11 +80,10 @@ export class DriveConfig {
       this.oAuth2Client.setCredentials(tokens);
       console.log('Credentials set in OAuth2Client');
       
-      await TokenStorage.storeToken(tokens);
-      console.log('Token stored successfully');
-      
       this.initializeDriveAPI();
       console.log('Drive API initialized');
+      
+      return tokens;
     } catch (error) {
       console.error('Authentication error:', error);
       throw error;
@@ -130,33 +109,8 @@ export class DriveConfig {
     console.log('Drive API initialized successfully');
   }
 
-  async refreshTokenIfNeeded(): Promise<void> {
-    if (!this.oAuth2Client) {
-      throw new Error('OAuth2Client not initialized');
-    }
-    const credentials = this.oAuth2Client.credentials;
-    
-    if (!credentials.refresh_token) {
-      throw new Error('Refresh token not available');
-    }
-
-    try {
-      console.log('Refreshing token...');
-      const { credentials: newCredentials } = await this.oAuth2Client.refreshToken(
-        credentials.refresh_token as string
-      );
-      this.oAuth2Client.setCredentials(newCredentials);
-      await TokenStorage.storeToken(newCredentials);
-      console.log('Token refreshed successfully');
-    } catch (error) {
-      console.error('Token refresh error:', error);
-      throw error;
-    }
-  }
-
   logout(): void {
     console.log('Logging out...');
-    TokenStorage.removeToken();
     this.oAuth2Client = null;
     this.driveAPI = null;
     console.log('Logout complete');
