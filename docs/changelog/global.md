@@ -1,19 +1,34 @@
 # SAPAV - Historique des modifications
 
-## [2.0.8] - 2025-02-06
+[2.0.8] - 2025-02-06
+Fixed
+* Correction des erreurs 500 sur les routes d'authentification Drive
+   * Gestion de localStorage côté serveur dans TokenStorage
+   * Adaptation aux variables d'environnement existantes
+   * Initialisation de DriveConfig avant authentification
+   * Meilleure gestion et journalisation des erreurs
+* Amélioration de la gestion des erreurs route auth-url
+   * Ajout de logs détaillés pour le debug
+   * Utilisation initialize sans token check
+   * Correction des conflits de vérification d'état
 
-### Fixed
-- Correction des erreurs 500 sur les routes d'authentification Drive
-  - Gestion de localStorage côté serveur dans TokenStorage
-  - Adaptation aux variables d'environnement existantes
-  - Initialisation de DriveConfig avant authentification
-  - Meilleure gestion et journalisation des erreurs
+Changed
+* Migration des composants d'authentification Drive vers core/drive/
+   * Déplacement de DriveConfig et TokenStorage
+   * Amélioration de la gestion des erreurs et des logs
+   * Adaptation à l'environnement serveur de Next.js
+* Réorganisation du système d'authentification
+   * Support de getInstance() dans DriveConfig
+   * Migration vers named imports pour meilleure maintenabilité
+   * Ajout de crypto-js pour la sécurité des tokens
+   * Suppression de l'ancien TokenStorage de services/auth
 
-### Changed
-- Migration des composants d'authentification Drive vers core/drive/
-  - Déplacement de DriveConfig et TokenStorage
-  - Amélioration de la gestion des erreurs et des logs
-  - Adaptation à l'environnement serveur de Next.js
+Added
+* Nouveau fichier .env.example avec les variables Drive requises
+* Documentation mise à jour
+   * Nouvelles métriques SSR dans performance.md
+   * Structure Drive actualisée dans architecture.md
+   * Intégration des routes dans integration.md
 
 # [2.0.7] - 2025-02-05
 
