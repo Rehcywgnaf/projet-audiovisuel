@@ -1,37 +1,14 @@
-export interface FileMetadata {
-  name: string;
-  mimeType: string;
-  parents?: string[];
-  id?: string;
-}
-
-export interface DriveResponse {
-  data: any;
-  headers?: Record<string, string>;
-  status?: number;
-}
+export type DriveOperationType = 'list' | 'get' | 'create' | 'update' | 'delete';
 
 export interface DriveOperation {
-  type: 'create' | 'read' | 'update' | 'delete';
+  type: DriveOperationType;
   fileId?: string;
-  content?: any;
-  metadata?: FileMetadata;
-}
-
-export interface CacheConfig {
-  enabled: boolean;
-  ttl: number;
-  maxSize: number;
-}
-
-export enum PermissionLevel {
-  READ = 'read',
-  WRITE = 'write',
-  ADMIN = 'admin'
-}
-
-export interface Permission {
-  userId: string;
-  level: PermissionLevel;
-  teamId?: string;
+  name?: string;
+  mimeType?: string;
+  parents?: string[];
+  media?: {
+    mimeType: string;
+    body: any;
+  };
+  pageSize?: number;
 }
