@@ -33,29 +33,36 @@ export function DriveProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const handleAuth = async () => {
+    const searchParams = new URLSearchParams(window.location.search);
+    if (searchParams.has('auth') && searchParams.get('auth') === 'true') {
+      console.log('Auth redirect detected, processing...');
+      try {
+        const response = await fetch('/api/drive/auth/handle', {
+          method: 'POST'
+        });
+        
+        if (!response.ok) {
+          throw new Error('Failed to process authentication');
+        }
+        
+        await checkAuthStatus();
+        window.history.replaceState({}, '', '/');
+      } catch (error) {
+        console.error('Error processing authentication:', error);
+        setError(error instanceof Error ? error.message : 'Authentication failed');
+      }
+    }
+  };
+
   // Vérification initiale de l'état d'authentification
   useEffect(() => {
     checkAuthStatus();
   }, []);
 
-  // Surveiller les changements d'URL pour détecter les retours de l'authentification
+  // Gérer l'authentification au retour de Google
   useEffect(() => {
-    const handleRouteChange = () => {
-      const searchParams = new URLSearchParams(window.location.search);
-      if (searchParams.has('status') && searchParams.get('status') === 'success') {
-        console.log('Auth success detected in URL');
-        checkAuthStatus();
-        // Nettoyer l'URL
-        window.history.replaceState({}, '', '/');
-      }
-    };
-
-    // Vérifier au montage
-    handleRouteChange();
-
-    // Écouter les changements de route
-    window.addEventListener('popstate', handleRouteChange);
-    return () => window.removeEventListener('popstate', handleRouteChange);
+    handleAuth();
   }, []);
 
   return (
