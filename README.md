@@ -53,14 +53,23 @@ Le projet suit une architecture modulaire standardisée sous /src :
    - Enrichissement contextuel
    - Cache 1h, priorité haute (95% hit rate)
 
-2. **AIEnhancedEditor** [Doc](/docs/project/architecture/ai-service.md)
+2. **Dashboard Amélioré**
+   - Interface utilisateur optimisée avec shadcn/ui
+   - Cartes de statistiques interactives avec tendances
+   - Gestion des états de chargement et erreurs
+   - Tests unitaires complets
+   - Cache optimisé pour les performances
+   - Support natif du mode responsive
+   - Intégration complète avec DriveProvider
+
+3. **AIEnhancedEditor** [Doc](/docs/project/architecture/ai-service.md)
    - Génération assistée de contenu via AIServiceManager
    - Suggestions contextuelles en temps réel
    - Interface d'édition augmentée
    - Validation intelligente
    - Cache 2min, priorité moyenne (98% hit rate optimisé)
 
-3. **Système de Versions**
+4. **Système de Versions**
    - Gestion centralisée avec VersionManager
    - Intégration native Drive via DriveSync
    - Cache intelligent multi-niveaux
@@ -73,7 +82,7 @@ Le projet suit une architecture modulaire standardisée sous /src :
      - Hit rate : >95%
      - Tests charge : 50 docs/60s
 
-4. **Système de Templates**
+5. **Système de Templates**
    - Architecture modulaire et testable
    - TemplateUI : Interface utilisateur de base (~45 lignes)
    - TemplateFeatures : Gestion des fonctionnalités IA via AIServiceManager
@@ -82,7 +91,7 @@ Le projet suit une architecture modulaire standardisée sous /src :
    - Documentation détaillée
    - Cache 24h, priorité basse (99% hit rate)
 
-5. ### Système de Monitoring
+6. ### Système de Monitoring
 
 Le système de monitoring offre une vue complète et centralisée des performances et de l'état du système :
 
@@ -290,7 +299,13 @@ Documentation complète :
 
 ### Frontend
 -### Frontend
-- Dashboard principal (React/Tailwind)
+- Dashboard amélioré avec shadcn/ui :
+  - StatsCard pour visualisation des métriques
+  - Système de navigation par onglets
+  - Gestion des états améliorée
+  - Composants UI réutilisables
+  - Tests unitaires exhaustifs
+  - Documentation technique complète
 - Modules RSS & Alertes
 - Interface Google Drive
 - Système de suivi des équipes
@@ -333,6 +348,11 @@ Documentation complète :
 - npm ou yarn
 - Compte Google Workspace
 - Droits d'administration
+...
+3. Installer les composants UI
+```bash
+chmod +x scripts/setup-ui.sh
+./scripts/setup-ui.sh
 ```
 
 ### Configuration
