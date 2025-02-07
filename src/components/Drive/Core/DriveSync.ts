@@ -1,4 +1,4 @@
-import DriveCore from './DriveCore';
+import { DriveCore, driveCore } from './DriveCore';
 import type { DriveOperation } from '../types';
 import { CacheManager, CachePriority } from '@/cache/CacheManager';
 
@@ -9,7 +9,7 @@ export class DriveSync {
   private cacheManager: CacheManager;
   
   private constructor() {
-    this.driveCore = DriveCore.getInstance();
+    this.driveCore = driveCore;
     this.cacheManager = CacheManager.getInstance();
   }
 
@@ -56,7 +56,7 @@ export class DriveSync {
     try {
       return await this.driveCore.executeOperation(operation);
     } catch (error) {
-      throw new Error(`Erreur lors de l'exécution de l'opération: ${error.message}`);
+      throw new Error(`Erreur lors de l'exécution de l'opération: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
 
@@ -78,4 +78,8 @@ export class DriveSync {
   }
 }
 
-export default DriveSync.getInstance();
+// Instance singleton
+export const driveSync = DriveSync.getInstance();
+
+// Export par défaut de la classe pour les cas où on veut accéder à getInstance()
+export default DriveSync;
