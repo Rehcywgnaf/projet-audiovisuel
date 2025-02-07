@@ -20,11 +20,14 @@ export async function POST(request: NextRequest) {
       redirectUri: process.env.GOOGLE_REDIRECT_URI || 'http://localhost:3000/drive/auth/callback'
     });
 
-    await driveConfig.authenticate(authCode.value);
+    const token = await driveConfig.authenticateAndGetToken(authCode.value);
     console.log('Authentication successful');
 
     // Supprimer le cookie après utilisation
-    const response = NextResponse.json({ success: true });
+    const response = NextResponse.json({ 
+      success: true,
+      token
+    });
     response.cookies.set('google_auth_code', '', { maxAge: 0 });
     
     return response;
