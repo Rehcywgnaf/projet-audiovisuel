@@ -3,8 +3,8 @@
 import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card } from '@/components/ui/card';
+import Dashboard from '@/components/Dashboard';
 import DriveAuthPage from './drive/auth/page';
-import DriveProvider from './drive/provider/page';
 import DriveIntegrationPage from './drive/integration/page';
 import { useDrive } from './drive/provider/page';
 
@@ -15,15 +15,21 @@ function DashboardContent() {
     <Tabs defaultValue="overview" className="space-y-4">
       <TabsList>
         <TabsTrigger value="overview">Vue d'ensemble</TabsTrigger>
-        <TabsTrigger value="integration" disabled={!isAuthenticated}>Drive</TabsTrigger>
+        <TabsTrigger value="drive" disabled={!isAuthenticated}>Drive</TabsTrigger>
         <TabsTrigger value="settings">Paramètres</TabsTrigger>
       </TabsList>
+      
       <TabsContent value="overview" className="space-y-4">
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <DriveAuthPage />
-        </div>
+        {isAuthenticated ? (
+          <Dashboard />
+        ) : (
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            <DriveAuthPage />
+          </div>
+        )}
       </TabsContent>
-      <TabsContent value="integration">
+      
+      <TabsContent value="drive">
         {isAuthenticated ? (
           <DriveIntegrationPage />
         ) : (
@@ -32,6 +38,7 @@ function DashboardContent() {
           </Card>
         )}
       </TabsContent>
+      
       <TabsContent value="settings">
         <Card className="p-6">
           Paramètres à venir...
@@ -44,9 +51,7 @@ function DashboardContent() {
 export default function Home() {
   return (
     <main className="p-4 space-y-8">
-      <DriveProvider>
-        <DashboardContent />
-      </DriveProvider>
+      <DashboardContent />
     </main>
   );
 }
