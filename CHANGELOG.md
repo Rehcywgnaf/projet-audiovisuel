@@ -1,5 +1,44 @@
 # SAPAV - Historique des modifications
 
+## [2.0.10] - 2025-02-08
+
+### Added
+- Composants UI shadcn personnalisés :
+  - StatsCard avec support des tendances et animations
+  - Select avec styles et interactions améliorés
+  - Alert avec variantes et gestion des erreurs
+  - Tabs pour la navigation globale
+  - Badge et Progress pour les indicateurs visuels
+- Tests unitaires du Dashboard :
+  - Tests de chargement des données
+  - Tests des états vides
+  - Tests de gestion d'erreurs
+  - Tests des interactions utilisateur
+- Script d'installation automatisé pour les composants UI
+- Vérificateur de dépendances pour plus de robustesse
+
+### Changed
+- Architecture du Dashboard améliorée :
+  - Intégration du DriveProvider au niveau application
+  - Optimisation des performances avec React.memo
+  - Meilleure gestion des états de chargement
+  - Gestion des erreurs plus robuste
+  - Interface utilisateur plus réactive
+- Structure des composants UI harmonisée :
+  - Utilisation de l'utilitaire cn pour les styles
+  - Standardisation des animations et transitions
+  - Amélioration du responsive design
+
+### Technical
+- Organisation des styles :
+  - Mise en place des variables CSS globales
+  - Configuration Tailwind optimisée
+  - Utilitaires de fusion de classes
+- Documentation enrichie :
+  - Guide de développement du Dashboard
+  - Documentation technique des composants
+  - Instructions d'installation détaillées
+
 ## [2.0.9] - 2025-02-07
 
 ### Added
