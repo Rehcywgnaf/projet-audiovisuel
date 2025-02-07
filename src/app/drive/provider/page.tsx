@@ -13,7 +13,7 @@ interface DriveContextType {
 const DriveContext = createContext<DriveContextType | null>(null);
 
 export function DriveProvider({ children }: { children: React.ReactNode }) {
-  const { token, saveToken, removeToken, getToken } = useToken();
+  const { token, saveToken, getToken } = useToken();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isInitializing, setIsInitializing] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -57,9 +57,10 @@ export function DriveProvider({ children }: { children: React.ReactNode }) {
         if (data.token) {
           console.log('Received new token from server');
           saveToken(data.token);
+          await checkAuthStatus();
         }
         
-        await checkAuthStatus();
+        // Nettoyer l'URL après authentification
         window.history.replaceState({}, '', '/');
       } catch (error) {
         console.error('Error processing authentication:', error);
@@ -70,13 +71,19 @@ export function DriveProvider({ children }: { children: React.ReactNode }) {
 
   // Vérification initiale de l'état d'authentification
   useEffect(() => {
-    checkAuthStatus();
+    const initialize = async () => {
+      await checkAuthStatus();
+      await handleAuth();
+    };
+    initialize();
   }, []);
 
-  // Gérer l'authentification au retour de Google
+  // Recheck auth status when token changes
   useEffect(() => {
-    handleAuth();
-  }, []);
+    if (token) {
+      checkAuthStatus();
+    }
+  }, [token]);
 
   return (
     <DriveContext.Provider
