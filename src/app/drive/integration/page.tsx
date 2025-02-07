@@ -32,6 +32,8 @@ export default function DriveIntegrationPage() {
 
   // Mise à jour du statut de synchronisation
   useEffect(() => {
+    let syncInterval: NodeJS.Timeout | null = null;
+
     const updateSyncStatus = async () => {
       if (!isAuthenticated) return;
 
@@ -49,14 +51,26 @@ export default function DriveIntegrationPage() {
       }
     };
 
-    const interval = setInterval(updateSyncStatus, 5000);
+    // Initial update
     updateSyncStatus();
 
-    return () => clearInterval(interval);
+    // Start interval only once
+    if (isAuthenticated && !syncInterval) {
+      syncInterval = setInterval(updateSyncStatus, 5000);
+    }
+
+    return () => {
+      if (syncInterval) {
+        clearInterval(syncInterval);
+        syncInterval = null;
+      }
+    };
   }, [isAuthenticated]);
 
   // Mise à jour des métriques du cache
   useEffect(() => {
+    let metricsInterval: NodeJS.Timeout | null = null;
+    
     const updateMetrics = async () => {
       if (!isAuthenticated) return;
 
@@ -71,10 +85,20 @@ export default function DriveIntegrationPage() {
       }
     };
 
-    const interval = setInterval(updateMetrics, 60000);
+    // Initial update
     updateMetrics();
 
-    return () => clearInterval(interval);
+    // Start interval only once
+    if (isAuthenticated && !metricsInterval) {
+      metricsInterval = setInterval(updateMetrics, 60000);
+    }
+
+    return () => {
+      if (metricsInterval) {
+        clearInterval(metricsInterval);
+        metricsInterval = null;
+      }
+    };
   }, [isAuthenticated]);
 
   const renderSyncStatus = () => {
