@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { 
   Card, 
   CardContent, 
@@ -24,7 +24,9 @@ import {
 } from 'recharts';
 import { 
   TrendingUp, 
-  Calendar 
+  Calendar,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 
 // Types enrichis
@@ -41,9 +43,8 @@ export type Project = {
 };
 
 // Composant de statistiques inline
-const ProjectStatusMiniStats = ({ projects }: { projects: Project[] }) => {
+const ProjectStatusMiniStats = React.memo(({ projects }: { projects: Project[] }) => {
   const statusCounts = useMemo(() => {
-    // Vérification de l'existence et du type de projects
     if (!Array.isArray(projects)) return {};
 
     return projects.reduce((acc, project) => {
@@ -52,22 +53,32 @@ const ProjectStatusMiniStats = ({ projects }: { projects: Project[] }) => {
     }, {} as Record<string, number>);
   }, [projects]);
 
+  const statusColors = {
+    active: 'bg-green-100 text-green-800',
+    pending: 'bg-yellow-100 text-yellow-800',
+    completed: 'bg-blue-100 text-blue-800'
+  };
+
   return (
-    <div className="flex space-x-4">
+    <div className="flex flex-wrap gap-4">
       {Object.entries(statusCounts).map(([status, count]) => (
         <div key={status} className="flex items-center space-x-2">
-          <Badge variant="outline">{status}</Badge>
+          <Badge 
+            variant="outline" 
+            className={statusColors[status as keyof typeof statusColors]}
+          >
+            {status}
+          </Badge>
           <span className="text-sm text-muted-foreground">{count}</span>
         </div>
       ))}
     </div>
   );
-};
+});
 
 // Composant de graphique de progression
-const ProjectProgressChart = ({ projects }: { projects: Project[] }) => {
+const ProjectProgressChart = React.memo(({ projects }: { projects: Project[] }) => {
   const chartData = useMemo(() => {
-    // Vérification de l'existence et du type de projects
     if (!Array.isArray(projects)) return [];
 
     const statusProgress = {
@@ -76,33 +87,87 @@ const ProjectProgressChart = ({ projects }: { projects: Project[] }) => {
       'completed': 0
     };
 
+    const statusCount = {
+      'active': 0,
+      'pending': 0,
+      'completed': 0
+    };
+
     projects.forEach(project => {
-      statusProgress[project.status] += project.progress || 0;
+      if (project.progress !== undefined) {
+        statusProgress[project.status] += project.progress;
+        statusCount[project.status]++;
+      }
     });
 
     return Object.entries(statusProgress).map(([status, totalProgress]) => ({
       status,
-      progress: totalProgress / (projects.filter(p => p.status === status).length || 1)
+      progress: statusCount[status as keyof typeof statusCount] 
+        ? totalProgress / statusCount[status as keyof typeof statusCount] 
+        : 0
     }));
   }, [projects]);
 
-  // Si pas de données, ne pas afficher le graphique
   if (chartData.length === 0) return null;
 
   return (
-    <ResponsiveContainer width="100%" height={200}>
-      <BarChart data={chartData}>
-        <XAxis dataKey="status" />
-        <Tooltip />
-        <Bar dataKey="progress" fill="#8884d8" />
-      </BarChart>
-    </ResponsiveContainer>
+    <div className="h-[200px] w-full">
+      <ResponsiveContainer>
+        <BarChart data={chartData}>
+          <XAxis dataKey="status" />
+          <Tooltip />
+          <Bar 
+            dataKey="progress" 
+            fill="#8884d8"
+            radius={[4, 4, 0, 0]}
+          />
+        </BarChart>
+      </ResponsiveContainer>
+    </div>
   );
-};
+});
+
+// Composant de projet individuel
+const ProjectCard = React.memo(({ project }: { project: Project }) => (
+  <Card className="hover:shadow-lg transition-shadow duration-200">
+    <CardContent className="pt-4">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div className="flex-1">
+          <h3 className="font-semibold text-lg">{project.title}</h3>
+          <p className="text-sm text-muted-foreground">{project.organization}</p>
+        </div>
+        
+        <div className="flex flex-wrap items-center gap-4 w-full sm:w-auto">
+          {project.progress !== undefined && (
+            <div className="flex items-center space-x-2">
+              <TrendingUp className="h-4 w-4 text-muted-foreground" />
+              <Progress value={project.progress} className="w-[100px]" />
+            </div>
+          )}
+          
+          <Badge 
+            variant={
+              project.status === 'active' ? 'default' :
+              project.status === 'pending' ? 'outline' : 'secondary'
+            }
+            className={project.status === 'active' ? 'bg-green-100 text-green-800' : ''}
+          >
+            {project.status}
+          </Badge>
+          
+          <div className="flex items-center text-sm text-muted-foreground">
+            <Calendar className="h-4 w-4 mr-2" />
+            {new Date(project.updatedAt).toLocaleDateString()}
+          </div>
+        </div>
+      </div>
+    </CardContent>
+  </Card>
+));
 
 // Composant principal de liste de projets
 export default function EnhancedProjectList({ 
-  projects = [], // Défaut à un tableau vide
+  projects = [], 
   pageSize = 5 
 }: { 
   projects?: Project[], 
@@ -114,17 +179,14 @@ export default function EnhancedProjectList({
 
   // Logique de tri et filtrage
   const processedProjects = useMemo(() => {
-    // Vérification de l'existence et du type de projects
     if (!Array.isArray(projects)) return [];
 
     let result = [...projects];
 
-    // Filtrage par statut
     if (filterStatus) {
       result = result.filter(p => p.status === filterStatus);
     }
 
-    // Tri
     result.sort((a, b) => {
       if (a[sortKey] < b[sortKey]) return -1;
       if (a[sortKey] > b[sortKey]) return 1;
@@ -140,7 +202,13 @@ export default function EnhancedProjectList({
     return processedProjects.slice(startIndex, startIndex + pageSize);
   }, [processedProjects, currentPage, pageSize]);
 
-  // Gestion des cas où il n'y a pas de projets
+  const totalPages = Math.ceil(processedProjects.length / pageSize);
+
+  const handlePageChange = useCallback((newPage: number) => {
+    setCurrentPage(Math.max(1, Math.min(newPage, totalPages)));
+  }, [totalPages]);
+
+  // Si pas de projets
   if (!Array.isArray(projects) || projects.length === 0) {
     return (
       <Card>
@@ -148,7 +216,9 @@ export default function EnhancedProjectList({
           <CardTitle>Projets</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-muted-foreground">Aucun projet disponible</p>
+          <p className="text-center text-muted-foreground py-8">
+            Aucun projet disponible
+          </p>
         </CardContent>
       </Card>
     );
@@ -157,12 +227,17 @@ export default function EnhancedProjectList({
   return (
     <Card>
       <CardHeader>
-        <div className="flex justify-between items-center">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <CardTitle>Projets</CardTitle>
-          <div className="flex space-x-2">
-            {/* Filtres de statut */}
-            <Select onValueChange={(val) => setFilterStatus(val || null)}>
-              <SelectTrigger className="w-[180px]">
+          <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+            {/* Filtres */}
+            <Select 
+              onValueChange={(val) => {
+                setFilterStatus(val || null);
+                setCurrentPage(1);
+              }}
+            >
+              <SelectTrigger className="w-full sm:w-[180px]">
                 <SelectValue placeholder="Filtrer par statut" />
               </SelectTrigger>
               <SelectContent>
@@ -174,8 +249,13 @@ export default function EnhancedProjectList({
             </Select>
 
             {/* Tri */}
-            <Select onValueChange={(val) => setSortKey(val as keyof Project)}>
-              <SelectTrigger className="w-[180px]">
+            <Select 
+              onValueChange={(val) => {
+                setSortKey(val as keyof Project);
+                setCurrentPage(1);
+              }}
+            >
+              <SelectTrigger className="w-full sm:w-[180px]">
                 <SelectValue placeholder="Trier par" />
               </SelectTrigger>
               <SelectContent>
@@ -190,78 +270,49 @@ export default function EnhancedProjectList({
       
       <CardContent>
         {/* Mini statistiques */}
-        <div className="mb-4">
+        <div className="mb-6">
           <ProjectStatusMiniStats projects={projects} />
         </div>
 
         {/* Graphique de progression */}
-        <div className="mb-4">
+        <div className="mb-6">
           <ProjectProgressChart projects={projects} />
         </div>
 
         {/* Liste de projets */}
         <div className="space-y-4">
           {paginatedProjects.map((project) => (
-            <Card key={project.id} className="hover:shadow-lg transition-shadow">
-              <CardContent className="pt-4">
-                <div className="flex justify-between items-center">
-                  <div className="flex-1 mr-4">
-                    <h3 className="font-semibold text-lg">{project.title}</h3>
-                    <p className="text-sm text-muted-foreground">{project.organization}</p>
-                  </div>
-                  
-                  <div className="flex items-center space-x-4">
-                    {/* Indicateur de progression */}
-                    {project.progress !== undefined && (
-                      <div className="flex items-center space-x-2">
-                        <TrendingUp className="h-4 w-4 text-muted-foreground" />
-                        <Progress value={project.progress} className="w-[100px]" />
-                      </div>
-                    )}
-                    
-                    {/* Badge de statut */}
-                    <Badge variant={
-                      project.status === 'active' ? 'default' :
-                      project.status === 'pending' ? 'outline' : 'secondary'
-                    }>
-                      {project.status}
-                    </Badge>
-                    
-                    {/* Date de mise à jour */}
-                    <div className="flex items-center text-sm text-muted-foreground">
-                      <Calendar className="h-4 w-4 mr-2" />
-                      {new Date(project.updatedAt).toLocaleDateString()}
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            <ProjectCard key={project.id} project={project} />
           ))}
         </div>
 
         {/* Pagination */}
-        <div className="flex justify-between items-center mt-4">
+        <div className="flex justify-between items-center mt-6">
           <Button 
             variant="outline" 
-            onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+            size="sm"
+            onClick={() => handlePageChange(currentPage - 1)}
             disabled={currentPage === 1}
           >
+            <ChevronLeft className="h-4 w-4 mr-2" />
             Précédent
           </Button>
+
           <span className="text-sm text-muted-foreground">
-            Page {currentPage} sur {Math.ceil(processedProjects.length / pageSize)}
+            Page {currentPage} sur {totalPages}
           </span>
+
           <Button 
-            variant="outline" 
-            onClick={() => setCurrentPage(prev => 
-              prev < Math.ceil(processedProjects.length / pageSize) ? prev + 1 : prev
-            )}
-            disabled={currentPage >= Math.ceil(processedProjects.length / pageSize)}
+            variant="outline"
+            size="sm" 
+            onClick={() => handlePageChange(currentPage + 1)}
+            disabled={currentPage >= totalPages}
           >
             Suivant
+            <ChevronRight className="h-4 w-4 ml-2" />
           </Button>
         </div>
       </CardContent>
     </Card>
   );
-};
+}
