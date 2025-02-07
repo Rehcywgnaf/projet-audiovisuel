@@ -118,6 +118,10 @@ Le système de monitoring offre une vue complète et centralisée des performanc
 - Nommage explicite des composants
 - Tests >90% couverture
 - Performance optimisée (<100ms)
+- Validation parallélisée (150-200ms)
+- Cache hit rate global : >95%
+- Temps de réponse API : <100ms
+- Disponibilité : 99.9%
 
 #### Intégrations
 - Connexion directe avec AIServiceManager
@@ -142,6 +146,8 @@ Pour plus de détails, consultez :
 - `/docs/technical/template-system/` : Architecture des templates
 - `/docs/technical/integration-tests/` : Tests d'intégration
 - `/docs/technical/performance-monitoring/` : Monitoring des performances
+- `/docs/technical/performance.md` : Monitoring et optimisation des performances
+- `/docs/technical/integration.md` : Guide d'intégration des composants
 - [Architecture globale](/docs/project/architecture/core.md)
 - [Guide IA](/docs/project/architecture/ai-service.md)
 - [Documentation composants](/docs/project/overview.md)
@@ -217,6 +223,11 @@ Documentation complète :
   - Support de l'héritage des permissions
   - Gestion des expirations
   - Tests unitaires par composant
+- Cache System
+  - Stratégie LRU implémentée
+  - TTL configurable par type
+  - Invalidation intelligente
+  - Hit rate >95%
 
 ### Backend
 - Services Email et RSS
@@ -305,6 +316,13 @@ Documentation complète :
   - Alertes paramétrables
 - Durée formation : 5 jours
 - Support post-formation inclus
+
+### Intégration
+- Points d'intégration standardisés
+- Communication inter-composants optimisée
+- Monitoring temps réel des intégrations
+- Validation continue des interfaces
+- Recovery automatique
 
 ## 📦 Installation
 
