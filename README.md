@@ -148,6 +148,7 @@ Pour plus de détails, consultez :
 - `/docs/technical/performance-monitoring/` : Monitoring des performances
 - `/docs/technical/performance.md` : Monitoring et optimisation des performances
 - `/docs/technical/integration.md` : Guide d'intégration des composants
+- `/docs/technical/drive/auth.md` : Intégration Drive et authentification
 - [Architecture globale](/docs/project/architecture/core.md)
 - [Guide IA](/docs/project/architecture/ai-service.md)
 - [Documentation composants](/docs/project/overview.md)
@@ -210,13 +211,13 @@ Documentation complète :
 ## 🛠 Architecture Technique
 
 ### Core
-- Drive
+- Drive ✓
   - Architecture modulaire sous /src/components/Drive/
-  - Auth : Gestion de l'authentification Google
-  - Core : Opérations Drive de base avec cache optimisé
-  - Integration : Intégration sécurisée avec l'application
-  - Support complet des types MIME
-  - Performance optimisée (>95% hit rate)
+  - Authentification Google OAuth2.0 validée
+  - Gestion des tokens sécurisée
+  - Cache optimisé (>95% hit rate)
+  - Tests complets
+  - Documentation : /docs/technical/drive/auth.md
 - Système de permissions modulaire
   - Gestionnaires spécialisés (<100 lignes)
   - Types unifiés pour l'authentification et les fichiers
@@ -349,9 +350,9 @@ npm install
 
 3. Configuration des Variables d'Environnement
 ```bash
-# Google OAuth Configuration  
-NEXT_PUBLIC_GOOGLE_CLIENT_ID=votre_client_id
-NEXT_PUBLIC_GOOGLE_API_KEY=votre_api_key
+# Google OAuth Configuration (Requis)  
+GOOGLE_CLIENT_ID=votre_client_id
+GOOGLE_CLIENT_SECRET=votre_client_secret
 GOOGLE_REDIRECT_URI=http://localhost:3000/drive/auth/callback
 NEXT_PUBLIC_GOOGLE_CHAT_SCOPE=https://www.googleapis.com/auth/chat.spaces
 
