@@ -1,6 +1,6 @@
 # SAPAV - Historique des modifications
 
-[2.0.8] - 2025-02-06
+# [2.0.8] - 2025-02-06
 Fixed
 * Correction des erreurs 500 sur les routes d'authentification Drive
    * Gestion de localStorage côté serveur dans TokenStorage
