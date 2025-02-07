@@ -14,18 +14,20 @@ interface SyncStatus {
 }
 
 interface CacheMetrics {
-  hitRate: number;
   size: number;
-  lastCleared: string;
+  lowPriority: number;
+  mediumPriority: number;
+  highPriority: number;
 }
 
 export default function DriveIntegrationPage() {
   const { isAuthenticated } = useDrive();
   const [syncStatus, setSyncStatus] = useState<SyncStatus>({ status: 'idle' });
   const [cacheMetrics, setCacheMetrics] = useState<CacheMetrics>({
-    hitRate: 0,
     size: 0,
-    lastCleared: new Date().toISOString()
+    lowPriority: 0,
+    mediumPriority: 0,
+    highPriority: 0
   });
 
   // Mise à jour du statut de synchronisation
@@ -152,21 +154,21 @@ export default function DriveIntegrationPage() {
             {/* Métriques du cache */}
             <div className="grid grid-cols-3 gap-4">
               <div className="p-4 bg-blue-50 rounded-lg">
-                <div className="text-sm text-gray-500">Hit Rate</div>
-                <div className="text-xl font-semibold">
-                  {cacheMetrics.hitRate.toFixed(1)}%
-                </div>
-              </div>
-              <div className="p-4 bg-blue-50 rounded-lg">
-                <div className="text-sm text-gray-500">Cache Size</div>
+                <div className="text-sm text-gray-500">Total Cache</div>
                 <div className="text-xl font-semibold">
                   {cacheMetrics.size} items
                 </div>
               </div>
               <div className="p-4 bg-blue-50 rounded-lg">
-                <div className="text-sm text-gray-500">Last Cleared</div>
+                <div className="text-sm text-gray-500">Priorité Haute</div>
                 <div className="text-xl font-semibold">
-                  {new Date(cacheMetrics.lastCleared).toLocaleTimeString()}
+                  {cacheMetrics.highPriority} items
+                </div>
+              </div>
+              <div className="p-4 bg-blue-50 rounded-lg">
+                <div className="text-sm text-gray-500">Priorité Moyenne</div>
+                <div className="text-xl font-semibold">
+                  {cacheMetrics.mediumPriority} items
                 </div>
               </div>
             </div>
