@@ -1,6 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { useToken, isTokenExpired } from '@/hooks/useToken';
 
 interface DriveContextType {
   isAuthenticated: boolean;
@@ -12,6 +13,7 @@ interface DriveContextType {
 const DriveContext = createContext<DriveContextType | null>(null);
 
 export function DriveProvider({ children }: { children: React.ReactNode }) {
+  const { token, saveToken, removeToken, getToken } = useToken();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isInitializing, setIsInitializing] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -19,15 +21,20 @@ export function DriveProvider({ children }: { children: React.ReactNode }) {
   const checkAuthStatus = async () => {
     try {
       console.log('Checking auth status...');
-      const response = await fetch('/api/drive/operation/status');
-      if (!response.ok) throw new Error('Erreur lors de la vérification du statut');
+      const currentToken = getToken();
       
-      const data = await response.json();
-      console.log('Auth status response:', data);
-      setIsAuthenticated(data.isAuthenticated);
+      if (!currentToken || isTokenExpired(currentToken)) {
+        console.log('No valid token found');
+        setIsAuthenticated(false);
+        return;
+      }
+
+      console.log('Valid token found');
+      setIsAuthenticated(true);
     } catch (err) {
       console.error('Auth status error:', err);
       setError(err instanceof Error ? err.message : 'Erreur de vérification du statut');
+      setIsAuthenticated(false);
     } finally {
       setIsInitializing(false);
     }
@@ -44,6 +51,12 @@ export function DriveProvider({ children }: { children: React.ReactNode }) {
         
         if (!response.ok) {
           throw new Error('Failed to process authentication');
+        }
+
+        const data = await response.json();
+        if (data.token) {
+          console.log('Received new token from server');
+          saveToken(data.token);
         }
         
         await checkAuthStatus();
