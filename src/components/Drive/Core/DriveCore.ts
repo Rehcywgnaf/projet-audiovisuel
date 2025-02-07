@@ -69,4 +69,8 @@ export class DriveCore {
   }
 }
 
-export default DriveCore.getInstance();
+// Instance singleton exportée séparément
+export const driveCore = DriveCore.getInstance();
+
+// Export par défaut de la classe pour les cas où on veut accéder à getInstance()
+export default DriveCore;
