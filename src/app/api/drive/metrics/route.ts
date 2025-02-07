@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import DriveSync from '@/components/Drive/Core/DriveSync';
-import { CacheManager } from '@/components/Drive/Core/CacheManager';
+import { CacheManager } from '@/cache/CacheManager';
 
 export async function GET(request: Request) {
   try {
@@ -19,7 +19,7 @@ export async function GET(request: Request) {
     return NextResponse.json(
       { 
         success: false, 
-        error: error.message 
+        error: error instanceof Error ? error.message : 'Unknown error'
       },
       { status: 500 }
     );
