@@ -1,18 +1,17 @@
 import { NextResponse } from 'next/server';
-import DriveSync from '@/components/Drive/Core/DriveSync';
+import { driveSync } from '@/components/Drive/Core/DriveSync';
 import { CacheManager } from '@/cache/CacheManager';
 
 export async function GET(request: Request) {
   try {
-    const driveSync = DriveSync.getInstance();
-    const cacheManager = CacheManager.getInstance();
     const status = await driveSync.getStatus();
-    const cacheStats = cacheManager.getStats();
+    const cacheStats = CacheManager.getInstance().getStats();
     
     return NextResponse.json({
-      hitRate: cacheStats.hitRate,
       size: cacheStats.size,
-      lastCleared: cacheStats.lastUpdated,
+      lowPriority: cacheStats.lowPriority,
+      mediumPriority: cacheStats.mediumPriority,
+      highPriority: cacheStats.highPriority,
       syncStatus: status
     });
   } catch (error) {
