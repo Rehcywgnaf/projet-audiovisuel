@@ -1,6 +1,6 @@
 import DriveCore from './DriveCore';
 import type { DriveOperation } from '../types';
-import { CacheManager, CachePriority } from '../../../cache/CacheManager';
+import { CacheManager, CachePriority } from '@/cache/CacheManager';
 
 export class DriveSync {
   private static instance: DriveSync;
