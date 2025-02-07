@@ -1,196 +1,108 @@
-import { CacheConfig, FileMetadata, DriveResponse } from '../types';
-import  EventSystem  from '../core/EventSystem';
-
-interface CacheEntry<T> {
-  data: T;
-  timestamp: number;
-  size: number;
+export enum CachePriority {
+  LOW = 'low',
+  MEDIUM = 'medium',
+  HIGH = 'high'
 }
 
-interface CacheStore {
-  files: Map<string, CacheEntry<DriveResponse>>;
-  metadata: Map<string, CacheEntry<FileMetadata>>;
-  folders: Map<string, CacheEntry<string[]>>;
-}
+type CacheEntry = {
+  value: any;
+  expiry: number;
+  priority: CachePriority;
+};
 
-class CacheManager {
+export class CacheManager {
   private static instance: CacheManager;
-  private eventSystem: EventSystem;
-  private store: CacheStore;
-  private config: CacheConfig = {
-    enabled: true,
-    ttl: 3600, // 1 hour default TTL
-    maxSize: 100 // 100MB default max size
+  private cache: Map<string, CacheEntry> = new Map();
+  
+  // TTL par priorité (en millisecondes)
+  private ttl = {
+    [CachePriority.LOW]: 5 * 60 * 1000,    // 5 minutes
+    [CachePriority.MEDIUM]: 2 * 60 * 1000,  // 2 minutes
+    [CachePriority.HIGH]: 60 * 1000         // 1 minute
   };
 
   private constructor() {
-    this.eventSystem = EventSystem.getInstance();
-    this.store = {
-      files: new Map(),
-      metadata: new Map(),
-      folders: new Map()
-    };
-    this.initializeEventListeners();
+    // Nettoyage automatique toutes les minutes
+    if (typeof window !== 'undefined') {
+      setInterval(() => this.cleanup(), 60 * 1000);
+    }
   }
 
-  static getInstance(): CacheManager {
+  public static getInstance(): CacheManager {
     if (!CacheManager.instance) {
       CacheManager.instance = new CacheManager();
     }
     return CacheManager.instance;
   }
 
-  private initializeEventListeners(): void {
-    this.eventSystem.on('driveFileUpdated', ({ fileId }) => {
-      this.invalidateFile(fileId);
-    });
+  async get(key: string, priority: CachePriority = CachePriority.MEDIUM): Promise<any | null> {
+    const entry = this.cache.get(key);
+    if (!entry) return null;
 
-    this.eventSystem.on('driveFolderUpdated', ({ folderId }) => {
-      this.invalidateFolder(folderId);
-    });
-  }
-
-  configure(config: Partial<CacheConfig>): void {
-    this.config = { ...this.config, ...config };
-    this.cleanup();
-  }
-
-  async getFile(fileId: string): Promise<DriveResponse | null> {
-    if (!this.config.enabled) return null;
-
-    const cached = this.store.files.get(fileId);
-    if (!cached) return null;
-
-    if (this.isExpired(cached.timestamp)) {
-      this.store.files.delete(fileId);
+    if (Date.now() > entry.expiry) {
+      this.cache.delete(key);
       return null;
     }
 
-    return cached.data;
+    return entry.value;
   }
 
-  async setFile(fileId: string, data: DriveResponse): Promise<void> {
-    if (!this.config.enabled) return;
-
-    const size = this.calculateSize(data);
-    if (size > this.config.maxSize) return;
-
-    await this.ensureSpace(size);
-    this.store.files.set(fileId, {
-      data,
-      timestamp: Date.now(),
-      size
-    });
-  }
-
-  async getMetadata(fileId: string): Promise<FileMetadata | null> {
-    if (!this.config.enabled) return null;
-
-    const cached = this.store.metadata.get(fileId);
-    if (!cached) return null;
-
-    if (this.isExpired(cached.timestamp)) {
-      this.store.metadata.delete(fileId);
-      return null;
-    }
-
-    return cached.data;
-  }
-
-  async setMetadata(fileId: string, data: FileMetadata): Promise<void> {
-    if (!this.config.enabled) return;
-
-    const size = this.calculateSize(data);
-    await this.ensureSpace(size);
+  async set(key: string, value: any, priority: CachePriority = CachePriority.MEDIUM): Promise<void> {
+    const ttl = this.ttl[priority];
+    const expiry = Date.now() + ttl;
     
-    this.store.metadata.set(fileId, {
-      data,
-      timestamp: Date.now(),
-      size
+    this.cache.set(key, {
+      value,
+      expiry,
+      priority
     });
-  }
-
-  async invalidateFile(fileId: string): Promise<void> {
-    this.store.files.delete(fileId);
-    this.store.metadata.delete(fileId);
-  }
-
-  async invalidateFolder(folderId: string): Promise<void> {
-    this.store.folders.delete(folderId);
-  }
-
-  clear(): void {
-    this.store.files.clear();
-    this.store.metadata.clear();
-    this.store.folders.clear();
-  }
-
-  private isExpired(timestamp: number): boolean {
-    const age = Date.now() - timestamp;
-    return age > this.config.ttl * 1000;
-  }
-
-  private calculateSize(data: any): number {
-    return new TextEncoder().encode(JSON.stringify(data)).length;
-  }
-
-  private async ensureSpace(requiredSize: number): Promise<void> {
-    let currentSize = 0;
-    const entries: [string, CacheEntry<any>][] = [];
-
-    for (const [store, map] of Object.entries(this.store)) {
-      for (const [key, entry] of map.entries()) {
-        currentSize += entry.size;
-        entries.push([key, entry]);
-      }
-    }
-
-    if (currentSize + requiredSize > this.config.maxSize * 1024 * 1024) {
-      entries.sort((a, b) => a[1].timestamp - b[1].timestamp);
-
-      while (currentSize + requiredSize > this.config.maxSize * 1024 * 1024 && entries.length > 0) {
-        const [key, entry] = entries.shift()!;
-        currentSize -= entry.size;
-        
-        for (const map of Object.values(this.store)) {
-          map.delete(key);
-        }
-      }
-    }
   }
 
   private cleanup(): void {
     const now = Date.now();
-
-    for (const map of Object.values(this.store)) {
-      for (const [key, entry] of map.entries()) {
-        if (this.isExpired(entry.timestamp)) {
-          map.delete(key);
-        }
+    for (const [key, entry] of this.cache.entries()) {
+      if (now > entry.expiry) {
+        this.cache.delete(key);
       }
     }
   }
 
+  clear(): void {
+    this.cache.clear();
+  }
+
   getStats(): {
-    filesCount: number;
-    metadataCount: number;
-    foldersCount: number;
-    totalSize: number;
+    size: number;
+    lowPriority: number;
+    mediumPriority: number;
+    highPriority: number;
   } {
-    let totalSize = 0;
-    for (const map of Object.values(this.store)) {
-      for (const entry of map.values()) {
-        totalSize += entry.size;
+    let lowCount = 0;
+    let mediumCount = 0;
+    let highCount = 0;
+
+    for (const entry of this.cache.values()) {
+      switch (entry.priority) {
+        case CachePriority.LOW:
+          lowCount++;
+          break;
+        case CachePriority.MEDIUM:
+          mediumCount++;
+          break;
+        case CachePriority.HIGH:
+          highCount++;
+          break;
       }
     }
 
     return {
-      filesCount: this.store.files.size,
-      metadataCount: this.store.metadata.size,
-      foldersCount: this.store.folders.size,
-      totalSize
+      size: this.cache.size,
+      lowPriority: lowCount,
+      mediumPriority: mediumCount,
+      highPriority: highCount
     };
   }
 }
 
-export default CacheManager;
+// Export l'instance par défaut
+export default CacheManager.getInstance();
