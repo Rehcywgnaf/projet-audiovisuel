@@ -15,12 +15,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    // Débogage : Log des variables d'environnement
-    console.log('ENV VARS:', {
-      CLAUDE_API_KEY: process.env.CLAUDE_API_KEY ? 'EXISTS' : 'NOT EXISTS',
-      CLAUDE_API_KEY_LENGTH: process.env.CLAUDE_API_KEY?.length || 0
-    });
-
     // Validation de la clé API
     const apiKey = process.env.CLAUDE_API_KEY;
     if (!apiKey) {
@@ -33,17 +27,22 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     // Log du corps de la requête pour débogage
     console.log('Request Body:', JSON.stringify(req.body, null, 2));
-    console.log('Request Headers:', req.headers);
+
+    // Modification pour utiliser le modèle Claude 3 Sonnet le plus récent
+    const requestBody = {
+      ...req.body,
+      model: 'claude-3-sonnet-20240229' // Modèle explicitement mentionné
+    };
 
     // Proxy de la requête vers l'API Anthropic
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'x-api-key': apiKey.trim(), // Ajout de trim() pour éliminer les espaces
+        'x-api-key': apiKey.trim(), 
         'anthropic-version': '2023-06-01'
       },
-      body: JSON.stringify(req.body)
+      body: JSON.stringify(requestBody)
     });
 
     // Gestion des erreurs de réponse
@@ -53,7 +52,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(response.status).json({ 
         error: 'Failed to fetch from Claude API', 
         details: errorBody,
-        apiKeyStatus: apiKey ? 'Key Exists' : 'No Key'
+        sentBody: requestBody
       });
     }
 
