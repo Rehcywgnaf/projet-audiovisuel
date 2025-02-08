@@ -16,17 +16,27 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   try {
     // Validation de la clé API
-    const apiKey = process.env.CLAUDE_API_KEY;
+    let apiKey = req.headers['x-api-key'] || req.headers['anthropic-api-key'] || process.env.CLAUDE_API_KEY;
+    
     if (!apiKey) {
-      console.error('CRITICAL: No API key found in environment');
-      return res.status(500).json({ 
+      console.error('CRITICAL: No API key found in request headers or environment');
+      return res.status(401).json({ 
         error: 'API key not configured', 
-        details: 'No API key found in environment variables' 
+        details: 'No API key found in request headers or environment variables' 
       });
     }
 
-    // Log des en-têtes pour débogage
-    console.log('Request Headers:', req.headers);
+    // Si la clé est un tableau, prendre la première valeur
+    if (Array.isArray(apiKey)) {
+      apiKey = apiKey[0];
+    }
+
+    // Log des en-têtes pour débogage (en masquant la clé API)
+    console.log('Request Headers:', {
+      ...req.headers,
+      'x-api-key': '[REDACTED]',
+      'anthropic-api-key': '[REDACTED]'
+    });
 
     // Log du corps de la requête pour débogage
     console.log('Request Body:', JSON.stringify(req.body, null, 2));
@@ -42,7 +52,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'x-api-key': apiKey.trim(), // Pour la compatibilité avec ancienne version de l'API
+        'anthropic-api-key': apiKey.trim(), // Utilisation du format correct pour Anthropic
         'anthropic-version': '2024-02-01'   // Version de l'API corrigée
       },
       body: JSON.stringify(requestBody)
@@ -65,7 +75,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // Configuration des en-têtes CORS
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, x-api-key');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, x-api-key, anthropic-api-key');
     
     res.status(200).json(data);
   } catch (error) {
