@@ -19,7 +19,7 @@ class AIServiceManager {
     this.cache = new Map();
     this.config = {
       apiKey: process.env.CLAUDE_API_KEY || '',
-      defaultModel: (process.env.CLAUDE_SONNET_MODEL || 'claude-3-sonnet-20240229') as ClaudeModel,
+      defaultModel: (process.env.CLAUDE_SONNET_MODEL || 'claude-3-sonnet-20241022') as ClaudeModel,
       haiku: (process.env.CLAUDE_HAIKU_MODEL || 'claude-3-haiku-20240307') as ClaudeModel,
       maxCost: 15, // $15 par mois
       warningThreshold: 10 // Alerte à $10
@@ -54,11 +54,11 @@ class AIServiceManager {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'x-api-key': this.config.apiKey,
-          'anthropic-version': '2023-06-01'
+          'anthropic-api-key': this.config.apiKey,
+          'anthropic-version': '2024-02-01'
         },
         body: JSON.stringify({
-          model: 'claude-3-sonnet-20240229', // Utilisation du modèle le plus récent
+          model: model, // Utilisation du modèle passé en paramètre
           max_tokens: 1000,
           messages: [{ role: 'user', content: prompt }]
         })
@@ -138,9 +138,9 @@ class AIServiceManager {
   }
 
   private calculateCost(model: ClaudeModel, tokens: number): number {
-    // Coûts par token (à ajuster selon les tarifs réels)
+    // Coûts par token (mis à jour selon les tarifs officiels)
     const costs = {
-      'claude-3-sonnet-20240229': 0.00003,
+      'claude-3-sonnet-20241022': 0.00003,
       'claude-3-haiku-20240307': 0.00001
     };
 
