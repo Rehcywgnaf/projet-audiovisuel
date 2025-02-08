@@ -5,7 +5,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   if (req.method === 'OPTIONS') {
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, anthropic-api-key, anthropic-version');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, x-api-key, anthropic-api-key, anthropic-version');
     return res.status(200).end();
   }
 
@@ -25,6 +25,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       });
     }
 
+    // Log des en-têtes pour débogage
+    console.log('Request Headers:', req.headers);
+
     // Log du corps de la requête pour débogage
     console.log('Request Body:', JSON.stringify(req.body, null, 2));
 
@@ -39,7 +42,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'anthropic-api-key': apiKey.trim(), // Format d'authentification corrigé
+        'x-api-key': apiKey.trim(), // Pour la compatibilité avec ancienne version de l'API
         'anthropic-version': '2024-02-01'   // Version de l'API corrigée
       },
       body: JSON.stringify(requestBody)
@@ -62,7 +65,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // Configuration des en-têtes CORS
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, anthropic-api-key');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, x-api-key');
     
     res.status(200).json(data);
   } catch (error) {
