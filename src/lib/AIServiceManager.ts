@@ -50,11 +50,17 @@ class AIServiceManager {
 
   private async callClaudeAPI(prompt: string, model: ClaudeModel): Promise<any> {
     try {
+      // Log debug des paramètres d'appel
+      console.log('Calling Claude API with:', {
+        model,
+        prompt: prompt.substring(0, 100) + '...' // Log partiel pour éviter de surcharger
+      });
+
       const response = await fetch('/api/claude', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'anthropic-api-key': this.config.apiKey,
+          'x-api-key': this.config.apiKey, // Utilisation de x-api-key pour compatibilité
           'anthropic-version': '2024-02-01'
         },
         body: JSON.stringify({
@@ -66,18 +72,37 @@ class AIServiceManager {
 
       if (!response.ok) {
         const errorBody = await response.text();
-        console.error('Claude API error:', errorBody);
-        throw new Error(`API error: ${response.status}`);
+        console.error('Claude API error:', {
+          status: response.status,
+          statusText: response.statusText,
+          headers: response.headers,
+          body: errorBody
+        });
+        throw new Error(`API error: ${response.status} - ${errorBody}`);
       }
 
-      return await response.json();
+      const data = await response.json();
+      return data;
     } catch (error) {
-      console.error('Claude API proxy error:', error);
+      console.error('Claude API proxy error:', {
+        error,
+        config: {
+          ...this.config,
+          apiKey: '[REDACTED]' // Ne pas loguer la clé API
+        }
+      });
       throw error;
     }
   }
 
   public async processRequest(service: string, operation: string, options?: AIRequest['options']): Promise<AIResponse> {
+    // Log debug du début de la requête
+    console.log('Processing request:', {
+      service,
+      operation: operation.substring(0, 100) + '...',
+      options
+    });
+
     // Vérifier le cache si activé
     if (options?.cache) {
       const cacheKey = `${service}-${operation}-${JSON.stringify(options)}`;
@@ -90,6 +115,7 @@ class AIServiceManager {
             cacheHits: currentStats.cacheHits + 1
           });
         }
+        console.log('Cache hit for:', cacheKey);
         return cachedResult;
       }
     }
@@ -126,10 +152,16 @@ class AIServiceManager {
       if (options?.cache) {
         const cacheKey = `${service}-${operation}-${JSON.stringify(options)}`;
         this.cache.set(cacheKey, result);
+        console.log('Cached result for:', cacheKey);
       }
 
       return result;
     } catch (error) {
+      console.error('Request processing error:', {
+        service,
+        operation: operation.substring(0, 100) + '...',
+        error
+      });
       return {
         success: false,
         error: error instanceof Error ? error.message : "Erreur inconnue"
@@ -171,6 +203,7 @@ class AIServiceManager {
 
   public clearCache(): void {
     this.cache.clear();
+    console.log('Cache cleared');
   }
 
   public getTotalCost(): number {
