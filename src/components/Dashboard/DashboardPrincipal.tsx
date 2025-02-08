@@ -1,10 +1,21 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { CheckCircle2, AlertTriangle, Clock, FileText, Users, Lightbulb, ArrowRight } from 'lucide-react';
+import { CheckCircle2, AlertTriangle, Clock, FileText, Users, Lightbulb, ArrowRight, Cpu } from 'lucide-react';
+import AIServiceManager from '@/lib/AIServiceManager';
+import { useAI } from '@/hooks/useAI';
 
 const DashboardPrincipal = () => {
+  const { stats: aiStats } = useAI('global');
+  const [aiManagerStats, setAIManagerStats] = useState<any>(null);
+
+  useEffect(() => {
+    const aiManager = AIServiceManager.getInstance();
+    const stats = aiManager.getAllStats();
+    setAIManagerStats(Object.fromEntries(stats));
+  }, []);
+
   const projectsData = [
     {name: 'Jan', aap: 4, ao: 2, success: 3},
     {name: 'Fév', aap: 6, ao: 3, success: 4},
@@ -41,7 +52,34 @@ const DashboardPrincipal = () => {
 
   return (
     <div className="space-y-6 p-6">
-      {/* Nouveaux Projets Détectés */}
+      {/* Métriques IA */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Cpu className="h-5 w-5" />
+            Métriques IA
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="p-4 border rounded-lg">
+              <h3 className="text-sm text-gray-500">Coût Total</h3>
+              <p className="text-2xl font-bold">{aiStats?.totalCost ? `$${aiStats.totalCost.toFixed(2)}` : 'N/A'}</p>
+            </div>
+            <div className="p-4 border rounded-lg">
+              <h3 className="text-sm text-gray-500">Requêtes IA</h3>
+              <p className="text-2xl font-bold">{aiStats?.requests || 0}</p>
+            </div>
+            <div className="p-4 border rounded-lg">
+              <h3 className="text-sm text-gray-500">Cache Hits</h3>
+              <p className="text-2xl font-bold">{aiStats?.cacheHits || 0}</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Reste du code existant... */}
+      {/* Nouvelles Opportunités */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -81,7 +119,7 @@ const DashboardPrincipal = () => {
         </CardContent>
       </Card>
 
-      {/* Métriques Essentielles */}
+      {/* Reste du composant inchangé */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0">
