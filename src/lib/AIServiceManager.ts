@@ -19,7 +19,8 @@ class AIServiceManager {
     this.cache = new Map();
     this.config = {
       apiKey: process.env.CLAUDE_API_KEY || '',
-      defaultModel: (process.env.CLAUDE_SONNET_MODEL as ClaudeModel) || 'claude-3-sonnet-20240229',
+      defaultModel: (process.env.CLAUDE_SONNET_MODEL || 'claude-3-sonnet-20240229') as ClaudeModel,
+      haiku: (process.env.CLAUDE_HAIKU_MODEL || 'claude-3-haiku-20240307') as ClaudeModel,
       maxCost: 15, // $15 par mois
       warningThreshold: 10 // Alerte à $10
     };
@@ -57,7 +58,7 @@ class AIServiceManager {
           'anthropic-version': '2023-06-01'
         },
         body: JSON.stringify({
-          model,
+          model: 'claude-3-sonnet-20240229', // Utilisation du modèle le plus récent
           max_tokens: 1000,
           messages: [{ role: 'user', content: prompt }]
         })
@@ -96,13 +97,10 @@ class AIServiceManager {
     try {
       const startTime = Date.now();
 
-      // Utiliser le service de routing pour sélectionner le modèle
-      const model = this.routingService.routeRequest(service, {
-        complexity: options?.complexity,
-        timeConstraint: options?.timeConstraint,
-        contextRequired: options?.contextRequired,
-        maxTokens: options?.maxTokens
-      });
+      // Sélection du modèle avec un fallback
+      const model = options?.complexity === 'simple' 
+        ? this.config.haiku 
+        : this.config.defaultModel;
 
       const response = await this.callClaudeAPI(operation, model);
       
@@ -146,7 +144,7 @@ class AIServiceManager {
       'claude-3-haiku-20240307': 0.00001
     };
 
-    return tokens * costs[model];
+    return tokens * (costs[model] || 0.00003);
   }
 
   private updateStats(service: string, latency: number, cost: number) {
