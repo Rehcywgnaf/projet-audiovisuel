@@ -241,7 +241,7 @@ export default function EnhancedProjectList({
                 <SelectValue placeholder="Filtrer par statut" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Tous</SelectItem>
+                <SelectItem value="all">Tous</SelectItem>
                 <SelectItem value="active">Actifs</SelectItem>
                 <SelectItem value="pending">En attente</SelectItem>
                 <SelectItem value="completed">Terminés</SelectItem>
