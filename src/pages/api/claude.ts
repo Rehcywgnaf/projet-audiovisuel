@@ -46,20 +46,20 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // Configuration des en-têtes pour Anthropic
     const headers = {
       'Content-Type': 'application/json',
-      'anthropic-api-key': apiKey.trim(),
-      'anthropic-version': '2023-06-01' // Version corrigée de l'API
+      'x-api-key': apiKey.trim(), // Utilisation du format x-api-key requis par Anthropic
+      'anthropic-version': '2023-06-01'
     };
 
     // Log des en-têtes qui seront envoyés à Anthropic (masqués)
     console.log('Sending to Anthropic with headers:', {
       ...headers,
-      'anthropic-api-key': '[REDACTED]'
+      'x-api-key': '[REDACTED]'
     });
 
     // Modification pour utiliser le modèle Claude 3 Sonnet le plus récent
     const requestBody = {
       ...req.body,
-      model: 'claude-3-sonnet-20241022' // Version corrigée du modèle
+      model: 'claude-3-sonnet-20241022'
     };
 
     // Proxy de la requête vers l'API Anthropic
@@ -77,8 +77,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         statusText: response.statusText,
         headers: Object.fromEntries(response.headers.entries()),
         body: errorBody,
-        requestHeaders: headers,
-        requestBody: requestBody
+        requestHeaders: {
+          ...headers,
+          'x-api-key': '[REDACTED]'
+        },
+        requestBody
       });
       return res.status(response.status).json({ 
         error: 'Failed to fetch from Claude API', 
@@ -89,6 +92,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     // Récupération et transmission de la réponse
     const data = await response.json();
+    console.log('Successful response from Anthropic');
     
     // Configuration des en-têtes CORS pour la réponse
     res.setHeader('Access-Control-Allow-Origin', '*');
