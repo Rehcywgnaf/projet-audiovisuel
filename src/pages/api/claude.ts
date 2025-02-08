@@ -47,7 +47,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const headers = {
       'Content-Type': 'application/json',
       'x-api-key': apiKey.trim(),
-      'anthropic-version': '2023-01-01'  // Version stable de l'API
+      'anthropic-version': '2024-02-01'  // Version la plus récente de l'API
     };
 
     // Log des en-têtes qui seront envoyés à Anthropic (masqués)
@@ -112,7 +112,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     console.error('Proxy error:', error);
     res.status(500).json({ 
       error: 'Internal Server Error', 
-      details: error instanceof Error ? error.message : 'Unknown error' 
+      details: error instanceof Error ? error.message : 'Unknown error',
+      stack: process.env.NODE_ENV === 'development' ? error : undefined
     });
   }
 }
