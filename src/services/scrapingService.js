@@ -1,41 +1,51 @@
-// scrapingService.js
 import axios from 'axios';
-import cheerio from 'cheerio';
+import * as cheerio from 'cheerio';
+import Parser from 'rss-parser';
 
-class ScrapingService {
-  async scrapeWebsite(url) {
+export const scrapingService = {
+  async parseRSSFeed(feedUrl) {
+    try {
+      const parser = new Parser();
+      const feed = await parser.parseURL(feedUrl);
+      
+      return feed.items.map(item => ({
+        title: item.title || '',
+        description: item.description || '',
+        link: item.link || '',
+        pubDate: item.pubDate || new Date().toISOString()
+      }));
+    } catch (error) {
+      console.error(`Erreur de parsing RSS pour ${feedUrl}:`, error);
+      return [];
+    }
+  },
+
+  async scrapeOpportunities(url) {
     try {
       const response = await axios.get(url);
       const $ = cheerio.load(response.data);
-      
-      switch (url) {
-        case 'https://www.francemarches.com/appels-offres-audiovisuel':
-          return this.scrapeFranceMarches($);
-        case 'https://appelaprojets.org':
-          return this.scrapeAppelProjets($);
-        case 'https://www.fimeco-walter-allinial.com':
-          return this.scrapeFimeco($);
-        case 'https://ellesfontlaculture.culture.gouv.fr':
-          return this.scrapeEFLC($);
-        default:
-          return this.scrapeGeneric($);
-      }
+      const opportunities = [];
+
+      // Sélecteurs génériques, à adapter selon chaque site
+      $('.opportunity, .project-listing, .call-for-project').each((index, element) => {
+        const title = $(element).find('.title').text().trim();
+        const description = $(element).find('.description').text().trim();
+        const deadline = $(element).find('.deadline').text().trim();
+        const budget = $(element).find('.budget').text().trim();
+
+        opportunities.push({
+          title,
+          description,
+          deadline,
+          budget,
+          source: url
+        });
+      });
+
+      return opportunities;
     } catch (error) {
-      console.error(`Erreur lors du scraping de ${url}:`, error);
-      throw error;
+      console.error(`Erreur de scraping pour ${url}:`, error);
+      return [];
     }
   }
-
-  scrapeFranceMarches($) {
-    const projects = [];
-    $('.appel-offre').each((i, el) => {
-      projects.push({
-        title: $(el).find('.titre').text().trim(),
-        deadline: $(el).find('.date-limite').text().trim(),
-        link: $(el).find('a').attr('href'),
-        budget: $(el).find('.budget').text().trim()
-      });
-    });
-    return projects;
-  }
-}
+};
