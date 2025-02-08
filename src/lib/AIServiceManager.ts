@@ -1,3 +1,5 @@
+import AIRoutingService from './AIRoutingService';
+
 type ClaudeModel = 'claude-3-sonnet-20240229' | 'claude-3-haiku-20240307';
 
 interface AIServiceStats {
@@ -15,7 +17,10 @@ interface AIRequest {
   options?: {
     priority?: 'low' | 'medium' | 'high';
     cache?: boolean;
-    model?: ClaudeModel;
+    complexity?: 'simple' | 'complex';
+    timeConstraint?: 'strict' | 'flexible';
+    contextRequired?: boolean;
+    maxTokens?: number;
   };
 }
 
@@ -24,6 +29,7 @@ interface AIResponse {
   data?: any;
   error?: string;
   cost?: number;
+  model?: ClaudeModel;
 }
 
 interface AIServiceConfig {
@@ -38,6 +44,7 @@ class AIServiceManager {
   private stats: Map<string, AIServiceStats>;
   private cache: Map<string, any>;
   private config: AIServiceConfig;
+  private routingService: AIRoutingService;
 
   private constructor() {
     this.stats = new Map();
@@ -48,6 +55,7 @@ class AIServiceManager {
       maxCost: 15, // $15 par mois
       warningThreshold: 10 // Alerte à $10
     };
+    this.routingService = AIRoutingService.getInstance();
     this.initializeStats();
   }
 
@@ -59,7 +67,7 @@ class AIServiceManager {
   }
 
   private initializeStats() {
-    const services = ['validator', 'suggester', 'analyzer'];
+    const services = ['validator', 'suggester', 'analyzer', 'rss', 'editor'];
     services.forEach(service => {
       this.stats.set(service, {
         cacheHits: 0,
@@ -98,32 +106,33 @@ class AIServiceManager {
     }
   }
 
-  public async processRequest(service: string, operation: string, options?: any): Promise<AIResponse> {
-    const request: AIRequest = {
-      service,
-      operation,
-      options
-    };
-
+  public async processRequest(service: string, operation: string, options?: AIRequest['options']): Promise<AIResponse> {
     // Vérifier le cache si activé
     if (options?.cache) {
       const cacheKey = `${service}-${operation}-${JSON.stringify(options)}`;
       const cachedResult = this.cache.get(cacheKey);
       if (cachedResult) {
-        this.updateStats(service, 0, 0); // Pas de coût pour le cache
+        const currentStats = this.stats.get(service);
+        if (currentStats) {
+          this.stats.set(service, {
+            ...currentStats,
+            cacheHits: currentStats.cacheHits + 1
+          });
+        }
         return cachedResult;
       }
     }
 
     try {
       const startTime = Date.now();
-      
-      // Sélection du modèle en fonction de la priorité
-      const model = options?.model || (
-        options?.priority === 'low' ? 
-        'claude-3-haiku-20240307' : 
-        this.config.defaultModel
-      );
+
+      // Utiliser le service de routing pour sélectionner le modèle
+      const model = this.routingService.routeRequest(service, {
+        complexity: options?.complexity,
+        timeConstraint: options?.timeConstraint,
+        contextRequired: options?.contextRequired,
+        maxTokens: options?.maxTokens
+      });
 
       const response = await this.callClaudeAPI(operation, model);
       
@@ -141,7 +150,8 @@ class AIServiceManager {
       const result: AIResponse = {
         success: true,
         data: response,
-        cost
+        cost,
+        model
       };
 
       // Mettre en cache si activé
@@ -185,6 +195,10 @@ class AIServiceManager {
 
   public getStats(service: string): AIServiceStats | null {
     return this.stats.get(service) || null;
+  }
+
+  public getAllStats(): Map<string, AIServiceStats> {
+    return new Map(this.stats);
   }
 
   public clearCache(): void {
