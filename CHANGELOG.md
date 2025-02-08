@@ -1,5 +1,22 @@
 # SAPAV - Historique des modifications
 
+## [2.0.11]
+### Refactoring - Gestion des Deadlines
+- Refonte complète du système de gestion des deadlines
+- Introduction de services modulaires (tracking, IA)
+- Création de `useDeadlineManager` hook
+- Ajout de suggestions IA contextuelles
+- Amélioration du système de tracking des modifications
+- Suppression des composants obsolètes :
+  - `DeadlineManager.tsx`
+  - `GestionDeadlines/index.tsx`
+- Documentation technique mise à jour
+
+### Ajouts
+- Nouvelle architecture pour la gestion des deadlines
+- Service d'enrichissement IA des deadlines
+- Tracking avancé des modifications
+
 ## [2.0.10] - 2025-02-08
 
 ### Added
