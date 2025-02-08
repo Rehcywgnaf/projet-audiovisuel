@@ -1,4 +1,7 @@
 import { createContext, useContext } from 'react';
+import AIServiceManager from '@/lib/AIServiceManager';
+import { scrapingService } from './scrapingService';
+import { apiService } from './apiService';
 
 // Types pour les opportunités
 export interface Opportunity {
@@ -35,55 +38,196 @@ export interface FilterCriteria {
   };
 }
 
-// Service de veille
+// Service de veille amélioré
 export class VeilleService {
-  static async fetchOpportunities(filters?: FilterCriteria): Promise<Opportunity[]> {
+  private aiManager: AIServiceManager;
+
+  constructor() {
+    this.aiManager = AIServiceManager.getInstance();
+  }
+
+  async fetchOpportunities(filters?: FilterCriteria): Promise<Opportunity[]> {
     try {
-      // TODO: Remplacer par l'appel API réel
-      const response = await fetch('/api/opportunities', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(filters),
-      });
+      // Collecte des sources RSS
+      const rssOpportunities = await this.fetchRSSOpportunities(filters);
+      
+      // Collecte des sources API
+      const apiOpportunities = await this.fetchAPIOpportunities(filters);
+      
+      // Collecte des sources Scraping
+      const scrapingOpportunities = await this.fetchScrapingOpportunities(filters);
 
-      if (!response.ok) {
-        throw new Error('Erreur lors de la récupération des opportunités');
-      }
+      // Combinaison et enrichissement des opportunités
+      const allOpportunities = [
+        ...rssOpportunities, 
+        ...apiOpportunities, 
+        ...scrapingOpportunities
+      ];
 
-      const data = await response.json();
-      return data.opportunities;
+      // Enrichissement IA
+      return await this.enrichOpportunitiesWithAI(allOpportunities);
     } catch (error) {
       console.error('Erreur VeilleService:', error);
       throw error;
     }
   }
 
-  static async getOpportunityDetails(id: number): Promise<Opportunity> {
+  private async fetchRSSOpportunities(filters?: FilterCriteria): Promise<Opportunity[]> {
     try {
-      const response = await fetch(`/api/opportunities/${id}`);
-      if (!response.ok) {
-        throw new Error('Erreur lors de la récupération des détails');
-      }
-      return await response.json();
+      // Utilisation du service de parsing RSS
+      const rssFeeds = [
+        'https://cnc.fr/feed',
+        'https://www.cap-metiers.pro/rss'
+      ];
+
+      const opportunitiesPromises = rssFeeds.map(async (feed) => {
+        const feedData = await scrapingService.parseRSSFeed(feed);
+        return feedData.map(item => ({
+          id: Date.now() + Math.random(),
+          type: this.determineOpportunityType(item.title),
+          title: item.title,
+          budget: this.extractBudget(item.description),
+          deadline: this.extractDeadline(item.description),
+          match: 0,
+          description: item.description,
+          source: feed
+        }));
+      });
+
+      return (await Promise.all(opportunitiesPromises)).flat();
     } catch (error) {
-      console.error('Erreur détails opportunité:', error);
-      throw error;
+      console.error('Erreur de récupération RSS:', error);
+      return [];
     }
   }
 
-  static matchScore(opportunity: Opportunity): number {
-    // TODO: Implémenter l'algorithme de scoring réel
+  private async fetchAPIOpportunities(filters?: FilterCriteria): Promise<Opportunity[]> {
+    try {
+      // Utilisation du service API
+      const apiEndpoints = [
+        'https://www.marchesonline.com/api/opportunities',
+        'https://www.e-marchespublics.com/api/calls'
+      ];
+
+      const opportunitiesPromises = apiEndpoints.map(async (endpoint) => {
+        const apiData = await apiService.fetchOpportunities(endpoint, filters);
+        return apiData.map(item => ({
+          id: item.id,
+          type: item.type,
+          title: item.title,
+          budget: item.budget,
+          deadline: item.deadline,
+          match: 0,
+          description: item.description,
+          source: endpoint
+        }));
+      });
+
+      return (await Promise.all(opportunitiesPromises)).flat();
+    } catch (error) {
+      console.error('Erreur de récupération API:', error);
+      return [];
+    }
+  }
+
+  private async fetchScrapingOpportunities(filters?: FilterCriteria): Promise<Opportunity[]> {
+    try {
+      // Utilisation du service de scraping
+      const scrapingSources = [
+        'https://www.francemarches.com/appels-offres-audiovisuel',
+        'https://ellesfontlaculture.culture.gouv.fr'
+      ];
+
+      const opportunitiesPromises = scrapingSources.map(async (source) => {
+        const scrapedData = await scrapingService.scrapeOpportunities(source);
+        return scrapedData.map(item => ({
+          id: Date.now() + Math.random(),
+          type: this.determineOpportunityType(item.title),
+          title: item.title,
+          budget: this.extractBudget(item.description),
+          deadline: this.extractDeadline(item.description),
+          match: 0,
+          description: item.description,
+          source: source
+        }));
+      });
+
+      return (await Promise.all(opportunitiesPromises)).flat();
+    } catch (error) {
+      console.error('Erreur de scraping:', error);
+      return [];
+    }
+  }
+
+  private async enrichOpportunitiesWithAI(opportunities: Opportunity[]): Promise<Opportunity[]> {
+    try {
+      const enrichedOpportunities = await Promise.all(
+        opportunities.map(async (opportunity) => {
+          const enrichmentResponse = await this.aiManager.processRequest('rss-analyzer', 'enrich', {
+            data: opportunity,
+            options: {
+              cache: true,
+              complexity: 'simple'
+            }
+          });
+
+          if (enrichmentResponse.success) {
+            return {
+              ...opportunity,
+              match: enrichmentResponse.data.match || this.matchScore(opportunity),
+              category: enrichmentResponse.data.category,
+              requirements: enrichmentResponse.data.requirements
+            };
+          }
+
+          return opportunity;
+        })
+      );
+
+      return this.filterAndSortOpportunities(enrichedOpportunities);
+    } catch (error) {
+      console.error('Erreur d\'enrichissement IA:', error);
+      return opportunities;
+    }
+  }
+
+  private filterAndSortOpportunities(opportunities: Opportunity[]): Opportunity[] {
+    return opportunities
+      .filter(opp => opp.match > 0)
+      .sort((a, b) => b.match - a.match);
+  }
+
+  private determineOpportunityType(title: string): 'AAP' | 'AO' {
+    const aapKeywords = ['appel à projet', 'appel à candidature'];
+    const aoKeywords = ['appel d\'offre', 'marché public'];
+
+    const lowercaseTitle = title.toLowerCase();
+    if (aapKeywords.some(keyword => lowercaseTitle.includes(keyword))) {
+      return 'AAP';
+    }
+    return 'AO';
+  }
+
+  private extractBudget(description?: string): string {
+    if (!description) return 'Non spécifié';
+    const budgetMatch = description.match(/(\d+(?:\s*\d{3})*)\s*(?:€|euros)/i);
+    return budgetMatch ? `${budgetMatch[1]} €` : 'Non spécifié';
+  }
+
+  private extractDeadline(description?: string): string {
+    if (!description) return 'Non spécifié';
+    const dateMatch = description.match(/(\d{1,2}\/\d{1,2}\/\d{4})/);
+    return dateMatch ? dateMatch[1] : 'Non spécifié';
+  }
+
+  matchScore(opportunity: Opportunity): number {
     let score = 0;
     
-    // Critères de base
-    if (opportunity.budget) score += 30;
-    if (opportunity.deadline) score += 20;
-    if (opportunity.requirements) score += 30;
-    if (opportunity.description) score += 20;
-
-    return score;
+    if (opportunity.budget !== 'Non spécifié') score += 30;
+    if (opportunity.deadline !== 'Non spécifié') score += 20;
+    if (opportunity.description) score += 30;
+    
+    return Math.min(score, 100);
   }
 }
 
@@ -97,3 +241,5 @@ export function useVeille() {
   }
   return context;
 }
+
+export const veilleService = new VeilleService();
