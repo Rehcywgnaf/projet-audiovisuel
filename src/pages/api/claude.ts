@@ -46,14 +46,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // Configuration des en-têtes pour Anthropic
     const headers = {
       'Content-Type': 'application/json',
-      'x-api-key': apiKey.trim(),
-      'anthropic-version': '2024-02-01'
+      'anthropic-api-key': apiKey.trim(),
+      'anthropic-version': '2023-06-01' // Version corrigée de l'API
     };
 
     // Log des en-têtes qui seront envoyés à Anthropic (masqués)
     console.log('Sending to Anthropic with headers:', {
       ...headers,
-      'x-api-key': '[REDACTED]'
+      'anthropic-api-key': '[REDACTED]'
     });
 
     // Modification pour utiliser le modèle Claude 3 Sonnet le plus récent
@@ -76,7 +76,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         status: response.status,
         statusText: response.statusText,
         headers: Object.fromEntries(response.headers.entries()),
-        body: errorBody
+        body: errorBody,
+        requestHeaders: headers,
+        requestBody: requestBody
       });
       return res.status(response.status).json({ 
         error: 'Failed to fetch from Claude API', 
