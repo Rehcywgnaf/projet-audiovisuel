@@ -175,6 +175,11 @@ Documentation complète :
 - Système de notification personnalisé
 - Analyse de pertinence intégrée
 - Tests d'intégration validés
+- Service centralisé avec AIServiceManager
+- Analyse IA intégrée des sources
+- Gestion intelligente du cache
+- Interface utilisateur réactive
+- Conversion automatique en projets
 
 ### 2. Gestion Documentaire
 - Génération IA de documents basée sur l'analyse des AAP/AO
