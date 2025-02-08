@@ -10,14 +10,15 @@ SAPAV est une plateforme innovante dédiée au soutien et à l'accompagnement de
 - Système de commentaires collaboratifs via Google Chat intégré
 
 ### Architecture IA
-Le projet utilise Claude-3 Sonnet d'Anthropic via une architecture centralisée :
+Le projet utilise Claude-3 (Sonnet et Haiku) via une architecture centralisée :
 - AIServiceManager : Point d'entrée unique pour l'IA
   * Gestion des coûts (max 15$/mois)
+  * Routing intelligent entre Sonnet (0.00003$/token) et Haiku (0.00001$/token)
   * Cache intelligent par composant :
-    - RSS-IA : 1h, priorité haute (95% hit rate)
-    - Editor : 5min, priorité moyenne (98%)
-    - Validation : 10min, priorité moyenne (95%)
-    - Templates : 24h, priorité basse (99%)
+    - RSS-IA : 1h, vers Haiku, priorité haute (95% hit rate)
+    - Editor : 5min, vers Sonnet, priorité moyenne (98%)
+    - Validation : 10min, mixte selon complexité (95%)
+    - Templates : 24h, principalement Haiku (99%)
   * Monitoring performances temps réel
   * Tests unitaires complets
   * Intégration DriveCore pour validation des synchronisations
@@ -64,6 +65,7 @@ Le projet suit une architecture modulaire standardisée sous /src :
 
 3. **AIEnhancedEditor** [Doc](/docs/project/architecture/ai-service.md)
    - Génération assistée de contenu via AIServiceManager
+   - Routing intelligent Haiku/Sonnet selon complexité
    - Suggestions contextuelles en temps réel
    - Interface d'édition augmentée
    - Validation intelligente
@@ -158,6 +160,8 @@ Pour plus de détails, consultez :
 - `/docs/technical/performance.md` : Monitoring et optimisation des performances
 - `/docs/technical/integration.md` : Guide d'intégration des composants
 - `/docs/technical/drive/auth.md` : Intégration Drive et authentification
+- `/docs/technical/hooks/useAI.md` : Documentation du hook useAI
+- `/docs/technical/services/AIRoutingService.md` : Documentation du service de routing IA
 - [Architecture globale](/docs/project/architecture/core.md)
 - [Guide IA](/docs/project/architecture/ai-service.md)
 - [Documentation composants](/docs/project/overview.md)
@@ -385,6 +389,10 @@ GOOGLE_CLIENT_ID=votre_client_id
 GOOGLE_CLIENT_SECRET=votre_client_secret
 GOOGLE_REDIRECT_URI=http://localhost:3000/drive/auth/callback
 NEXT_PUBLIC_GOOGLE_CHAT_SCOPE=https://www.googleapis.com/auth/chat.spaces
+# Claude API Configuration (Requis)
+CLAUDE_API_KEY=votre_clé_api_claude
+CLAUDE_SONNET_MODEL=claude-3-sonnet-20240229
+CLAUDE_HAIKU_MODEL=claude-3-haiku-20240307
 
 # Application Configuration 
 NODE_ENV=development 
