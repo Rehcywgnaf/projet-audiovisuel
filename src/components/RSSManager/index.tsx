@@ -1,92 +1,84 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardHeader, CardContent } from '@/components/ui/card';
 import { Plus, Trash2, RefreshCw, AlertCircle } from 'lucide-react';
-import AIServiceManager from '@/lib/AIServiceManager';
+import { rssProjectService } from '@/services/RSSProjectService';
 
-interface RSSSource {
+type RSSSource = {
   id: number;
   url: string;
   type: 'rss' | 'scraping' | 'api';
   status: 'active' | 'pending' | 'error';
   lastCheck: Date | null;
-  lastAnalysis?: {
+  analysis?: {
     score: number;
     category: string;
     keywords: string[];
+    lastAnalysis: Date;
   };
-}
+};
 
 const RSSManager: React.FC = () => {
-  const [sources, setSources] = useState<RSSSource[]>([
-    { id: 1, url: 'https://cnc.fr/feed', type: 'rss', status: 'active', lastCheck: new Date() },
-    { id: 2, url: 'https://www.francemarches.com/appels-offres-audiovisuel', type: 'scraping', status: 'active', lastCheck: new Date() },
-    { id: 3, url: 'https://www.e-marchespublics.com', type: 'api', status: 'pending', lastCheck: null },
-    { id: 4, url: 'https://appelaprojets.org', type: 'scraping', status: 'active', lastCheck: new Date() },
-    { id: 5, url: 'https://www.marchesonline.com', type: 'api', status: 'active', lastCheck: new Date() },
-    { id: 6, url: 'https://www.fimeco-walter-allinial.com', type: 'scraping', status: 'pending', lastCheck: null },
-    { id: 7, url: 'https://www.cap-metiers.pro', type: 'rss', status: 'active', lastCheck: new Date() },
-    { id: 8, url: 'https://ellesfontlaculture.culture.gouv.fr', type: 'scraping', status: 'active', lastCheck: new Date() }
-  ]);
-
+  const [sources, setSources] = useState<RSSSource[]>([]);
   const [newSource, setNewSource] = useState<string>('');
-  const [isAnalyzing, setIsAnalyzing] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const aiManager = AIServiceManager.getInstance();
-
-  const analyzeSource = async (url: string): Promise<void> => {
-    try {
-      setIsAnalyzing(true);
-      const response = await aiManager.processRequest('rss-analyzer', 'analyze', {
-        data: { url },
-        options: {
-          priority: 'high',
-          cache: true
-        }
-      });
-
-      if (response.success && response.data) {
-        // TODO: Mise à jour de l'analyse
-        console.log('Analyse réussie:', response.data);
-      }
-    } catch (error) {
-      console.error('Erreur lors de l\'analyse:', error);
-    } finally {
-      setIsAnalyzing(false);
-    }
-  };
+  // Chargement initial des sources
+  useEffect(() => {
+    setSources(rssProjectService.getSources());
+  }, []);
 
   const addSource = async (): Promise<void> => {
     if (!newSource) return;
 
-    const newSourceData: RSSSource = {
-      id: Date.now(),
-      url: newSource,
-      type: determineSourceType(newSource),
-      status: 'pending',
-      lastCheck: null
-    };
+    try {
+      setIsLoading(true);
+      setError(null);
 
-    setSources(prev => [...prev, newSourceData]);
-    setNewSource('');
+      const newSourceData = await rssProjectService.addSource(newSource);
+      setSources(rssProjectService.getSources());
+      setNewSource('');
 
-    // Analyse de la nouvelle source
-    await analyzeSource(newSource);
-  };
-
-  const determineSourceType = (url: string): RSSSource['type'] => {
-    if (url.includes('feed') || url.includes('rss')) return 'rss';
-    if (url.includes('api')) return 'api';
-    return 'scraping';
+    } catch (error) {
+      setError('Erreur lors de l\'ajout de la source');
+      console.error('Erreur:', error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const removeSource = (id: number): void => {
-    setSources(sources.filter(source => source.id !== id));
+    try {
+      rssProjectService.removeSource(id);
+      setSources(rssProjectService.getSources());
+    } catch (error) {
+      setError('Erreur lors de la suppression de la source');
+      console.error('Erreur:', error);
+    }
+  };
+
+  const updateSourceAnalysis = async (id: number): Promise<void> => {
+    try {
+      setIsLoading(true);
+      await rssProjectService.updateAnalysis(id);
+      setSources(rssProjectService.getSources());
+    } catch (error) {
+      setError('Erreur lors de la mise à jour de l\'analyse');
+      console.error('Erreur:', error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
     <Card className="w-full max-w-4xl mx-auto">
       <CardHeader className="flex flex-row items-center justify-between">
-        <h2 className="text-xl font-bold">Sources de Veille</h2>
+        <div className="space-y-1">
+          <h2 className="text-2xl font-bold">Sources de Veille</h2>
+          {error && (
+            <p className="text-sm text-red-500">{error}</p>
+          )}
+        </div>
         <div className="flex gap-2">
           <input
             type="text"
@@ -94,13 +86,14 @@ const RSSManager: React.FC = () => {
             onChange={(e) => setNewSource(e.target.value)}
             placeholder="URL du flux RSS"
             className="px-3 py-2 border rounded"
+            disabled={isLoading}
           />
           <button 
             onClick={addSource}
-            disabled={isAnalyzing}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={isLoading || !newSource}
+            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
-            {isAnalyzing ? (
+            {isLoading ? (
               <RefreshCw className="w-4 h-4 animate-spin" />
             ) : (
               <Plus className="w-4 h-4" />
@@ -109,14 +102,18 @@ const RSSManager: React.FC = () => {
           </button>
         </div>
       </CardHeader>
+
       <CardContent>
         <div className="space-y-4">
           {sources.map(source => (
-            <div key={source.id} className="flex items-center justify-between p-4 border rounded hover:shadow-md transition-shadow">
+            <div key={source.id} className="flex items-center justify-between p-4 border rounded hover:shadow-md transition-all">
               <div className="flex items-center gap-4">
                 <div className="flex items-center gap-2">
                   {source.status === 'active' ? (
-                    <RefreshCw className="w-5 h-5 text-green-500" />
+                    <RefreshCw 
+                      className="w-5 h-5 text-green-500 cursor-pointer hover:text-green-600" 
+                      onClick={() => updateSourceAnalysis(source.id)}
+                    />
                   ) : source.status === 'error' ? (
                     <AlertCircle className="w-5 h-5 text-red-500" />
                   ) : (
@@ -126,7 +123,17 @@ const RSSManager: React.FC = () => {
                     {source.type}
                   </span>
                 </div>
-                <span className="text-sm">{source.url}</span>
+                <span className="text-sm flex-1">{source.url}</span>
+                {source.analysis && (
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs px-2 py-1 rounded bg-green-100 text-green-800">
+                      Score: {source.analysis.score}
+                    </span>
+                    <span className="text-xs px-2 py-1 rounded bg-blue-100 text-blue-800">
+                      {source.analysis.category}
+                    </span>
+                  </div>
+                )}
               </div>
               <div className="flex items-center gap-4">
                 <span className="text-sm text-gray-500">
