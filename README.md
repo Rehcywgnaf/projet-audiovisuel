@@ -215,6 +215,11 @@ Documentation complète :
 - Monitoring des deadlines
 - Alertes automatiques
 - Statistiques et reporting
+- Système de gestion des deadlines avancé
+  - Tracking intelligent des échéances
+  - Suggestions IA contextuelles
+  - Gestion dynamique des priorités
+  - Historique détaillé des modifications
 
 ### 4. Accompagnement Projet
 - Suivi personnalisé
