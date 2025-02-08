@@ -1,198 +1,168 @@
 # Guide d'Intégration IA - SAPAV
 
-## Vue d'ensemble
+## Architecture Globale
 
-L'intelligence artificielle dans SAPAV est gérée par un service centralisé (AIServiceManager) qui utilise l'API Claude-3 Sonnet d'Anthropic. Cette architecture assure une gestion efficace des coûts et des performances.
+### Points Centraux
+1. **AIServiceManager**
+   - Point d'entrée unique
+   - Gestion des requêtes vers l'API Claude
+   - Monitoring des coûts et performances
+   - Cache intelligent par service
 
-## Architecture
+2. **AIRoutingService**
+   - Sélection intelligente Haiku/Sonnet
+   - Configuration par type de service
+   - Critères de routing
+   - Gestion des fallbacks
 
-### AIServiceManager
+### Stratégie de Routing
+Critères de sélection entre Haiku et Sonnet :
 
-Point d'entrée unique pour toutes les interactions IA :
+#### Haiku (0.00001$/token)
+- Requêtes simples et rapides
+- Sans contexte étendu
+- Maximum 1000 tokens
+- Temps de réponse critique
 
+Utilisé pour :
+- Suggestions de deadlines
+- Filtrage initial RSS
+- Prévisualisation documents
+- Enrichissement léger métadonnées
+
+#### Sonnet (0.00003$/token)
+- Analyses complexes
+- Besoin de contexte
+- Sans limite de tokens
+- Temps de réponse flexible
+
+Utilisé pour :
+- Analyse approfondie AAP/AO
+- Génération de documents
+- Suggestions structurelles
+- Analyses contextuelles
+
+## Configuration
+
+### Variables d'Environnement
+```env
+CLAUDE_API_KEY=votre_clé_api_claude
+CLAUDE_SONNET_MODEL=claude-3-sonnet-20240229
+CLAUDE_HAIKU_MODEL=claude-3-haiku-20240307
+```
+
+### Gestion des Coûts
+- Budget mensuel : 15$
+- Seuil d'alerte : 10$
+- Monitoring par service
+- Calcul des coûts par modèle
+
+## Utilisation
+
+### Via Hook React
+```typescript
+function MonComposant() {
+  const { 
+    execute, 
+    isLoading, 
+    result, 
+    stats 
+  } = useAI('rss-filtering');
+
+  const analyserContenu = async () => {
+    await execute('analyser', {
+      complexity: 'simple',
+      timeConstraint: 'strict',
+      cache: true
+    });
+  };
+}
+```
+
+### Via Manager Direct
 ```typescript
 const aiManager = AIServiceManager.getInstance();
 const response = await aiManager.processRequest(
-  'rss-analyzer',
-  content,
-  options
+  'document-generation',
+  'génerer',
+  {
+    complexity: 'complex',
+    contextRequired: true
+  }
 );
 ```
-
-#### Configuration par Composant
-- RSS-IA : Cache 1h, priorité haute
-- Editor : Cache 5min, priorité moyenne
-- Template : Cache 24h, priorité basse
-- Validator : Cache 10min, priorité moyenne
-
-### Gestion des Coûts
-
-Budget et seuils :
-- Maximum : 15$ par mois
-- Alerte principale : 10$
-- Alertes progressives : 5$ et 8$
-
-### Composants Intégrés
-
-1. RSS-IA
-```typescript
-// Exemple d'intégration dans RSS-IA
-const analyzeContent = async (content: string) => {
-  return await aiManager.processRequest('rss-analyzer', content, {
-    maxTokens: 1000,
-    temperature: 0.3
-  });
-};
-```
-
-2. AIEnhancedEditor
-```typescript
-// Exemple dans l'éditeur
-const getSuggestions = async (text: string) => {
-  return await aiManager.processRequest('editor', text, {
-    maxTokens: 2000,
-    stream: true
-  });
-};
-```
-
-3. TemplateManager
-```typescript
-// Exemple de sélection de template
-const selectTemplate = async (requirements: string) => {
-  return await aiManager.processRequest('template', requirements, {
-    cache: true
-  });
-};
-```
-
-## Optimisations
-
-### Cache
-- Stratégie par composant
-- TTL configurable
-- Invalidation intelligente
-```typescript
-const cacheConfig = {
-  rss: { ttl: 3600, maxSize: 100 },
-  editor: { ttl: 300, maxSize: 50 },
-  template: { ttl: 86400, maxSize: 200 }
-};
-```
-
-### Gestion des Coûts
-- Tracking par composant
-- Rapports d'utilisation
-- Alertes configurables
 
 ## Monitoring
 
 ### Métriques Disponibles
-1. Par composant :
-   - Utilisation (tokens/coût)
-   - Cache hits/misses
-   - Temps de réponse
+- Coût total par service
+- Nombre de requêtes
+- Latence moyenne
+- Taux d'utilisation du cache
+- Modèle utilisé
 
-2. Global :
-   - Budget restant
-   - Alertes actives
-   - Statistiques d'utilisation
-
-### Dashboard
-```typescript
-const stats = aiManager.getGlobalStats();
-console.log(`Stats : ${JSON.stringify(stats, null, 2)}`);
-```
-
-## Tests
-
-### Tests d'Intégration
-- Workflow complet
-- Performance
-- Gestion des erreurs
-- Monitoring des coûts
-
-### Mocks pour Tests
-```typescript
-jest.mock('../../components/AIServiceManager', () => ({
-  AIServiceManager: {
-    getInstance: jest.fn(() => ({
-      processRequest: jest.fn(),
-      getComponentStats: jest.fn()
-    }))
-  }
-}));
-```
+### Alertes
+- Approche du budget
+- Erreurs API
+- Performance dégradée
 
 ## Bonnes Pratiques
 
-1. Gestion des Coûts
-   - Utiliser le cache quand possible
-   - Optimiser la taille des requêtes
-   - Monitorer l'utilisation
+### Optimisation des Coûts
+1. Utiliser le cache quand possible
+2. Évaluer la complexité réelle
+3. Limiter les tokens quand possible
+4. Préférer Haiku pour les tâches simples
 
-2. Performance
-   - Limiter la taille des inputs
-   - Utiliser le streaming quand approprié
-   - Batching des requêtes similaires
+### Performance
+1. Gérer les timeouts
+2. Implémenter des retries
+3. Monitorer les latences
+4. Utiliser le streaming si nécessaire
 
-3. Sécurité
-   - Validation des inputs
-   - Rate limiting par composant
-   - Logs d'audit
+## Tests
 
-## Exemple Complet
-
+### Tests Unitaires
 ```typescript
-// Exemple d'utilisation complète
-class DocumentAnalyzer {
-  private aiManager: AIServiceManager;
-
-  constructor() {
-    this.aiManager = AIServiceManager.getInstance();
-  }
-
-  async analyzeDocument(content: string): Promise<AnalysisResult> {
-    try {
-      // Vérifier le budget disponible
-      const stats = await this.aiManager.getComponentStats('analyzer');
-      if (stats.usage > stats.config.budget) {
-        throw new Error('Budget exceeded');
-      }
-
-      // Procéder à l'analyse
-      const response = await this.aiManager.processRequest(
-        'analyzer',
-        content,
-        {
-          maxTokens: 1000,
-          temperature: 0.3,
-          cache: true
-        }
-      );
-
-      return this.processResponse(response);
-    } catch (error) {
-      this.handleError(error);
-      throw error;
-    }
-  }
-}
+describe('AIServiceManager', () => {
+  it('should route simple requests to Haiku', async () => {
+    const manager = AIServiceManager.getInstance();
+    const response = await manager.processRequest('rss-filtering', 'filter', {
+      complexity: 'simple'
+    });
+    expect(response.model).toBe('claude-3-haiku-20240307');
+  });
+});
 ```
+
+### Tests de Charge
+- 50 validations simultanées
+- 20 générations/minute
+- 100 mises à jour cache/30s
+- 200 lectures/minute
 
 ## Points d'Attention
 
-1. Gestion des Erreurs
-   - Toujours implémenter des fallbacks
-   - Gérer les timeouts
-   - Retries intelligents
+### Sécurité
+- Protection clé API
+- Validation des entrées
+- Audit des accès
+- Logs sécurisés
 
-2. Monitoring
-   - Surveiller les coûts quotidiens
-   - Alertes précoces
-   - Logs détaillés
+### Maintenance
+- Monitoring régulier
+- Ajustement des seuils
+- Optimisation du cache
+- Mise à jour des coûts
 
-3. Performance
-   - Cache agressif
-   - Optimisation requêtes
-   - Batching si possible
+## Évolutions Futures
+
+### Court Terme
+1. Dashboard de monitoring
+2. Amélioration du cache
+3. Optimisation des coûts
+
+### Long Terme
+1. Support nouveaux modèles
+2. Analytics avancées
+3. Auto-optimisation
