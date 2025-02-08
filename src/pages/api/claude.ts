@@ -46,8 +46,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // Configuration des en-têtes pour Anthropic
     const headers = {
       'Content-Type': 'application/json',
-      'x-api-key': apiKey.trim(), // Utilisation du format x-api-key requis par Anthropic
-      'anthropic-version': '2023-06-01'
+      'x-api-key': apiKey.trim(),
+      'anthropic-version': '2024-01-01'  // Mise à jour à la version la plus récente
     };
 
     // Log des en-têtes qui seront envoyés à Anthropic (masqués)
@@ -59,8 +59,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // Modification pour utiliser le modèle Claude 3 Sonnet le plus récent
     const requestBody = {
       ...req.body,
-      model: 'claude-3-sonnet-20241022'
+      model: 'claude-3-sonnet'  // Version corrigée de l'identifiant du modèle
     };
+
+    // Log du corps de la requête avant envoi
+    console.log('Sending request body to Anthropic:', requestBody);
 
     // Proxy de la requête vers l'API Anthropic
     const response = await fetch('https://api.anthropic.com/v1/messages', {
