@@ -47,7 +47,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const headers = {
       'Content-Type': 'application/json',
       'x-api-key': apiKey.trim(),
-      'anthropic-version': '2024-01-01'  // Mise à jour à la version la plus récente
+      'anthropic-version': '2023-01-01'  // Version stable de l'API
     };
 
     // Log des en-têtes qui seront envoyés à Anthropic (masqués)
@@ -56,10 +56,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       'x-api-key': '[REDACTED]'
     });
 
-    // Modification pour utiliser le modèle Claude 3 Sonnet le plus récent
+    // Modification pour utiliser le modèle Claude 3 Sonnet
     const requestBody = {
       ...req.body,
-      model: 'claude-3-sonnet'  // Version corrigée de l'identifiant du modèle
+      model: 'claude-3-sonnet',
+      system: 'Tu es Claude, un assistant créé par Anthropic. Tu communiques toujours en français.'
     };
 
     // Log du corps de la requête avant envoi
@@ -95,7 +96,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     // Récupération et transmission de la réponse
     const data = await response.json();
-    console.log('Successful response from Anthropic');
+    console.log('Successful response from Anthropic:', {
+      status: response.status,
+      headers: Object.fromEntries(response.headers.entries()),
+      data: data
+    });
     
     // Configuration des en-têtes CORS pour la réponse
     res.setHeader('Access-Control-Allow-Origin', '*');
