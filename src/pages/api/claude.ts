@@ -15,18 +15,32 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
+    // Débogage : Log des variables d'environnement
+    console.log('ENV VARS:', {
+      CLAUDE_API_KEY: process.env.CLAUDE_API_KEY ? 'EXISTS' : 'NOT EXISTS',
+      CLAUDE_API_KEY_LENGTH: process.env.CLAUDE_API_KEY?.length || 0
+    });
+
     // Validation de la clé API
     const apiKey = process.env.CLAUDE_API_KEY;
     if (!apiKey) {
-      return res.status(500).json({ error: 'API key not configured' });
+      console.error('CRITICAL: No API key found in environment');
+      return res.status(500).json({ 
+        error: 'API key not configured', 
+        details: 'No API key found in environment variables' 
+      });
     }
+
+    // Log du corps de la requête pour débogage
+    console.log('Request Body:', JSON.stringify(req.body, null, 2));
+    console.log('Request Headers:', req.headers);
 
     // Proxy de la requête vers l'API Anthropic
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'x-api-key': apiKey,
+        'x-api-key': apiKey.trim(), // Ajout de trim() pour éliminer les espaces
         'anthropic-version': '2023-06-01'
       },
       body: JSON.stringify(req.body)
@@ -38,7 +52,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       console.error('Claude API error:', errorBody);
       return res.status(response.status).json({ 
         error: 'Failed to fetch from Claude API', 
-        details: errorBody 
+        details: errorBody,
+        apiKeyStatus: apiKey ? 'Key Exists' : 'No Key'
       });
     }
 
