@@ -2,15 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '../../../components/ui/card';
 import { Alert, AlertTitle, AlertDescription } from '../../../components/ui/alert';
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, ResponsiveContainer, Tooltip, CartesianGrid } from 'recharts';
-import { Clock, AlertTriangle, RefreshCcw, CheckCircle2 } from 'lucide-react';
+import { Clock, AlertTriangle, RefreshCcw, CheckCircle2, Cpu } from 'lucide-react';
 import { monitoringService } from '@/lib/monitoring/MonitoringService';
 import type { MonitoringMetrics, QueueAlert } from '@/types/monitoring';
-
-const alertThresholds = {
-  high: { size: 10, waitTime: 300 },     // 5 minutes
-  standard: { size: 20, waitTime: 900 },  // 15 minutes
-  low: { size: 30, waitTime: 1800 }      // 30 minutes
-};
+import AIServiceManager from '@/lib/AIServiceManager';
 
 const DashboardMonitoring = () => {
   const [metrics, setMetrics] = useState<MonitoringMetrics>({
@@ -21,9 +16,10 @@ const DashboardMonitoring = () => {
   });
 
   const [systemStatus, setSystemStatus] = useState<'healthy' | 'warning'>('healthy');
+  const [aiServiceStats, setAIServiceStats] = useState<any>({});
 
   useEffect(() => {
-    // Abonnement aux métriques via MonitoringService
+    // Existing monitoring service subscriptions
     const unsubscribeMetrics = monitoringService.onMetricsUpdate((newMetrics: MonitoringMetrics) => {
       setMetrics(prev => ({
         ...prev,
@@ -33,7 +29,6 @@ const DashboardMonitoring = () => {
       }));
     });
 
-    // Abonnement aux alertes
     const unsubscribeAlerts = monitoringService.onAlertsUpdate((alerts: QueueAlert[]) => {
       setMetrics(prev => ({
         ...prev,
@@ -41,6 +36,11 @@ const DashboardMonitoring = () => {
       }));
       setSystemStatus(alerts.length > 0 ? 'warning' : 'healthy');
     });
+
+    // Fetch AI service stats
+    const aiManager = AIServiceManager.getInstance();
+    const stats = aiManager.getAllStats();
+    setAIServiceStats(Object.fromEntries(stats));
 
     return () => {
       unsubscribeMetrics();
@@ -55,7 +55,40 @@ const DashboardMonitoring = () => {
         <RefreshCcw className="w-5 h-5 text-gray-500 animate-spin" />
       </div>
 
-      {/* Alertes système */}
+      {/* Nouvelles métriques IA */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Cpu className="w-5 h-5" />
+            Performance IA
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {Object.entries(aiServiceStats).map(([service, stats]) => (
+              <div key={service} className="p-4 border rounded-lg">
+                <h3 className="text-sm text-gray-500 mb-2">{service.toUpperCase()}</h3>
+                <div className="space-y-2">
+                  <div>
+                    <span className="text-xs text-gray-500">Requêtes</span>
+                    <p className="text-lg font-bold">{stats.totalRequests}</p>
+                  </div>
+                  <div>
+                    <span className="text-xs text-gray-500">Latence Moy.</span>
+                    <p className="text-lg font-bold">{stats.averageLatency.toFixed(2)}ms</p>
+                  </div>
+                  <div>
+                    <span className="text-xs text-gray-500">Coût Total</span>
+                    <p className="text-lg font-bold">${stats.totalCost.toFixed(4)}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Reste du code existant */}
       {metrics.activeAlerts.length > 0 && (
         <Alert variant="warning" className="col-span-full">
           <AlertTriangle className="w-4 h-4" />
@@ -65,15 +98,13 @@ const DashboardMonitoring = () => {
               <div key={alert.id} className="mt-1">
                 {alert.message}
                 {alert.priority && (
-                  <span className={
-                    `ml-2 px-2 py-0.5 rounded-full text-xs ${
-                      alert.priority === 'high' 
-                        ? 'bg-red-100 text-red-800'
-                        : alert.priority === 'standard'
-                        ? 'bg-blue-100 text-blue-800'
-                        : 'bg-green-100 text-green-800'
-                    }`
-                  }>
+                  <span className={`ml-2 px-2 py-0.5 rounded-full text-xs ${
+                    alert.priority === 'high' 
+                      ? 'bg-red-100 text-red-800'
+                      : alert.priority === 'standard'
+                      ? 'bg-blue-100 text-blue-800'
+                      : 'bg-green-100 text-green-800'
+                  }`}>
                     {alert.priority}
                   </span>
                 )}
@@ -91,7 +122,7 @@ const DashboardMonitoring = () => {
         </Alert>
       )}
 
-      {/* Graphiques de monitoring */}
+      {/* Graphiques existants */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card>
           <CardHeader>
@@ -132,6 +163,7 @@ const DashboardMonitoring = () => {
           </CardContent>
         </Card>
 
+        {/* Les autres graphiques restent inchangés */}
         <Card>
           <CardHeader>
             <CardTitle>Taux d'Erreurs</CardTitle>
