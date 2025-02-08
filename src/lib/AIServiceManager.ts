@@ -49,7 +49,7 @@ class AIServiceManager {
 
   private async callClaudeAPI(prompt: string, model: ClaudeModel): Promise<any> {
     try {
-      const response = await fetch('https://api.anthropic.com/v1/messages', {
+      const response = await fetch('/api/claude', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -64,12 +64,14 @@ class AIServiceManager {
       });
 
       if (!response.ok) {
+        const errorBody = await response.text();
+        console.error('Claude API error:', errorBody);
         throw new Error(`API error: ${response.status}`);
       }
 
       return await response.json();
     } catch (error) {
-      console.error('Claude API error:', error);
+      console.error('Claude API proxy error:', error);
       throw error;
     }
   }
