@@ -5,7 +5,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   if (req.method === 'OPTIONS') {
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, x-api-key, anthropic-version');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, anthropic-api-key, anthropic-version');
     return res.status(200).end();
   }
 
@@ -31,7 +31,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // Modification pour utiliser le modèle Claude 3 Sonnet le plus récent
     const requestBody = {
       ...req.body,
-      model: 'claude-3-sonnet-20240229' // Modèle explicitement mentionné
+      model: 'claude-3-sonnet-20241022' // Version corrigée du modèle
     };
 
     // Proxy de la requête vers l'API Anthropic
@@ -39,8 +39,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'x-api-key': apiKey.trim(), 
-        'anthropic-version': '2023-06-01'
+        'anthropic-api-key': apiKey.trim(), // Format d'authentification corrigé
+        'anthropic-version': '2024-02-01'   // Version de l'API corrigée
       },
       body: JSON.stringify(requestBody)
     });
@@ -62,7 +62,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // Configuration des en-têtes CORS
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, x-api-key');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, anthropic-api-key');
     
     res.status(200).json(data);
   } catch (error) {
