@@ -15,8 +15,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    // Validation de la clé API
-    let apiKey = req.headers['x-api-key'] || req.headers['anthropic-api-key'] || process.env.CLAUDE_API_KEY;
+    // Validation de la clé API - d'abord des headers, puis de l'environnement
+    let apiKey = req.headers['anthropic-api-key'] as string || 
+                 req.headers['x-api-key'] as string || 
+                 process.env.CLAUDE_API_KEY;
     
     if (!apiKey) {
       console.error('CRITICAL: No API key found in request headers or environment');
@@ -41,6 +43,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // Log du corps de la requête pour débogage
     console.log('Request Body:', JSON.stringify(req.body, null, 2));
 
+    // Configuration des en-têtes pour Anthropic
+    const headers = {
+      'Content-Type': 'application/json',
+      'x-api-key': apiKey.trim(),
+      'anthropic-version': '2024-02-01'
+    };
+
+    // Log des en-têtes qui seront envoyés à Anthropic (masqués)
+    console.log('Sending to Anthropic with headers:', {
+      ...headers,
+      'x-api-key': '[REDACTED]'
+    });
+
     // Modification pour utiliser le modèle Claude 3 Sonnet le plus récent
     const requestBody = {
       ...req.body,
@@ -50,18 +65,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // Proxy de la requête vers l'API Anthropic
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'anthropic-api-key': apiKey.trim(), // Utilisation du format correct pour Anthropic
-        'anthropic-version': '2024-02-01'   // Version de l'API corrigée
-      },
+      headers,
       body: JSON.stringify(requestBody)
     });
 
     // Gestion des erreurs de réponse
     if (!response.ok) {
       const errorBody = await response.text();
-      console.error('Claude API error:', errorBody);
+      console.error('Claude API error response:', {
+        status: response.status,
+        statusText: response.statusText,
+        headers: Object.fromEntries(response.headers.entries()),
+        body: errorBody
+      });
       return res.status(response.status).json({ 
         error: 'Failed to fetch from Claude API', 
         details: errorBody,
@@ -72,7 +88,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // Récupération et transmission de la réponse
     const data = await response.json();
     
-    // Configuration des en-têtes CORS
+    // Configuration des en-têtes CORS pour la réponse
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, x-api-key, anthropic-api-key');
