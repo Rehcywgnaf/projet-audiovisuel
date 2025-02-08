@@ -1,5 +1,16 @@
 # SAPAV - Historique des modifications
 
+## [2.0.12]
+### Added
+- Intégration complète de l'API Claude
+- Support des modèles Sonnet et Haiku avec routing intelligent
+- Monitoring des coûts et performances
+- Hook React useAI
+
+### Changed
+- Refactorisation de AIServiceManager pour supporter l'API Claude
+- Extraction des types communs
+
 ## [2.0.11]
 ### Refactoring - Gestion des Deadlines
 - Refonte complète du système de gestion des deadlines
