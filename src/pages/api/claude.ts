@@ -47,7 +47,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const headers = {
       'Content-Type': 'application/json',
       'x-api-key': apiKey.trim(),
-      'anthropic-version': '2024-02-01'  // Version la plus récente de l'API
+      'anthropic-version': '2023-06-01'  // Version stable pour messages API
     };
 
     // Log des en-têtes qui seront envoyés à Anthropic (masqués)
@@ -56,9 +56,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       'x-api-key': '[REDACTED]'
     });
 
-    // Modification pour utiliser le modèle Claude 3 Sonnet
+    // Modification pour utiliser le modèle Claude 3 Sonnet avec les paramètres corrects
+    const { max_tokens, ...restBody } = req.body;  // Supprimer max_tokens
     const requestBody = {
-      ...req.body,
+      ...restBody,
       model: 'claude-3-sonnet',
       system: 'Tu es Claude, un assistant créé par Anthropic. Tu communiques toujours en français.'
     };
