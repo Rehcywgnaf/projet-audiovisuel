@@ -1,4 +1,4 @@
-type ClaudeModel = 'claude-3-sonnet-20240229' | 'claude-3-haiku-20240307';
+import type { ClaudeModel } from './types';
 
 interface RoutingCriteria {
   serviceType: 'rss' | 'editor' | 'validator' | 'suggester' | 'analyzer';
