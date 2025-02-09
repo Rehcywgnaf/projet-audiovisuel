@@ -10,21 +10,23 @@ export class ProjectService {
 
   async getProjects(): Promise<Project[]> {
     try {
-      // Utilisation du service IA pour générer/récupérer les projets
-      const response = await this.aiManager.generateContent({
-        type: AIRequestType.PROJECT_SUMMARY,
-        messages: [
-          { role: 'user', content: 'Generate a list of active audiovisual projects' }
-        ],
-        maxTokens: 1000
-      });
+      // Vérification côté serveur uniquement
+      if (typeof window === 'undefined') {
+        const response = await this.aiManager.generateContent({
+          type: AIRequestType.PROJECT_SUMMARY,
+          messages: [
+            { role: 'user', content: 'Generate a list of active audiovisual projects' }
+          ],
+          maxTokens: 1000
+        });
 
-      if (response?.content) {
-        // Transformation des données de réponse en projets
-        return this.transformProjects(JSON.parse(response.content));
+        if (response?.content) {
+          // Transformation des données de réponse en projets
+          return this.transformProjects(JSON.parse(response.content));
+        }
       }
 
-      // Projets par défaut si la génération échoue
+      // Projets par défaut si la génération échoue ou côté client
       return this.getDefaultProjects();
     } catch (error) {
       console.error('Erreur lors de la récupération des projets', error);
@@ -34,21 +36,24 @@ export class ProjectService {
 
   async getProjectStats() {
     try {
-      const response = await this.aiManager.generateContent({
-        type: AIRequestType.PROJECT_SUMMARY,
-        messages: [
-          { role: 'user', content: 'Calculate project statistics: total, active, completed' }
-        ],
-        maxTokens: 500
-      });
+      // Vérification côté serveur uniquement
+      if (typeof window === 'undefined') {
+        const response = await this.aiManager.generateContent({
+          type: AIRequestType.PROJECT_SUMMARY,
+          messages: [
+            { role: 'user', content: 'Calculate project statistics: total, active, completed' }
+          ],
+          maxTokens: 500
+        });
 
-      if (response?.content) {
-        const stats = JSON.parse(response.content);
-        return {
-          totalProjects: stats.total || 0,
-          activeProjects: stats.active || 0,
-          completedProjects: stats.completed || 0
-        };
+        if (response?.content) {
+          const stats = JSON.parse(response.content);
+          return {
+            totalProjects: stats.total || 0,
+            activeProjects: stats.active || 0,
+            completedProjects: stats.completed || 0
+          };
+        }
       }
 
       // Statistiques par défaut
