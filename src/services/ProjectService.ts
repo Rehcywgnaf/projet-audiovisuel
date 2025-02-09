@@ -1,4 +1,4 @@
-import AIServiceManager from '@/lib/AIServiceManager';
+import AIServiceManager, { AIRequestType } from '@/lib/AIServiceManager';
 import { Project } from '@/components/EnhancedProjectList';
 
 export class ProjectService {
@@ -11,14 +11,17 @@ export class ProjectService {
   async getProjects(): Promise<Project[]> {
     try {
       // Utilisation du service IA pour générer/récupérer les projets
-      const response = await this.aiManager.processRequest('project-generator', 'list', {
-        priority: 'high',
-        cache: true
+      const response = await this.aiManager.generateContent({
+        type: AIRequestType.PROJECT_SUMMARY,
+        messages: [
+          { role: 'user', content: 'Generate a list of active audiovisual projects' }
+        ],
+        maxTokens: 1000
       });
 
-      if (response.success && response.data) {
+      if (response?.content) {
         // Transformation des données de réponse en projets
-        return this.transformProjects(response.data);
+        return this.transformProjects(JSON.parse(response.content));
       }
 
       // Projets par défaut si la génération échoue
@@ -31,16 +34,20 @@ export class ProjectService {
 
   async getProjectStats() {
     try {
-      const response = await this.aiManager.processRequest('project-stats', 'calculate', {
-        priority: 'medium',
-        cache: true
+      const response = await this.aiManager.generateContent({
+        type: AIRequestType.PROJECT_SUMMARY,
+        messages: [
+          { role: 'user', content: 'Calculate project statistics: total, active, completed' }
+        ],
+        maxTokens: 500
       });
 
-      if (response.success && response.data) {
+      if (response?.content) {
+        const stats = JSON.parse(response.content);
         return {
-          totalProjects: response.data.total || 0,
-          activeProjects: response.data.active || 0,
-          completedProjects: response.data.completed || 0
+          totalProjects: stats.total || 0,
+          activeProjects: stats.active || 0,
+          completedProjects: stats.completed || 0
         };
       }
 
