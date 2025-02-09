@@ -1,5 +1,23 @@
 # SAPAV - Historique des modifications
 
+## [2.0.13] - 2025-02-09
+
+### Refactoring
+- Réorganisation complète des composants Dashboard pour une meilleure maintenabilité et clarté
+  - Migration du Dashboard principal vers `/src/components/dashboard/global/`
+  - Migration du Dashboard équipes vers `/src/components/dashboard/team/`
+  - Migration du Dashboard projets vers `/src/components/dashboard/project/`
+
+### Changements
+- Renommage de `Dashboard.tsx` en `GlobalDashboard.tsx` pour une meilleure clarté
+- Optimisation des imports dans les composants Dashboard
+- Amélioration de la gestion des types TypeScript dans les composants Dashboard
+
+### Technique
+- Integration avec l'AIServiceManager
+- Mise en place d'un système de cache optimisé
+- Support de la validation en temps réel dans le ProjectDashboard
+
 ## [2.0.12]
 ### Added
 - Intégration complète de l'API Claude
