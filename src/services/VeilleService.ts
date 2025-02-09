@@ -1,9 +1,9 @@
-import { createContext, useContext } from 'react';
 import AIServiceManager from '@/lib/AIServiceManager';
 import { scrapingService } from './scrapingService';
 import { apiService } from './apiService';
+import { rssProjectService } from './RSSProjectService';
+import { LoggingService } from '@/lib/LoggingService';
 
-// Types pour les opportunités
 export interface Opportunity {
   id: number;
   type: 'AAP' | 'AO';
@@ -17,15 +17,6 @@ export interface Opportunity {
   requirements?: string[];
 }
 
-interface VeilleContextType {
-  opportunities: Opportunity[];
-  isLoading: boolean;
-  error: Error | null;
-  refreshOpportunities: () => Promise<void>;
-  filterOpportunities: (criteria: FilterCriteria) => Promise<void>;
-}
-
-// Types pour les filtres
 export interface FilterCriteria {
   type?: 'AAP' | 'AO';
   minBudget?: number;
@@ -38,43 +29,41 @@ export interface FilterCriteria {
   };
 }
 
-// Service de veille amélioré
 export class VeilleService {
   private aiManager: AIServiceManager;
+  private loggingService: LoggingService;
 
   constructor() {
     this.aiManager = AIServiceManager.getInstance();
+    this.loggingService = LoggingService.getInstance();
   }
 
   async fetchOpportunities(filters?: FilterCriteria): Promise<Opportunity[]> {
     try {
-      // Collecte des sources RSS
+      // Collecte des sources RSS, API et Scraping
       const rssOpportunities = await this.fetchRSSOpportunities(filters);
-      
-      // Collecte des sources API
       const apiOpportunities = await this.fetchAPIOpportunities(filters);
-      
-      // Collecte des sources Scraping
       const scrapingOpportunities = await this.fetchScrapingOpportunities(filters);
 
-      // Combinaison et enrichissement des opportunités
+      // Combinaison des opportunités
       const allOpportunities = [
         ...rssOpportunities, 
         ...apiOpportunities, 
         ...scrapingOpportunities
       ];
 
-      // Enrichissement IA
+      // Enrichissement IA via AIServiceManager
       return await this.enrichOpportunitiesWithAI(allOpportunities);
     } catch (error) {
-      console.error('Erreur VeilleService:', error);
-      throw error;
+      this.loggingService.error('Erreur VeilleService', { 
+        error: error instanceof Error ? error.message : 'Erreur inconnue' 
+      });
+      return [];
     }
   }
 
   private async fetchRSSOpportunities(filters?: FilterCriteria): Promise<Opportunity[]> {
     try {
-      // Utilisation du service de parsing RSS
       const rssFeeds = [
         'https://cnc.fr/feed',
         'https://www.cap-metiers.pro/rss'
@@ -96,14 +85,13 @@ export class VeilleService {
 
       return (await Promise.all(opportunitiesPromises)).flat();
     } catch (error) {
-      console.error('Erreur de récupération RSS:', error);
+      this.loggingService.error('Erreur de récupération RSS', { error });
       return [];
     }
   }
 
   private async fetchAPIOpportunities(filters?: FilterCriteria): Promise<Opportunity[]> {
     try {
-      // Utilisation du service API
       const apiEndpoints = [
         'https://www.marchesonline.com/api/opportunities',
         'https://www.e-marchespublics.com/api/calls'
@@ -125,14 +113,13 @@ export class VeilleService {
 
       return (await Promise.all(opportunitiesPromises)).flat();
     } catch (error) {
-      console.error('Erreur de récupération API:', error);
+      this.loggingService.error('Erreur de récupération API', { error });
       return [];
     }
   }
 
   private async fetchScrapingOpportunities(filters?: FilterCriteria): Promise<Opportunity[]> {
     try {
-      // Utilisation du service de scraping
       const scrapingSources = [
         'https://www.francemarches.com/appels-offres-audiovisuel',
         'https://ellesfontlaculture.culture.gouv.fr'
@@ -144,8 +131,8 @@ export class VeilleService {
           id: Date.now() + Math.random(),
           type: this.determineOpportunityType(item.title),
           title: item.title,
-          budget: this.extractBudget(item.description),
-          deadline: this.extractDeadline(item.description),
+          budget: item.budget,
+          deadline: item.deadline,
           match: 0,
           description: item.description,
           source: source
@@ -154,20 +141,22 @@ export class VeilleService {
 
       return (await Promise.all(opportunitiesPromises)).flat();
     } catch (error) {
-      console.error('Erreur de scraping:', error);
+      this.loggingService.error('Erreur de scraping', { error });
       return [];
     }
   }
 
   private async enrichOpportunitiesWithAI(opportunities: Opportunity[]): Promise<Opportunity[]> {
     try {
+      // Utilisation de AIServiceManager pour l'enrichissement
       const enrichedOpportunities = await Promise.all(
         opportunities.map(async (opportunity) => {
-          const enrichmentResponse = await this.aiManager.processRequest('rss-analyzer', 'enrich', {
+          const enrichmentResponse = await this.aiManager.processRequest('veille-analyzer', 'enrich', {
             data: opportunity,
             options: {
               cache: true,
-              complexity: 'simple'
+              complexity: 'simple',
+              monitoringKey: 'opportunity_enrichment'
             }
           });
 
@@ -186,15 +175,9 @@ export class VeilleService {
 
       return this.filterAndSortOpportunities(enrichedOpportunities);
     } catch (error) {
-      console.error('Erreur d\'enrichissement IA:', error);
+      this.loggingService.error('Erreur d\'enrichissement IA', { error });
       return opportunities;
     }
-  }
-
-  private filterAndSortOpportunities(opportunities: Opportunity[]): Opportunity[] {
-    return opportunities
-      .filter(opp => opp.match > 0)
-      .sort((a, b) => b.match - a.match);
   }
 
   private determineOpportunityType(title: string): 'AAP' | 'AO' {
@@ -202,15 +185,12 @@ export class VeilleService {
     const aoKeywords = ['appel d\'offre', 'marché public'];
 
     const lowercaseTitle = title.toLowerCase();
-    if (aapKeywords.some(keyword => lowercaseTitle.includes(keyword))) {
-      return 'AAP';
-    }
-    return 'AO';
+    return aapKeywords.some(keyword => lowercaseTitle.includes(keyword)) ? 'AAP' : 'AO';
   }
 
   private extractBudget(description?: string): string {
     if (!description) return 'Non spécifié';
-    const budgetMatch = description.match(/(\d+(?:\s*\d{3})*)\s*(?:€|euros)/i);
+    const budgetMatch = description.match(/(\d+(?:\s*\d{3})*)?\s*(?:€|euros)/i);
     return budgetMatch ? `${budgetMatch[1]} €` : 'Non spécifié';
   }
 
@@ -220,7 +200,7 @@ export class VeilleService {
     return dateMatch ? dateMatch[1] : 'Non spécifié';
   }
 
-  matchScore(opportunity: Opportunity): number {
+  private matchScore(opportunity: Opportunity): number {
     let score = 0;
     
     if (opportunity.budget !== 'Non spécifié') score += 30;
@@ -229,17 +209,12 @@ export class VeilleService {
     
     return Math.min(score, 100);
   }
-}
 
-// Context pour la veille
-export const VeilleContext = createContext<VeilleContextType | undefined>(undefined);
-
-export function useVeille() {
-  const context = useContext(VeilleContext);
-  if (context === undefined) {
-    throw new Error('useVeille doit être utilisé dans un VeilleProvider');
+  private filterAndSortOpportunities(opportunities: Opportunity[]): Opportunity[] {
+    return opportunities
+      .filter(opp => opp.match > 0)
+      .sort((a, b) => b.match - a.match);
   }
-  return context;
 }
 
 export const veilleService = new VeilleService();
