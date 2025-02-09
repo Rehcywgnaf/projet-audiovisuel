@@ -2,12 +2,16 @@ import Anthropic from '@anthropic-ai/sdk';
 import { CacheManager } from './CacheManager';
 import { BudgetTracker } from './BudgetTracker';
 import { LoggingService } from './LoggingService';
+import { EventSystem } from './EventSystem';
 
-export enum AIRequestType {
+// Définition des types d'interaction avancés
+export enum AIInteractionType {
   RSS_ANALYSIS = 'RSS_ANALYSIS',
   DOCUMENT_GENERATION = 'DOCUMENT_GENERATION',
   PROJECT_SUMMARY = 'PROJECT_SUMMARY',
-  DEADLINE_ANALYSIS = 'DEADLINE_ANALYSIS'
+  DEADLINE_ANALYSIS = 'DEADLINE_ANALYSIS',
+  TEAM_OPTIMIZATION = 'TEAM_OPTIMIZATION',
+  RESOURCE_ALLOCATION = 'RESOURCE_ALLOCATION'
 }
 
 export enum AIModelType {
@@ -17,11 +21,43 @@ export enum AIModelType {
 }
 
 export interface AIRequestParams {
-  type: AIRequestType;
-  messages: Array<{ role: string; content: string }>;
+  type: AIInteractionType;
+  messages: Array<{ 
+    role: 'user' | 'assistant' | 'system'; 
+    content: string 
+  }>;
   model?: AIModelType | string;
   maxTokens?: number;
-  additionalContext?: Record<string, any>;
+  temperature?: number;
+  context?: Record<string, any>;
+  performanceMetrics?: {
+    maxResponseTime?: number;
+    priorityLevel?: 'LOW' | 'MEDIUM' | 'HIGH';
+  };
+}
+
+export interface AIResponse {
+  content: string;
+  model: string;
+  tokens: {
+    input: number;
+    output: number;
+  };
+  metadata: {
+    timestamp: string;
+    interactionType: AIInteractionType;
+    performanceMetrics?: Record<string, any>;
+  };
+}
+
+export interface AIPerformanceMetrics {
+  responseTime: number;
+  tokenUsage: {
+    input: number;
+    output: number;
+  };
+  costEstimation: number;
+  modelUsed: string;
 }
 
 const MODEL_MAPPING = {
@@ -30,28 +66,26 @@ const MODEL_MAPPING = {
   [AIModelType.OPUS]: process.env.CLAUDE_OPUS_MODEL || 'claude-3-opus-20240229'
 };
 
-const SUPPORTED_MODELS = Object.values(MODEL_MAPPING);
-
 class AIServiceManager {
   private static instance: AIServiceManager | null = null;
   private client: Anthropic | null = null;
   private cacheManager: CacheManager;
   private budgetTracker: BudgetTracker;
   private loggingService: LoggingService;
+  private eventSystem: EventSystem;
   private currentModel: string;
 
   private constructor() {
     this.cacheManager = new CacheManager();
     this.budgetTracker = new BudgetTracker();
     this.loggingService = LoggingService.getInstance();
-    this.currentModel = MODEL_MAPPING[AIModelType.SONNET]; // Modèle par défaut
+    this.eventSystem = EventSystem.getInstance();
+    this.currentModel = MODEL_MAPPING[AIModelType.SONNET];
     
-    // Initialisation conditionnelle du client
     this.initializeClient();
   }
 
   private initializeClient() {
-    // Vérification côté serveur uniquement
     if (typeof window === 'undefined') {
       const apiKey = process.env.ANTHROPIC_API_KEY;
       
@@ -65,47 +99,58 @@ class AIServiceManager {
           dangerouslyAllowBrowser: false 
         });
 
-        // Test de connexion 
         this.validateApiConnection();
       } catch (error) {
-        this.loggingService.error('Anthropic Client Initialization Failed', { 
-          error: error instanceof Error ? error.message : 'Unknown error' 
-        });
-        throw error;
+        this.handleInitializationError(error);
       }
     }
   }
 
+  private handleInitializationError(error: any) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown initialization error';
+    
+    this.loggingService.error('Anthropic Client Initialization Failed', { 
+      error: errorMessage 
+    });
+
+    // Émission d'un événement système pour les erreurs critiques
+    this.eventSystem.emit('system:critical-error', {
+      component: 'AIServiceManager',
+      errorType: 'INITIALIZATION_FAILED',
+      details: errorMessage
+    });
+
+    throw error;
+  }
+
   private async validateApiConnection() {
-    const testModels = [...SUPPORTED_MODELS];
+    const testModels = Object.values(MODEL_MAPPING);
     let connectionSuccessful = false;
 
     for (const model of testModels) {
       try {
-        // Test minimal de connexion
+        const startTime = Date.now();
         const testResponse = await this.client?.messages.create({
           model: model,
           max_tokens: 10,
-          messages: [{ role: "user", content: "System check: Are you operational?" }]
+          messages: [{ role: "user", content: "System diagnostic check" }]
         });
+
+        const responseTime = Date.now() - startTime;
 
         if (testResponse) {
           this.currentModel = model;
           connectionSuccessful = true;
           
-          // Log du modèle utilisé
           this.loggingService.log('Anthropic API Connection Validated', { 
-            model: this.currentModel 
+            model: this.currentModel,
+            responseTime 
           });
 
-          // Avertissement si modèle déprécié
-          if (model !== MODEL_MAPPING[AIModelType.SONNET]) {
-            this.loggingService.warn('Deprecated Model in Use', {
-              message: 'Current model is deprecated. Consider updating.',
-              currentModel: model,
-              recommendedModel: MODEL_MAPPING[AIModelType.SONNET]
-            });
-          }
+          this.eventSystem.emit('ai:connection-validated', {
+            model: this.currentModel,
+            responseTime
+          });
 
           break;
         }
@@ -122,7 +167,6 @@ class AIServiceManager {
     }
   }
 
-  // Méthode statique pour obtenir l'instance singleton
   public static getInstance(): AIServiceManager {
     if (!AIServiceManager.instance) {
       AIServiceManager.instance = new AIServiceManager();
@@ -130,65 +174,84 @@ class AIServiceManager {
     return AIServiceManager.instance;
   }
 
-  // Helper pour convertir AIModelType en string de modèle
   private resolveModel(model?: AIModelType | string): string {
     if (!model) return this.currentModel;
     
-    // Si c'est un enum AIModelType, convertir
-    if (Object.values(AIModelType).includes(model as AIModelType)) {
-      return MODEL_MAPPING[model as AIModelType];
-    }
-    
-    // Sinon, retourner directement
-    return model;
+    return Object.values(AIModelType).includes(model as AIModelType) 
+      ? MODEL_MAPPING[model as AIModelType] 
+      : model;
   }
 
-  async generateContent(params: AIRequestParams) {
-    // Vérification que le client est disponible
+  async generateContent(params: AIRequestParams): Promise<AIResponse> {
     if (!this.client) {
-      this.loggingService.error('AI Client not initialized');
       throw new Error('AI services are not available on the client side');
     }
 
-    // Résolution du modèle
     const selectedModel = this.resolveModel(params.model);
+    const startTime = Date.now();
 
-    // Génération d'une clé de cache unique
+    // Vérification du cache et des permissions
     const cacheKey = this.generateCacheKey({...params, model: selectedModel});
-    
-    // Vérification du cache
     const cachedResponse = this.cacheManager.get(cacheKey);
+    
     if (cachedResponse) {
       this.loggingService.log('Cache hit', { cacheKey });
       return cachedResponse;
     }
 
-    // Vérification du budget
     if (!this.budgetTracker.canMakeRequest()) {
       this.loggingService.error('Budget limit reached');
       throw new Error('Budget limit reached');
     }
 
     try {
-      // Préparation des paramètres spécifiques selon le type de requête
       const requestParams = this.prepareRequestParams({...params, model: selectedModel});
-
-      // Appel à l'API Claude
+      
       const response = await this.client.messages.create(requestParams);
 
+      const performanceMetrics: AIPerformanceMetrics = {
+        responseTime: Date.now() - startTime,
+        tokenUsage: {
+          input: response.usage.input_tokens,
+          output: response.usage.output_tokens
+        },
+        costEstimation: this.budgetTracker.estimateCost(response),
+        modelUsed: selectedModel
+      };
+
+      const aiResponse: AIResponse = {
+        content: response.content[0].text,
+        model: selectedModel,
+        tokens: {
+          input: response.usage.input_tokens,
+          output: response.usage.output_tokens
+        },
+        metadata: {
+          timestamp: new Date().toISOString(),
+          interactionType: params.type,
+          performanceMetrics
+        }
+      };
+
       // Mise en cache
-      this.cacheManager.set(cacheKey, response);
+      this.cacheManager.set(cacheKey, aiResponse);
       
       // Tracking budgétaire
       this.budgetTracker.trackRequest(response);
 
-      // Logging de la requête
-      this.loggingService.log('AI Request Processed', { 
-        type: params.type, 
-        model: requestParams.model 
+      // Émission d'événement
+      this.eventSystem.emit('ai:request-processed', {
+        type: params.type,
+        performanceMetrics
       });
 
-      return response;
+      this.loggingService.log('AI Request Processed', { 
+        type: params.type, 
+        model: selectedModel,
+        performanceMetrics
+      });
+
+      return aiResponse;
     } catch (error) {
       this.handleApiError(error, params);
       throw error;
@@ -199,27 +262,46 @@ class AIServiceManager {
     const baseParams = {
       model: this.resolveModel(params.model),
       max_tokens: params.maxTokens || 1000,
-      messages: params.messages
+      messages: params.messages,
+      temperature: params.temperature || 0.7
     };
 
-    // Personnalisation selon le type de requête
-    switch(params.type) {
-      case AIRequestType.RSS_ANALYSIS:
-        return {
-          ...baseParams,
-          system: "You are an expert in analyzing RSS feeds for audiovisual project opportunities."
-        };
-      case AIRequestType.DOCUMENT_GENERATION:
-        return {
-          ...baseParams,
-          system: "Help generate professional documents for audiovisual project submissions."
-        };
-      default:
-        return baseParams;
-    }
+    const systemPrompts = {
+      [AIInteractionType.RSS_ANALYSIS]: 
+        "You are an expert in analyzing RSS feeds for audiovisual project opportunities.",
+      [AIInteractionType.DOCUMENT_GENERATION]: 
+        "Help generate professional documents for audiovisual project submissions.",
+      [AIInteractionType.PROJECT_SUMMARY]: 
+        "Provide a concise and insightful summary of project details.",
+      default: "Provide helpful and context-aware assistance."
+    };
+
+    return {
+      ...baseParams,
+      system: systemPrompts[params.type] || systemPrompts.default
+    };
   }
 
-  // Reste du code inchangé...
+  private generateCacheKey(params: AIRequestParams): string {
+    return JSON.stringify({
+      type: params.type,
+      messages: params.messages.map(m => m.content).join('|'),
+      model: params.model
+    });
+  }
+
+  private handleApiError(error: any, params: AIRequestParams) {
+    this.loggingService.error('Claude API Error', {
+      type: params.type,
+      error: error.message,
+      stack: error.stack
+    });
+
+    this.eventSystem.emit('ai:request-error', {
+      type: params.type,
+      error: error.message
+    });
+  }
 }
 
 export default AIServiceManager;
