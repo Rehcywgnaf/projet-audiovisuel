@@ -7,7 +7,8 @@ import { Card, CardHeader, CardTitle, CardContent } from '../../ui/card';
 import { Button } from '../../ui/button';
 import { StatsCard } from '../../ui/stats-card';
 import { Alert, AlertDescription, AlertTitle } from '../../ui/alert';
-import AIServiceManager, { AIInteractionType } from '@/lib/AIServiceManager';
+import { AIInteractionType } from '@/lib/AIServiceManager';
+import { useAI } from '@/hooks/useAI';
 
 export default function GlobalDashboard() {
   const [projects, setProjects] = useState([]);
@@ -22,7 +23,7 @@ export default function GlobalDashboard() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const aiManager = AIServiceManager.getInstance();
+  const { generateContent, isLoading: isAiLoading } = useAI();
 
   const fetchDashboardData = useCallback(async () => {
     try {
@@ -40,26 +41,24 @@ export default function GlobalDashboard() {
       ]);
 
       // Analyse IA des projets et sources
-      try {
-        const aiAnalysis = await aiManager.generateContent({
-          type: AIInteractionType.PROJECT_SUMMARY,
-          messages: [
-            {
-              role: 'user',
-              content: `Analyze these projects and RSS sources. Projects: ${JSON.stringify(projectsData)}. RSS Sources: ${JSON.stringify(sources)}`
-            }
-          ],
-          maxTokens: 500,
-          temperature: 0.3,
-          performanceMetrics: {
-            maxResponseTime: 2000,
-            priorityLevel: 'HIGH'
+      const aiAnalysis = await generateContent({
+        type: AIInteractionType.PROJECT_SUMMARY,
+        messages: [
+          {
+            role: 'user',
+            content: `Analyze these projects and RSS sources. Projects: ${JSON.stringify(projectsData)}. RSS Sources: ${JSON.stringify(sources)}`
           }
-        });
+        ],
+        maxTokens: 500,
+        temperature: 0.3,
+        performanceMetrics: {
+          maxResponseTime: 2000,
+          priorityLevel: 'HIGH'
+        }
+      });
 
+      if (aiAnalysis) {
         setAiSuggestions(aiAnalysis.content);
-      } catch (aiError) {
-        console.warn('AI Analysis failed, continuing without suggestions:', aiError);
       }
 
       setProjects(rssProjects.concat(projectsData));
@@ -78,7 +77,7 @@ export default function GlobalDashboard() {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [generateContent]);
 
   useEffect(() => {
     fetchDashboardData();
@@ -128,12 +127,13 @@ export default function GlobalDashboard() {
       </div>
 
       {/* Section Suggestions IA */}
-      {aiSuggestions && (
+      {(aiSuggestions || isAiLoading) && (
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Activity className="w-5 h-5" />
               Analyse IA
+              {isAiLoading && <Loader2 className="w-4 h-4 animate-spin ml-2" />}
             </CardTitle>
           </CardHeader>
           <CardContent>
