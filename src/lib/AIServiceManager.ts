@@ -1,28 +1,19 @@
 import AIRoutingService from './AIRoutingService';
 import type { 
-  ClaudeModel,
   AIServiceStats,
   AIRequest,
-  AIResponse,
-  AIServiceConfig
+  AIResponse
 } from './types';
 
 class AIServiceManager {
   private static instance: AIServiceManager;
   private stats: Map<string, AIServiceStats>;
   private cache: Map<string, any>;
-  private config: AIServiceConfig;
   private routingService: AIRoutingService;
 
   private constructor() {
     this.stats = new Map();
     this.cache = new Map();
-    this.config = {
-      defaultModel: (process.env.CLAUDE_SONNET_MODEL || 'claude-3-sonnet-20240229') as ClaudeModel,
-      haiku: (process.env.CLAUDE_HAIKU_MODEL || 'claude-3-haiku-20240307') as ClaudeModel,
-      maxCost: 15, // $15 par mois
-      warningThreshold: 10 // Alerte à $10
-    };
     this.routingService = AIRoutingService.getInstance();
     this.initializeStats();
   }
@@ -47,10 +38,10 @@ class AIServiceManager {
     });
   }
 
-  private async callClaudeAPI(prompt: string, model: ClaudeModel): Promise<any> {
+  private async callClaudeAPI(prompt: string, complexity: 'simple' | 'complete' = 'complete'): Promise<any> {
     try {
       console.log('Calling Claude API via proxy:', {
-        model,
+        complexity,
         prompt: prompt.substring(0, 100) + '...'
       });
 
@@ -60,7 +51,7 @@ class AIServiceManager {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          model: model,
+          complexity,
           messages: [{ role: 'user', content: prompt }]
         })
       });
@@ -79,7 +70,7 @@ class AIServiceManager {
     } catch (error) {
       console.error('Claude API request error:', {
         error,
-        model
+        complexity
       });
       throw error;
     }
@@ -111,30 +102,19 @@ class AIServiceManager {
 
     try {
       const startTime = Date.now();
-
-      // Sélection du modèle
-      const model = options?.complexity === 'simple' 
-        ? this.config.haiku 
-        : this.config.defaultModel;
-
-      const response = await this.callClaudeAPI(operation, model);
+      const complexity = options?.complexity || 'complete';
+      const response = await this.callClaudeAPI(operation, complexity);
       
       const latency = Date.now() - startTime;
-      const cost = this.calculateCost(model, response.usage?.total_tokens || 0);
+      const cost = response.cost || 0; // Le coût est maintenant calculé par claude.ts
       
       this.updateStats(service, latency, cost);
-
-      // Vérification budget
-      const currentStats = this.stats.get(service);
-      if (currentStats && currentStats.totalCost >= this.config.warningThreshold) {
-        console.warn(`Warning: Service ${service} approaching budget limit`);
-      }
 
       const result: AIResponse = {
         success: true,
         data: response,
         cost,
-        model
+        complexity
       };
 
       // Mise en cache si activé
@@ -156,15 +136,6 @@ class AIServiceManager {
         error: error instanceof Error ? error.message : "Erreur inconnue"
       };
     }
-  }
-
-  private calculateCost(model: ClaudeModel, tokens: number): number {
-    const costs = {
-      'claude-3-sonnet-20240229': 0.00003,
-      'claude-3-haiku-20240307': 0.00001
-    };
-
-    return tokens * (costs[model] || 0.00003);
   }
 
   private updateStats(service: string, latency: number, cost: number) {
