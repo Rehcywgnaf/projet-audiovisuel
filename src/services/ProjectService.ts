@@ -1,4 +1,4 @@
-import AIServiceManager, { AIRequestType } from '@/lib/AIServiceManager';
+import AIServiceManager, { AIInteractionType } from '@/lib/AIServiceManager';
 import { Project } from '@/components/EnhancedProjectList';
 
 export class ProjectService {
@@ -13,14 +13,14 @@ export class ProjectService {
       // Vérification côté serveur uniquement
       if (typeof window === 'undefined') {
         const response = await this.aiManager.generateContent({
-          type: AIRequestType.PROJECT_SUMMARY,
+          type: AIInteractionType.PROJECT_SUMMARY,
           messages: [
             { role: 'user', content: 'Generate a list of active audiovisual projects' }
           ],
           maxTokens: 1000
         });
 
-        if (response?.content) {
+        if (response.content) {
           // Transformation des données de réponse en projets
           return this.transformProjects(JSON.parse(response.content));
         }
@@ -39,14 +39,14 @@ export class ProjectService {
       // Vérification côté serveur uniquement
       if (typeof window === 'undefined') {
         const response = await this.aiManager.generateContent({
-          type: AIRequestType.PROJECT_SUMMARY,
+          type: AIInteractionType.PROJECT_SUMMARY,
           messages: [
             { role: 'user', content: 'Calculate project statistics: total, active, completed' }
           ],
           maxTokens: 500
         });
 
-        if (response?.content) {
+        if (response.content) {
           const stats = JSON.parse(response.content);
           return {
             totalProjects: stats.total || 0,
