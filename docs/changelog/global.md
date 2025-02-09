@@ -1,5 +1,58 @@
 # SAPAV - Historique des modifications
 
+[2.0.13] - 2025-02-09
+Refactoring
+
+    Réorganisation complète des composants Dashboard pour une meilleure maintenabilité et clarté
+        Migration du Dashboard principal vers /src/components/dashboard/global/
+        Migration du Dashboard équipes vers /src/components/dashboard/team/
+        Migration du Dashboard projets vers /src/components/dashboard/project/
+
+Changements
+
+    Renommage de Dashboard.tsx en GlobalDashboard.tsx pour une meilleure clarté
+    Optimisation des imports dans les composants Dashboard
+    Amélioration de la gestion des types TypeScript dans les composants Dashboard
+
+Technique
+
+    Integration avec l'AIServiceManager
+    Mise en place d'un système de cache optimisé
+    Support de la validation en temps réel dans le ProjectDashboard
+
+[2.0.12]
+Added
+
+    Intégration complète de l'API Claude
+    Support des modèles Sonnet et Haiku avec routing intelligent
+    Monitoring des coûts et performances
+    Hook React useAI
+
+Changed
+
+    Refactorisation de AIServiceManager pour supporter l'API Claude
+    Extraction des types communs
+
+[2.0.11]
+Refactoring - Gestion des Deadlines
+
+    Refonte complète du système de gestion des deadlines
+    Introduction de services modulaires (tracking, IA)
+    Création de useDeadlineManager hook
+    Ajout de suggestions IA contextuelles
+    Amélioration du système de tracking des modifications
+    Suppression des composants obsolètes :
+        DeadlineManager.tsx
+        GestionDeadlines/index.tsx
+    Documentation technique mise à jour
+
+Ajouts
+
+    Nouvelle architecture pour la gestion des deadlines
+    Service d'enrichissement IA des deadlines
+    Tracking avancé des modifications
+
+
 ## [2.0.10] - 2025-02-08
 
 ### Added
