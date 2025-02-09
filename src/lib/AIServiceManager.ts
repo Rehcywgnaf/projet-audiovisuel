@@ -19,19 +19,28 @@ export interface AIRequestParams {
 }
 
 class AIServiceManager {
-  private static instance: AIServiceManager;
-  private client: Anthropic;
+  private static instance: AIServiceManager | null = null;
+  private client: Anthropic | null = null;
   private cacheManager: CacheManager;
   private budgetTracker: BudgetTracker;
   private loggingService: LoggingService;
 
   private constructor() {
-    this.client = new Anthropic({
-      apiKey: process.env.ANTHROPIC_API_KEY,
-    });
     this.cacheManager = new CacheManager();
     this.budgetTracker = new BudgetTracker();
     this.loggingService = LoggingService.getInstance();
+    
+    // Initialisation conditionnelle du client
+    this.initializeClient();
+  }
+
+  private initializeClient() {
+    // Vérification côté serveur uniquement
+    if (typeof window === 'undefined') {
+      this.client = new Anthropic({
+        apiKey: process.env.ANTHROPIC_API_KEY,
+      });
+    }
   }
 
   // Méthode statique pour obtenir l'instance singleton
@@ -43,6 +52,12 @@ class AIServiceManager {
   }
 
   async generateContent(params: AIRequestParams) {
+    // Vérification que le client est disponible
+    if (!this.client) {
+      this.loggingService.error('AI Client not initialized');
+      throw new Error('AI services are not available on the client side');
+    }
+
     // Générer une clé de cache unique
     const cacheKey = this.generateCacheKey(params);
     
