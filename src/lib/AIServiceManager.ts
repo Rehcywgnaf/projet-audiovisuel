@@ -1,11 +1,28 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { CacheManager } from './CacheManager';
 import { BudgetTracker } from './BudgetTracker';
+import { LoggingService } from './LoggingService';
+
+export enum AIRequestType {
+  RSS_ANALYSIS = 'RSS_ANALYSIS',
+  DOCUMENT_GENERATION = 'DOCUMENT_GENERATION',
+  PROJECT_SUMMARY = 'PROJECT_SUMMARY',
+  DEADLINE_ANALYSIS = 'DEADLINE_ANALYSIS'
+}
+
+export interface AIRequestParams {
+  type: AIRequestType;
+  messages: Array<{ role: string; content: string }>;
+  model?: string;
+  maxTokens?: number;
+  additionalContext?: Record<string, any>;
+}
 
 export class AIServiceManager {
   private client: Anthropic;
   private cacheManager: CacheManager;
   private budgetTracker: BudgetTracker;
+  private loggingService: LoggingService;
 
   constructor() {
     this.client = new Anthropic({
@@ -13,30 +30,32 @@ export class AIServiceManager {
     });
     this.cacheManager = new CacheManager();
     this.budgetTracker = new BudgetTracker();
+    this.loggingService = new LoggingService();
   }
 
-  async generateContent(params: {
-    model?: string;
-    messages: Array<{ role: string; content: string }>;
-    maxTokens?: number;
-  }) {
+  async generateContent(params: AIRequestParams) {
+    // Générer une clé de cache unique
     const cacheKey = this.generateCacheKey(params);
     
-    // Vérification cache
+    // Vérification du cache
     const cachedResponse = this.cacheManager.get(cacheKey);
-    if (cachedResponse) return cachedResponse;
+    if (cachedResponse) {
+      this.loggingService.log('Cache hit', { cacheKey });
+      return cachedResponse;
+    }
 
-    // Vérification budget
+    // Vérification du budget
     if (!this.budgetTracker.canMakeRequest()) {
+      this.loggingService.error('Budget limit reached');
       throw new Error('Budget limit reached');
     }
 
     try {
-      const response = await this.client.messages.create({
-        model: params.model || "claude-3-sonnet-20240229",
-        max_tokens: params.maxTokens || 1000,
-        messages: params.messages
-      });
+      // Préparation des paramètres spécifiques selon le type de requête
+      const requestParams = this.prepareRequestParams(params);
+
+      // Appel à l'API Claude
+      const response = await this.client.messages.create(requestParams);
 
       // Mise en cache
       this.cacheManager.set(cacheKey, response);
@@ -44,21 +63,61 @@ export class AIServiceManager {
       // Tracking budgétaire
       this.budgetTracker.trackRequest(response);
 
+      // Logging de la requête
+      this.loggingService.log('AI Request Processed', { 
+        type: params.type, 
+        model: params.model 
+      });
+
       return response;
     } catch (error) {
-      this.handleApiError(error);
+      this.handleApiError(error, params);
       throw error;
     }
   }
 
-  private generateCacheKey(params) {
-    // Logique de génération de clé de cache
-    return JSON.stringify(params);
+  private prepareRequestParams(params: AIRequestParams) {
+    const baseParams = {
+      model: params.model || "claude-3-sonnet-20240229",
+      max_tokens: params.maxTokens || 1000,
+      messages: params.messages
+    };
+
+    // Personnalisation selon le type de requête
+    switch(params.type) {
+      case AIRequestType.RSS_ANALYSIS:
+        return {
+          ...baseParams,
+          system: "You are an expert in analyzing RSS feeds for audiovisual project opportunities."
+        };
+      case AIRequestType.DOCUMENT_GENERATION:
+        return {
+          ...baseParams,
+          system: "Help generate professional documents for audiovisual project submissions."
+        };
+      default:
+        return baseParams;
+    }
   }
 
-  private handleApiError(error) {
-    // Logging détaillé de l'erreur
-    console.error('Claude API Error:', error);
-    // Possibilité d'ajouter une logique de retry, notification, etc.
+  private generateCacheKey(params: AIRequestParams): string {
+    // Génération d'une clé de cache unique basée sur les paramètres
+    return JSON.stringify({
+      type: params.type,
+      messages: params.messages.map(m => m.content).join('|'),
+      model: params.model
+    });
+  }
+
+  private handleApiError(error: any, params: AIRequestParams) {
+    // Logging détaillé des erreurs
+    this.loggingService.error('Claude API Error', {
+      type: params.type,
+      error: error.message,
+      stack: error.stack
+    });
+
+    // Possibilité d'implémenter une logique de retry sophistiquée
+    // Notification du système en cas d'erreur critique
   }
 }
