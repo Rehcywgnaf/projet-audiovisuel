@@ -1,177 +1,64 @@
-import AIRoutingService from './AIRoutingService';
-import type { 
-  AIServiceStats,
-  AIRequest,
-  AIResponse
-} from './types';
+import Anthropic from '@anthropic-ai/sdk';
+import { CacheManager } from './CacheManager';
+import { BudgetTracker } from './BudgetTracker';
 
-class AIServiceManager {
-  private static instance: AIServiceManager;
-  private stats: Map<string, AIServiceStats>;
-  private cache: Map<string, any>;
-  private routingService: AIRoutingService;
+export class AIServiceManager {
+  private client: Anthropic;
+  private cacheManager: CacheManager;
+  private budgetTracker: BudgetTracker;
 
-  private constructor() {
-    this.stats = new Map();
-    this.cache = new Map();
-    this.routingService = AIRoutingService.getInstance();
-    this.initializeStats();
-  }
-
-  public static getInstance(): AIServiceManager {
-    if (!AIServiceManager.instance) {
-      AIServiceManager.instance = new AIServiceManager();
-    }
-    return AIServiceManager.instance;
-  }
-
-  private initializeStats() {
-    const services = ['validator', 'suggester', 'analyzer', 'rss', 'editor'];
-    services.forEach(service => {
-      this.stats.set(service, {
-        cacheHits: 0,
-        totalRequests: 0,
-        averageLatency: 0,
-        lastProcessed: new Date(),
-        totalCost: 0
-      });
+  constructor() {
+    this.client = new Anthropic({
+      apiKey: process.env.ANTHROPIC_API_KEY,
     });
+    this.cacheManager = new CacheManager();
+    this.budgetTracker = new BudgetTracker();
   }
 
-  private async callClaudeAPI(prompt: string, complexity: 'simple' | 'complete' = 'complete'): Promise<any> {
+  async generateContent(params: {
+    model?: string;
+    messages: Array<{ role: string; content: string }>;
+    maxTokens?: number;
+  }) {
+    const cacheKey = this.generateCacheKey(params);
+    
+    // Vérification cache
+    const cachedResponse = this.cacheManager.get(cacheKey);
+    if (cachedResponse) return cachedResponse;
+
+    // Vérification budget
+    if (!this.budgetTracker.canMakeRequest()) {
+      throw new Error('Budget limit reached');
+    }
+
     try {
-      console.log('Calling Claude API via proxy:', {
-        complexity,
-        prompt: prompt.substring(0, 100) + '...'
+      const response = await this.client.messages.create({
+        model: params.model || "claude-3-sonnet-20240229",
+        max_tokens: params.maxTokens || 1000,
+        messages: params.messages
       });
 
-      const response = await fetch('/api/claude', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          complexity,
-          messages: [{ role: 'user', content: prompt }]
-        })
-      });
+      // Mise en cache
+      this.cacheManager.set(cacheKey, response);
+      
+      // Tracking budgétaire
+      this.budgetTracker.trackRequest(response);
 
-      if (!response.ok) {
-        const errorBody = await response.text();
-        console.error('Claude API error via proxy:', {
-          status: response.status,
-          body: errorBody
-        });
-        throw new Error(`API error: ${response.status} - ${errorBody}`);
-      }
-
-      const data = await response.json();
-      return data;
+      return response;
     } catch (error) {
-      console.error('Claude API request error:', {
-        error,
-        complexity
-      });
+      this.handleApiError(error);
       throw error;
     }
   }
 
-  public async processRequest(service: string, operation: string, options?: AIRequest['options']): Promise<AIResponse> {
-    console.log('Processing request:', {
-      service,
-      operation: operation.substring(0, 100) + '...',
-      options
-    });
-
-    // Vérification du cache
-    if (options?.cache) {
-      const cacheKey = `${service}-${operation}-${JSON.stringify(options)}`;
-      const cachedResult = this.cache.get(cacheKey);
-      if (cachedResult) {
-        const currentStats = this.stats.get(service);
-        if (currentStats) {
-          this.stats.set(service, {
-            ...currentStats,
-            cacheHits: currentStats.cacheHits + 1
-          });
-        }
-        console.log('Cache hit for:', cacheKey);
-        return cachedResult;
-      }
-    }
-
-    try {
-      const startTime = Date.now();
-      const complexity = options?.complexity || 'complete';
-      const response = await this.callClaudeAPI(operation, complexity);
-      
-      const latency = Date.now() - startTime;
-      const cost = response.cost || 0; // Le coût est maintenant calculé par claude.ts
-      
-      this.updateStats(service, latency, cost);
-
-      const result: AIResponse = {
-        success: true,
-        data: response,
-        cost,
-        complexity
-      };
-
-      // Mise en cache si activé
-      if (options?.cache) {
-        const cacheKey = `${service}-${operation}-${JSON.stringify(options)}`;
-        this.cache.set(cacheKey, result);
-        console.log('Cached result for:', cacheKey);
-      }
-
-      return result;
-    } catch (error) {
-      console.error('Request processing error:', {
-        service,
-        operation: operation.substring(0, 100) + '...',
-        error
-      });
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : "Erreur inconnue"
-      };
-    }
+  private generateCacheKey(params) {
+    // Logique de génération de clé de cache
+    return JSON.stringify(params);
   }
 
-  private updateStats(service: string, latency: number, cost: number) {
-    const currentStats = this.stats.get(service);
-    if (currentStats) {
-      const newStats = {
-        ...currentStats,
-        totalRequests: currentStats.totalRequests + 1,
-        averageLatency: (currentStats.averageLatency * currentStats.totalRequests + latency) / (currentStats.totalRequests + 1),
-        lastProcessed: new Date(),
-        totalCost: currentStats.totalCost + cost
-      };
-      this.stats.set(service, newStats);
-    }
-  }
-
-  public getStats(service: string): AIServiceStats | null {
-    return this.stats.get(service) || null;
-  }
-
-  public getAllStats(): Map<string, AIServiceStats> {
-    return new Map(this.stats);
-  }
-
-  public clearCache(): void {
-    this.cache.clear();
-    console.log('Cache cleared');
-  }
-
-  public getTotalCost(): number {
-    let total = 0;
-    this.stats.forEach(stat => {
-      total += stat.totalCost;
-    });
-    return total;
+  private handleApiError(error) {
+    // Logging détaillé de l'erreur
+    console.error('Claude API Error:', error);
+    // Possibilité d'ajouter une logique de retry, notification, etc.
   }
 }
-
-export default AIServiceManager;
