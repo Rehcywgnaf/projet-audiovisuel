@@ -39,6 +39,11 @@ export function useAI() {
       setIsLoading(true);
       setError(null);
 
+      // Validation des paramètres
+      if (!params.messages || params.messages.length === 0) {
+        throw new Error('Aucun message fourni pour l\'analyse AI');
+      }
+
       // Appel API serveur pour les requêtes AI
       const response = await fetch('/api/ai-analysis', {
         method: 'POST',
@@ -48,16 +53,29 @@ export function useAI() {
         body: JSON.stringify(params)
       });
 
+      // Gestion des erreurs HTTP
       if (!response.ok) {
-        throw new Error('Erreur lors de la requête AI');
+        const errorBody = await response.json();
+        throw new Error(errorBody.details || 'Erreur lors de la requête AI');
       }
 
       const responseData = await response.json();
       return responseData;
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Unknown error occurred';
-      setError(message);
-      console.warn('AI Analysis failed:', err);
+      let errorMessage = 'Erreur inconnue lors de l\'analyse AI';
+      
+      if (err instanceof Error) {
+        errorMessage = err.message;
+        console.error('Détails de l\'erreur AI:', {
+          message: err.message,
+          stack: err.stack
+        });
+      } else if (typeof err === 'string') {
+        errorMessage = err;
+      }
+
+      setError(errorMessage);
+      console.warn('AI Analysis failed:', errorMessage);
       return null;
     } finally {
       setIsLoading(false);
