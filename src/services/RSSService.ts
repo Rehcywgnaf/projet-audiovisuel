@@ -119,24 +119,37 @@ export class RSSService {
 
   private async analyzeOpportunity(item: { title: string, description: string }): Promise<Partial<RSSOpportunity>> {
     try {
-      const response = await this.aiServiceManager.generateContent({
-        type: AIInteractionType.RSS_ANALYSIS,
-        messages: [{ 
-          role: 'user', 
-          content: `Analyze the following opportunity and provide a detailed analysis:\n\nTitle: ${item.title}\n\nDescription: ${item.description}` 
-        }],
-        model: 'HAIKU',
-        maxTokens: 300
+      const response = await this.aiServiceManager.processRequest('rss-analyzer', 'analyze', {
+        data: {
+          title: item.title,
+          description: item.description
+        },
+        options: {
+          model: 'HAIKU', // Choix du modèle par AIServiceManager
+          cache: true,    // Utilisation du cache centralisé
+          complexity: 'simple',
+          monitoringKey: 'rss_opportunity_analysis'
+        }
       });
 
-      // Parse la réponse AI 
-      const analysis = JSON.parse(response.content);
+      // Si le traitement réussit
+      if (response.success) {
+        return {
+          relevanceScore: response.data.relevanceScore || 0,
+          category: response.data.category || 'Non catégorisé',
+          // Autres métadonnées potentielles
+        };
+      } else {
+        // Gestion des cas où l'IA ne peut pas traiter
+        this.loggingService.warn('Analyse IA incomplète', { 
+          reason: response.error 
+        });
 
-      return {
-        relevanceScore: analysis.relevanceScore || 0,
-        category: analysis.category || 'Non catégorisé',
-        // Autres métadonnées potentielles
-      };
+        return {
+          relevanceScore: 0,
+          category: 'Non catégorisé'
+        };
+      }
     } catch (error) {
       this.loggingService.error('Erreur d\'analyse IA', { 
         error: error instanceof Error ? error.message : 'Erreur inconnue' 
