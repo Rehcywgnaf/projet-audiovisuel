@@ -18,17 +18,26 @@ export interface AIRequestParams {
   additionalContext?: Record<string, any>;
 }
 
+// Liste des modèles supportés, avec le modèle recommandé en premier
+const SUPPORTED_MODELS = [
+  'claude-3-5-sonnet-20240620', // Modèle le plus récent
+  'claude-3-sonnet-20240229',   // Ancien modèle (en deprecation)
+  'claude-3-opus-20240229'      // Alternative
+];
+
 class AIServiceManager {
   private static instance: AIServiceManager | null = null;
   private client: Anthropic | null = null;
   private cacheManager: CacheManager;
   private budgetTracker: BudgetTracker;
   private loggingService: LoggingService;
+  private currentModel: string;
 
   private constructor() {
     this.cacheManager = new CacheManager();
     this.budgetTracker = new BudgetTracker();
     this.loggingService = LoggingService.getInstance();
+    this.currentModel = SUPPORTED_MODELS[0]; // Modèle par défaut
     
     // Initialisation conditionnelle du client
     this.initializeClient();
@@ -61,22 +70,48 @@ class AIServiceManager {
   }
 
   private async validateApiConnection() {
-    try {
-      // Test minimal de connexion
-      const testResponse = await this.client?.messages.create({
-        model: "claude-3-sonnet-20240229",
-        max_tokens: 10,
-        messages: [{ role: "user", content: "Are you there?" }]
-      });
+    const testModels = [...SUPPORTED_MODELS];
+    let connectionSuccessful = false;
 
-      if (testResponse) {
-        this.loggingService.log('Anthropic API Connection Validated Successfully');
+    for (const model of testModels) {
+      try {
+        // Test minimal de connexion
+        const testResponse = await this.client?.messages.create({
+          model: model,
+          max_tokens: 10,
+          messages: [{ role: "user", content: "System check: Are you operational?" }]
+        });
+
+        if (testResponse) {
+          this.currentModel = model;
+          connectionSuccessful = true;
+          
+          // Log du modèle utilisé
+          this.loggingService.log('Anthropic API Connection Validated', { 
+            model: this.currentModel 
+          });
+
+          // Avertissement si modèle déprécié
+          if (model !== SUPPORTED_MODELS[0]) {
+            this.loggingService.warn('Deprecated Model in Use', {
+              message: 'Current model is deprecated. Consider updating.',
+              currentModel: model,
+              recommendedModel: SUPPORTED_MODELS[0]
+            });
+          }
+
+          break;
+        }
+      } catch (error) {
+        this.loggingService.error('Model Connection Test Failed', { 
+          model,
+          error: error instanceof Error ? error.message : 'Unknown error' 
+        });
       }
-    } catch (error) {
-      this.loggingService.error('Anthropic API Connection Test Failed', { 
-        error: error instanceof Error ? error.message : 'Unknown error' 
-      });
-      throw new Error('Anthropic API Connection Test Failed');
+    }
+
+    if (!connectionSuccessful) {
+      throw new Error('All Anthropic API Connection Tests Failed');
     }
   }
 
@@ -95,8 +130,11 @@ class AIServiceManager {
       throw new Error('AI services are not available on the client side');
     }
 
+    // Utiliser le modèle courant si non spécifié
+    const selectedModel = params.model || this.currentModel;
+
     // Génération d'une clé de cache unique
-    const cacheKey = this.generateCacheKey(params);
+    const cacheKey = this.generateCacheKey({...params, model: selectedModel});
     
     // Vérification du cache
     const cachedResponse = this.cacheManager.get(cacheKey);
@@ -113,7 +151,7 @@ class AIServiceManager {
 
     try {
       // Préparation des paramètres spécifiques selon le type de requête
-      const requestParams = this.prepareRequestParams(params);
+      const requestParams = this.prepareRequestParams({...params, model: selectedModel});
 
       // Appel à l'API Claude
       const response = await this.client.messages.create(requestParams);
@@ -127,7 +165,7 @@ class AIServiceManager {
       // Logging de la requête
       this.loggingService.log('AI Request Processed', { 
         type: params.type, 
-        model: params.model 
+        model: requestParams.model 
       });
 
       return response;
@@ -139,7 +177,7 @@ class AIServiceManager {
 
   private prepareRequestParams(params: AIRequestParams) {
     const baseParams = {
-      model: params.model || "claude-3-sonnet-20240229",
+      model: params.model || this.currentModel,
       max_tokens: params.maxTokens || 1000,
       messages: params.messages
     };
