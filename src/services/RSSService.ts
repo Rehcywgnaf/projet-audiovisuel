@@ -2,6 +2,7 @@ import axios from 'axios';
 import { parse } from 'rss-to-json';
 import { LoggingService } from '@/lib/LoggingService';
 import AIServiceManager, { AIInteractionType } from '@/lib/AIServiceManager';
+import { validateURL, sanitizeText, extractDate, extractBudget } from '../utils/dataValidation';
 
 export interface RSSOpportunity {
   id: string;
@@ -13,6 +14,7 @@ export interface RSSOpportunity {
   deadline?: string;
   category?: string;
   relevanceScore?: number;
+  budget?: string;
 }
 
 export class RSSService {
@@ -22,6 +24,7 @@ export class RSSService {
   private sources = [
     'https://www.cnc.fr/rss/professionnels/aides-et-appels-a-projets',
     'https://www.arte.tv/rss/appels-a-projets',
+    'https://www.culture.gouv.fr/rss/appels-projets',
     // Ajouter d'autres sources RSS
   ];
 
@@ -37,6 +40,31 @@ export class RSSService {
     return RSSService.instance;
   }
 
+  async addSource(newSource: string): Promise<boolean> {
+    if (!validateURL(newSource)) {
+      this.loggingService.warn('URL RSS invalide', { url: newSource });
+      return false;
+    }
+
+    if (this.sources.includes(newSource)) {
+      this.loggingService.warn('Source RSS déjà existante', { url: newSource });
+      return false;
+    }
+
+    try {
+      // Vérification rapide de la validité du flux
+      await parse(newSource);
+      this.sources.push(newSource);
+      return true;
+    } catch (error) {
+      this.loggingService.error('Impossible de parser la source RSS', { 
+        url: newSource, 
+        error: error instanceof Error ? error.message : 'Erreur inconnue' 
+      });
+      return false;
+    }
+  }
+
   async fetchOpportunities(): Promise<RSSOpportunity[]> {
     const opportunities: RSSOpportunity[] = [];
 
@@ -46,72 +74,99 @@ export class RSSService {
         
         const sourceOpportunities = await Promise.all(
           rssData.items.map(async (item) => {
-            // Utilisation de l'IA pour analyser et scorer la pertinence
-            const aiAnalysis = await this.analyzeOpportunity(item);
+            // Nettoyer et valider les données
+            const cleanTitle = sanitizeText(item.title);
+            const cleanDescription = sanitizeText(item.description);
+
+            if (!cleanTitle || !cleanDescription) return null;
+
+            // Analyse IA
+            const aiAnalysis = await this.analyzeOpportunity({
+              title: cleanTitle,
+              description: cleanDescription
+            });
             
             return {
-              id: item.id || crypto.randomUUID(),
-              title: item.title,
-              description: item.description,
-              link: item.link,
+              id: item.id || this.generateUniqueId(),
+              title: cleanTitle,
+              description: cleanDescription,
+              link: item.link || '',
               source: source,
-              publishedAt: item.published,
+              publishedAt: item.published ? new Date(item.published).toISOString() : new Date().toISOString(),
+              deadline: extractDate(cleanDescription),
+              budget: extractBudget(cleanDescription),
               ...aiAnalysis
             };
           })
         );
 
-        opportunities.push(...sourceOpportunities);
+        // Filtrer les entrées nulles et valides
+        opportunities.push(...sourceOpportunities.filter(Boolean) as RSSOpportunity[]);
       } catch (error) {
-        this.loggingService.error('RSS Fetch Error', { 
+        this.loggingService.error('Erreur de récupération RSS', { 
           source, 
-          error: error instanceof Error ? error.message : 'Unknown error' 
+          error: error instanceof Error ? error.message : 'Erreur inconnue' 
         });
       }
     }
 
-    return opportunities;
+    return this.filterAndSortOpportunities(opportunities);
   }
 
-  private async analyzeOpportunity(item: any): Promise<Partial<RSSOpportunity>> {
+  private generateUniqueId(): string {
+    return `RSS_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  }
+
+  private async analyzeOpportunity(item: { title: string, description: string }): Promise<Partial<RSSOpportunity>> {
     try {
       const response = await this.aiServiceManager.generateContent({
         type: AIInteractionType.RSS_ANALYSIS,
-        messages: [
-          { 
-            role: 'user', 
-            content: `Analyze the following opportunity and provide a relevance score for an audiovisual project:\n\nTitle: ${item.title}\n\nDescription: ${item.description}` 
-          }
-        ],
-        model: 'HAIKU',  // Utilisation du modèle léger pour l'analyse
-        maxTokens: 200
+        messages: [{ 
+          role: 'user', 
+          content: `Analyze the following opportunity and provide a detailed analysis:\n\nTitle: ${item.title}\n\nDescription: ${item.description}` 
+        }],
+        model: 'HAIKU',
+        maxTokens: 300
       });
 
-      // Parse la réponse AI pour extraire le score de pertinence et autres détails
+      // Parse la réponse AI 
       const analysis = JSON.parse(response.content);
 
       return {
         relevanceScore: analysis.relevanceScore || 0,
-        category: analysis.category,
-        deadline: analysis.deadline
+        category: analysis.category || 'Non catégorisé',
+        // Autres métadonnées potentielles
       };
     } catch (error) {
-      this.loggingService.error('AI Opportunity Analysis Error', { 
-        error: error instanceof Error ? error.message : 'Unknown error' 
+      this.loggingService.error('Erreur d\'analyse IA', { 
+        error: error instanceof Error ? error.message : 'Erreur inconnue' 
       });
       
       return {
-        relevanceScore: 0
+        relevanceScore: 0,
+        category: 'Non catégorisé'
       };
     }
   }
 
-  // Méthode pour filtrer et trier les opportunités
-  async getRelevantOpportunities(minRelevanceScore: number = 0.5): Promise<RSSOpportunity[]> {
-    const opportunities = await this.fetchOpportunities();
+  private filterAndSortOpportunities(opportunities: RSSOpportunity[]): RSSOpportunity[] {
     return opportunities
-      .filter(opp => (opp.relevanceScore || 0) >= minRelevanceScore)
-      .sort((a, b) => (b.relevanceScore || 0) - (a.relevanceScore || 0));
+      .filter(opp => (opp.relevanceScore || 0) > 0.3) // Seuil de pertinence
+      .sort((a, b) => (b.relevanceScore || 0) - (a.relevanceScore || 0)) // Tri par pertinence
+      .slice(0, 100); // Limiter à 100 opportunités
+  }
+
+  // Méthode pour récupérer les sources actuelles
+  getSources(): string[] {
+    return [...this.sources];
+  }
+
+  // Méthode pour supprimer une source
+  removeSource(sourceUrl: string): boolean {
+    const initialLength = this.sources.length;
+    this.sources = this.sources.filter(source => source !== sourceUrl);
+    
+    return this.sources.length < initialLength;
   }
 }
 
