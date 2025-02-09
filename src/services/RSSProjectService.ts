@@ -1,7 +1,8 @@
 import { Project } from '@/components/EnhancedProjectList';
 import AIServiceManager from '@/lib/AIServiceManager';
+import { LoggingService } from '@/lib/LoggingService';
+import { veilleService } from './VeilleService';
 
-// Types enrichis
 export type RSSSource = {
   id: number;
   url: string;
@@ -20,52 +21,125 @@ export interface ProjectStats {
   totalProjects: number;
   activeProjects: number;
   completedProjects: number;
+  pendingProjects: number;
+  categorizedProjects: { [key: string]: number };
 }
 
 export class RSSProjectService {
   private sources: RSSSource[];
   private aiManager: AIServiceManager;
+  private loggingService: LoggingService;
 
   constructor() {
-    this.sources = [
-      { id: 1, url: 'https://cnc.fr/feed', type: 'rss', status: 'active', lastCheck: new Date() },
-      { id: 2, url: 'https://www.francemarches.com/appels-offres-audiovisuel', type: 'scraping', status: 'active', lastCheck: new Date() },
-      { id: 3, url: 'https://www.e-marchespublics.com', type: 'api', status: 'pending', lastCheck: null },
-      { id: 4, url: 'https://appelaprojets.org', type: 'scraping', status: 'active', lastCheck: new Date() },
-      { id: 5, url: 'https://www.marchesonline.com', type: 'api', status: 'active', lastCheck: new Date() },
-      { id: 6, url: 'https://www.fimeco-walter-allinial.com', type: 'scraping', status: 'pending', lastCheck: null },
-      { id: 7, url: 'https://www.cap-metiers.pro', type: 'rss', status: 'active', lastCheck: new Date() },
-      { id: 8, url: 'https://ellesfontlaculture.culture.gouv.fr', type: 'scraping', status: 'active', lastCheck: new Date() }
-    ];
+    this.loggingService = LoggingService.getInstance();
     this.aiManager = AIServiceManager.getInstance();
+    this.sources = this.initializeSources();
   }
 
-  // Ajout de la méthode getSources
-  getSources(): RSSSource[] {
-    return this.sources;
+  private initializeSources(): RSSSource[] {
+    return [
+      { 
+        id: 1, 
+        url: 'https://cnc.fr/feed', 
+        type: 'rss', 
+        status: 'active', 
+        lastCheck: new Date(),
+        analysis: {
+          score: 85,
+          category: 'Audiovisuel',
+          keywords: ['financement', 'cinéma', 'production'],
+          lastAnalysis: new Date()
+        }
+      },
+      { 
+        id: 2, 
+        url: 'https://www.francemarches.com/appels-offres-audiovisuel', 
+        type: 'scraping', 
+        status: 'active', 
+        lastCheck: new Date(),
+        analysis: {
+          score: 75,
+          category: 'Appels d\'offres',
+          keywords: ['marché', 'public', 'audiovisuel'],
+          lastAnalysis: new Date()
+        }
+      }
+      // Sources supplémentaires peuvent être ajoutées
+    ];
   }
 
-  // Ajout de la méthode getProjectStats
-  getProjectStats(): ProjectStats {
-    const projects = this.convertToProjects();
-    return {
-      totalProjects: projects.length,
-      activeProjects: projects.filter(p => p.status === 'active').length,
-      completedProjects: projects.filter(p => p.status === 'terminated').length
-    };
-  }
-
-  // Méthodes utilitaires existantes
-  private extractProjectTitle(url: string): string {
+  async updateSourceAnalysis(sourceId: number): Promise<boolean> {
     try {
-      const hostname = new URL(url).hostname;
-      return hostname.replace('www.', '').split('.')[0].replace(/[-_]/g, ' ');
-    } catch {
-      return 'Projet sans titre';
+      const source = this.sources.find(s => s.id === sourceId);
+      if (!source) return false;
+
+      // Utilisation de AIServiceManager pour l'analyse
+      const analysisResult = await this.aiManager.processRequest('source-analyzer', 'analyze', {
+        data: { 
+          url: source.url, 
+          type: source.type 
+        },
+        options: {
+          cache: true,
+          monitoringKey: 'rss_source_analysis'
+        }
+      });
+
+      if (analysisResult.success) {
+        source.analysis = {
+          score: analysisResult.data.score || 0,
+          category: analysisResult.data.category || 'Non catégorisé',
+          keywords: analysisResult.data.keywords || [],
+          lastAnalysis: new Date()
+        };
+        source.status = 'active';
+        return true;
+      }
+
+      source.status = 'error';
+      return false;
+    } catch (error) {
+      this.loggingService.error('Erreur de mise à jour de l\'analyse source', { 
+        sourceId, 
+        error: error instanceof Error ? error.message : 'Erreur inconnue' 
+      });
+      return false;
     }
   }
 
-  private extractOrganization(url: string): string {
+  getProjectStats(): ProjectStats {
+    const projects = this.convertToProjects();
+    const categorizedProjects = projects.reduce((acc, project) => {
+      const category = project.category || 'Non catégorisé';
+      acc[category] = (acc[category] || 0) + 1;
+      return acc;
+    }, {} as { [key: string]: number });
+
+    return {
+      totalProjects: projects.length,
+      activeProjects: projects.filter(p => p.status === 'active').length,
+      completedProjects: projects.filter(p => p.status === 'terminated').length,
+      pendingProjects: projects.filter(p => p.status === 'pending').length,
+      categorizedProjects
+    };
+  }
+
+  convertToProjects(): Project[] {
+    return this.sources.map(source => ({
+      id: source.id.toString(),
+      title: this.extractProjectTitle(source.url),
+      organization: this.extractOrganization(source.url),
+      status: this.determineProjectStatus(source),
+      updatedAt: source.lastCheck?.toISOString() || new Date().toISOString(),
+      progress: this.calculateProgress(source),
+      priority: this.determinePriority(source),
+      category: source.analysis?.category,
+      budget: '0', // À améliorer avec des données réelles
+      deadline: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
+    }));
+  }
+
+  private extractProjectTitle(url: string): string {
     try {
       const hostname = new URL(url).hostname;
       return hostname.replace('www.', '').split('.')[0]
@@ -74,8 +148,12 @@ export class RSSProjectService {
         .map(word => word.charAt(0).toUpperCase() + word.slice(1))
         .join(' ');
     } catch {
-      return 'Organisation inconnue';
+      return 'Projet sans titre';
     }
+  }
+
+  private extractOrganization(url: string): string {
+    return this.extractProjectTitle(url);
   }
 
   private determineProjectStatus(source: RSSSource): Project['status'] {
@@ -95,33 +173,68 @@ export class RSSProjectService {
   }
 
   private determinePriority(source: RSSSource): Project['priority'] {
-    switch(source.type) {
-      case 'rss': return 'high';
-      case 'api': return 'medium';
-      case 'scraping': return 'low';
-      default: return 'low';
+    if (source.analysis) {
+      if (source.analysis.score >= 80) return 'high';
+      if (source.analysis.score >= 50) return 'medium';
     }
-  }
-
-  private determinePriorityFromAnalysis(analysis: RSSSource['analysis']): Project['priority'] {
-    if (!analysis) return 'low';
-    if (analysis.score >= 80) return 'high';
-    if (analysis.score >= 50) return 'medium';
     return 'low';
   }
 
-  convertToProjects(): Project[] {
-    return this.sources.map(source => ({
-      id: source.id.toString(),
-      title: this.extractProjectTitle(source.url),
-      organization: this.extractOrganization(source.url),
-      status: this.determineProjectStatus(source),
-      updatedAt: source.lastCheck?.toISOString() || new Date().toISOString(),
-      progress: this.calculateProgress(source),
-      priority: source.analysis ? this.determinePriorityFromAnalysis(source.analysis) : this.determinePriority(source),
-      budget: 0, // À compléter si possible
-      deadline: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString() // 30 jours par défaut
-    }));
+  getSources(): RSSSource[] {
+    return [...this.sources];
+  }
+
+  async addSource(url: string): Promise<boolean> {
+    // Vérification et ajout de source avec validation
+    try {
+      // Vérification de l'URL
+      new URL(url);
+
+      // Vérification que la source n'existe pas déjà
+      if (this.sources.some(s => s.url === url)) {
+        this.loggingService.warn('Source déjà existante', { url });
+        return false;
+      }
+
+      // Tentative de récupération des données pour validation
+      const opportunities = await veilleService.fetchOpportunities({ dateRange: { 
+        start: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000), 
+        end: new Date() 
+      }});
+
+      if (opportunities.length > 0) {
+        const newSource: RSSSource = {
+          id: this.sources.length + 1,
+          url,
+          type: this.determineSourceType(url),
+          status: 'active',
+          lastCheck: new Date(),
+          analysis: {
+            score: 50, // Score initial par défaut
+            category: 'Non catégorisé',
+            keywords: [],
+            lastAnalysis: new Date()
+          }
+        };
+
+        this.sources.push(newSource);
+        return true;
+      }
+
+      return false;
+    } catch (error) {
+      this.loggingService.error('Erreur d\'ajout de source', { 
+        url, 
+        error: error instanceof Error ? error.message : 'Erreur inconnue' 
+      });
+      return false;
+    }
+  }
+
+  private determineSourceType(url: string): RSSSource['type'] {
+    if (url.includes('rss') || url.includes('feed')) return 'rss';
+    if (url.includes('api')) return 'api';
+    return 'scraping';
   }
 }
 
