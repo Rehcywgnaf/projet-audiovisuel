@@ -1,53 +1,71 @@
 import { useState, useCallback } from 'react';
-import AIServiceManager from '../lib/AIServiceManager';
-import { type AIRequest, type AIResponse } from '../lib/types';
+import { AIInteractionType } from '@/lib/AIServiceManager';
 
-interface UseAIResult {
-  isLoading: boolean;
-  error: Error | null;
-  result: AIResponse | null;
-  execute: (operation: string, options?: AIRequest['options']) => Promise<void>;
-  stats: {
-    totalCost: number;
-    requests: number;
-    cacheHits: number;
-  } | null;
-  clearError: () => void;
+export interface AIRequestParams {
+  type: AIInteractionType;
+  messages: Array<{ 
+    role: 'user' | 'assistant' | 'system';
+    content: string;
+  }>;
+  maxTokens?: number;
+  temperature?: number;
+  performanceMetrics?: {
+    maxResponseTime?: number;
+    priorityLevel?: 'LOW' | 'MEDIUM' | 'HIGH';
+  };
 }
 
-export function useAI(service: string): UseAIResult {
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<Error | null>(null);
-  const [result, setResult] = useState<AIResponse | null>(null);
-  const [stats, setStats] = useState<UseAIResult['stats']>(null);
+export interface AIResponse {
+  content: string;
+  model: string;
+  tokens: {
+    input: number;
+    output: number;
+  };
+  metadata: {
+    timestamp: string;
+    interactionType: AIInteractionType;
+    performanceMetrics?: Record<string, any>;
+  };
+}
 
-  const execute = useCallback(async (operation: string, options?: AIRequest['options']) => {
-    setIsLoading(true);
-    setError(null);
+export function useAI() {
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const generateContent = useCallback(async (params: AIRequestParams): Promise<AIResponse | null> => {
     try {
-      const aiManager = AIServiceManager.getInstance();
-      const response = await aiManager.processRequest(service, operation, options);
-      setResult(response);
-      
-      // Mise à jour des stats
-      const serviceStats = aiManager.getStats(service);
-      if (serviceStats) {
-        setStats({
-          totalCost: serviceStats.totalCost,
-          requests: serviceStats.totalRequests,
-          cacheHits: serviceStats.cacheHits
-        });
+      setIsLoading(true);
+      setError(null);
+
+      const response = await fetch('/api/ai', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(params),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'AI request failed');
       }
+
+      const data = await response.json();
+      return data;
     } catch (err) {
-      setError(err instanceof Error ? err : new Error('Unknown error'));
+      const message = err instanceof Error ? err.message : 'Unknown error occurred';
+      setError(message);
+      console.warn('AI Analysis failed:', err);
+      return null;
     } finally {
       setIsLoading(false);
     }
-  }, [service]);
-
-  const clearError = useCallback(() => {
-    setError(null);
   }, []);
 
-  return { isLoading, error, result, execute, stats, clearError };
+  return {
+    generateContent,
+    isLoading,
+    error
+  };
 }
