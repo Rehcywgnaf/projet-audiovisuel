@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { AIInteractionType } from '@/lib/AIServiceManager';
+import AIServiceManager, { AIInteractionType } from '@/lib/AIServiceManager';
 
 export interface AIRequestParams {
   type?: AIInteractionType;
@@ -39,21 +39,11 @@ export function useAI() {
       setIsLoading(true);
       setError(null);
 
-      const response = await fetch('/api/claude', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(params),
-      });
+      // Utilisation de l'instance d'AIServiceManager
+      const aiManager = AIServiceManager.getInstance();
+      const response = await aiManager.generateContent(params);
 
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || error.details || 'AI request failed');
-      }
-
-      const data = await response.json();
-      return data;
+      return response;
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Unknown error occurred';
       setError(message);
