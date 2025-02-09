@@ -37,9 +37,46 @@ class AIServiceManager {
   private initializeClient() {
     // Vérification côté serveur uniquement
     if (typeof window === 'undefined') {
-      this.client = new Anthropic({
-        apiKey: process.env.ANTHROPIC_API_KEY,
+      const apiKey = process.env.ANTHROPIC_API_KEY;
+      
+      if (!apiKey) {
+        throw new Error('ANTHROPIC_API_KEY is not set in environment variables');
+      }
+
+      try {
+        this.client = new Anthropic({ 
+          apiKey,
+          dangerouslyAllowBrowser: false 
+        });
+
+        // Test de connexion 
+        this.validateApiConnection();
+      } catch (error) {
+        this.loggingService.error('Anthropic Client Initialization Failed', { 
+          error: error instanceof Error ? error.message : 'Unknown error' 
+        });
+        throw error;
+      }
+    }
+  }
+
+  private async validateApiConnection() {
+    try {
+      // Test minimal de connexion
+      const testResponse = await this.client?.messages.create({
+        model: "claude-3-sonnet-20240229",
+        max_tokens: 10,
+        messages: [{ role: "user", content: "Are you there?" }]
       });
+
+      if (testResponse) {
+        this.loggingService.log('Anthropic API Connection Validated Successfully');
+      }
+    } catch (error) {
+      this.loggingService.error('Anthropic API Connection Test Failed', { 
+        error: error instanceof Error ? error.message : 'Unknown error' 
+      });
+      throw new Error('Anthropic API Connection Test Failed');
     }
   }
 
@@ -58,7 +95,7 @@ class AIServiceManager {
       throw new Error('AI services are not available on the client side');
     }
 
-    // Générer une clé de cache unique
+    // Génération d'une clé de cache unique
     const cacheKey = this.generateCacheKey(params);
     
     // Vérification du cache
