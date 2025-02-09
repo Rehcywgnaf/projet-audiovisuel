@@ -18,19 +18,28 @@ export interface AIRequestParams {
   additionalContext?: Record<string, any>;
 }
 
-export class AIServiceManager {
+class AIServiceManager {
+  private static instance: AIServiceManager;
   private client: Anthropic;
   private cacheManager: CacheManager;
   private budgetTracker: BudgetTracker;
   private loggingService: LoggingService;
 
-  constructor() {
+  private constructor() {
     this.client = new Anthropic({
       apiKey: process.env.ANTHROPIC_API_KEY,
     });
     this.cacheManager = new CacheManager();
     this.budgetTracker = new BudgetTracker();
-    this.loggingService = new LoggingService();
+    this.loggingService = LoggingService.getInstance();
+  }
+
+  // Méthode statique pour obtenir l'instance singleton
+  public static getInstance(): AIServiceManager {
+    if (!AIServiceManager.instance) {
+      AIServiceManager.instance = new AIServiceManager();
+    }
+    return AIServiceManager.instance;
   }
 
   async generateContent(params: AIRequestParams) {
@@ -121,3 +130,5 @@ export class AIServiceManager {
     // Notification du système en cas d'erreur critique
   }
 }
+
+export default AIServiceManager;
