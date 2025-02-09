@@ -2,11 +2,12 @@ import { useState, useCallback } from 'react';
 import { AIInteractionType } from '@/lib/AIServiceManager';
 
 export interface AIRequestParams {
-  type: AIInteractionType;
+  type?: AIInteractionType;
   messages: Array<{ 
     role: 'user' | 'assistant' | 'system';
     content: string;
   }>;
+  model?: string;
   maxTokens?: number;
   temperature?: number;
   performanceMetrics?: {
@@ -24,7 +25,7 @@ export interface AIResponse {
   };
   metadata: {
     timestamp: string;
-    interactionType: AIInteractionType;
+    interactionType?: AIInteractionType;
     performanceMetrics?: Record<string, any>;
   };
 }
@@ -38,7 +39,7 @@ export function useAI() {
       setIsLoading(true);
       setError(null);
 
-      const response = await fetch('/api/ai', {
+      const response = await fetch('/api/claude', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -48,7 +49,7 @@ export function useAI() {
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.message || 'AI request failed');
+        throw new Error(error.message || error.details || 'AI request failed');
       }
 
       const data = await response.json();
