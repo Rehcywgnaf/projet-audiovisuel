@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import AIServiceManager, { AIInteractionType } from '@/lib/AIServiceManager';
+import { AIInteractionType } from '@/lib/AIServiceManager';
 
 export interface AIRequestParams {
   type?: AIInteractionType;
@@ -39,11 +39,21 @@ export function useAI() {
       setIsLoading(true);
       setError(null);
 
-      // Utilisation de l'instance d'AIServiceManager
-      const aiManager = AIServiceManager.getInstance();
-      const response = await aiManager.generateContent(params);
+      // Appel API serveur pour les requêtes AI
+      const response = await fetch('/api/ai-analysis', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(params)
+      });
 
-      return response;
+      if (!response.ok) {
+        throw new Error('Erreur lors de la requête AI');
+      }
+
+      const responseData = await response.json();
+      return responseData;
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Unknown error occurred';
       setError(message);
