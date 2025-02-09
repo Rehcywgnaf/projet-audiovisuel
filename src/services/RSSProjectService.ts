@@ -2,7 +2,7 @@ import { Project } from '@/components/EnhancedProjectList';
 import AIServiceManager from '@/lib/AIServiceManager';
 
 // Types enrichis
-type RSSSource = {
+export type RSSSource = {
   id: number;
   url: string;
   type: 'rss' | 'scraping' | 'api';
@@ -15,6 +15,12 @@ type RSSSource = {
     lastAnalysis: Date;
   };
 };
+
+export interface ProjectStats {
+  totalProjects: number;
+  activeProjects: number;
+  completedProjects: number;
+}
 
 export class RSSProjectService {
   private sources: RSSSource[];
@@ -34,7 +40,22 @@ export class RSSProjectService {
     this.aiManager = AIServiceManager.getInstance();
   }
 
-  // Méthodes utilitaires rajoutées
+  // Ajout de la méthode getSources
+  getSources(): RSSSource[] {
+    return this.sources;
+  }
+
+  // Ajout de la méthode getProjectStats
+  getProjectStats(): ProjectStats {
+    const projects = this.convertToProjects();
+    return {
+      totalProjects: projects.length,
+      activeProjects: projects.filter(p => p.status === 'active').length,
+      completedProjects: projects.filter(p => p.status === 'terminated').length
+    };
+  }
+
+  // Méthodes utilitaires existantes
   private extractProjectTitle(url: string): string {
     try {
       const hostname = new URL(url).hostname;
@@ -89,7 +110,6 @@ export class RSSProjectService {
     return 'low';
   }
 
-  // Reste du code inchangé...
   convertToProjects(): Project[] {
     return this.sources.map(source => ({
       id: source.id.toString(),
@@ -103,8 +123,6 @@ export class RSSProjectService {
       deadline: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString() // 30 jours par défaut
     }));
   }
-
-  // Les autres méthodes restent inchangées...
 }
 
 export const rssProjectService = new RSSProjectService();
