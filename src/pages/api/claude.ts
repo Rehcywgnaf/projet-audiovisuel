@@ -6,9 +6,20 @@ const API_VERSIONS = {
   BETA: '2024-02-01'
 };
 
+// Configuration des modèles Claude et leurs coûts
+const MODELS = {
+  complete: {
+    name: 'claude-3-sonnet-20240229',
+    cost_per_token: 0.00003
+  },
+  simple: {
+    name: 'claude-3-haiku-20240307',
+    cost_per_token: 0.00001
+  }
+};
+
 // Configuration minimale requise pour un appel API
 const MINIMAL_REQUEST = {
-  model: 'claude-3-sonnet-20240229',
   max_tokens: 1000,
   messages: [{ role: 'user', content: 'Test' }]
 };
@@ -20,8 +31,12 @@ const getBaseHeaders = (apiKey: string, version: string) => ({
   'anthropic-version': version
 });
 
+// Calcul du coût basé sur le modèle et les tokens
+const calculateCost = (modelType: 'simple' | 'complete', tokens: number): number => {
+  return tokens * MODELS[modelType].cost_per_token;
+};
+
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  // Gestion des requêtes OPTIONS pour CORS
   if (req.method === 'OPTIONS') {
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
@@ -29,13 +44,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(200).end();
   }
 
-  // Vérification de la méthode
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method Not Allowed' });
   }
 
   try {
-    // Validation de la clé API - d'abord des headers, puis de l'environnement
     let apiKey = req.headers['anthropic-api-key'] as string || 
                  req.headers['x-api-key'] as string || 
                  process.env.CLAUDE_API_KEY;
@@ -48,12 +61,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       });
     }
 
-    // Si la clé est un tableau, prendre la première valeur
     if (Array.isArray(apiKey)) {
       apiKey = apiKey[0];
     }
 
-    // Log de la configuration initiale
     console.log('Initial request configuration:', {
       headers: {
         ...req.headers,
@@ -63,18 +74,22 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       body: JSON.stringify(req.body, null, 2)
     });
 
-    // Construction du corps de la requête avec les paramètres requis
+    // Détermination du modèle basé sur la complexité
+    const complexity = req.body.complexity || 'complete';
+    const modelConfig = MODELS[complexity];
+
+    // Construction du corps de la requête
     const requestBody = {
-      model: 'claude-3-sonnet-20240229',
-      max_tokens: 1000,
+      model: modelConfig.name,
+      max_tokens: req.body.max_tokens || MINIMAL_REQUEST.max_tokens,
       messages: req.body.messages,
       system: 'Tu es Claude, un assistant créé par Anthropic. Tu communiques toujours en français.'
     };
 
-    // Log de la configuration finale
     console.log('Final request configuration:', {
       api_version: API_VERSIONS.STABLE,
       endpoint: '/v1/messages',
+      model: modelConfig.name,
       request_params: {
         ...requestBody,
         messages: requestBody.messages.map(m => ({
@@ -84,14 +99,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       }
     });
 
-    // Proxy de la requête vers l'API Anthropic
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: getBaseHeaders(apiKey, API_VERSIONS.STABLE),
       body: JSON.stringify(requestBody)
     });
 
-    // Gestion des erreurs de réponse
     if (!response.ok) {
       const errorBody = await response.text();
       const errorDetails = {
@@ -111,7 +124,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
       console.error('Claude API error response:', errorDetails);
 
-      // Si l'erreur est liée à la version de l'API, on réessaie avec la version bêta
       if (errorBody.includes('version')) {
         console.log('Retrying with beta API version...');
         const betaResponse = await fetch('https://api.anthropic.com/v1/messages', {
@@ -122,11 +134,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
         if (betaResponse.ok) {
           const data = await betaResponse.json();
+          const cost = calculateCost(complexity, data.usage?.total_tokens || 0);
           console.log('Successful response with beta API version');
-          return res.status(200).json(data);
+          return res.status(200).json({ ...data, cost });
         }
 
-        // Log de l'erreur avec la version bêta
         const betaErrorBody = await betaResponse.text();
         errorDetails.beta_error = {
           status: betaResponse.status,
@@ -141,19 +153,22 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       });
     }
 
-    // Récupération et transmission de la réponse
     const data = await response.json();
+    const cost = calculateCost(complexity, data.usage?.total_tokens || 0);
+
     console.log('Successful response:', {
       status: response.status,
+      model: modelConfig.name,
+      tokens: data.usage?.total_tokens,
+      cost,
       response_length: JSON.stringify(data).length
     });
     
-    // Configuration des en-têtes CORS pour la réponse
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, x-api-key, anthropic-api-key');
     
-    res.status(200).json(data);
+    res.status(200).json({ ...data, cost });
   } catch (error) {
     console.error('Proxy error:', error);
     res.status(500).json({ 
