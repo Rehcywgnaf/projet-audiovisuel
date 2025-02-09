@@ -18,8 +18,7 @@ class AIServiceManager {
     this.stats = new Map();
     this.cache = new Map();
     this.config = {
-      apiKey: process.env.CLAUDE_API_KEY || '',
-      defaultModel: (process.env.CLAUDE_SONNET_MODEL || 'claude-3-sonnet-20241022') as ClaudeModel,
+      defaultModel: (process.env.CLAUDE_SONNET_MODEL || 'claude-3-sonnet-20240229') as ClaudeModel,
       haiku: (process.env.CLAUDE_HAIKU_MODEL || 'claude-3-haiku-20240307') as ClaudeModel,
       maxCost: 15, // $15 par mois
       warningThreshold: 10 // Alerte à $10
@@ -50,32 +49,26 @@ class AIServiceManager {
 
   private async callClaudeAPI(prompt: string, model: ClaudeModel): Promise<any> {
     try {
-      // Log debug des paramètres d'appel
-      console.log('Calling Claude API with:', {
+      console.log('Calling Claude API via proxy:', {
         model,
-        prompt: prompt.substring(0, 100) + '...' // Log partiel pour éviter de surcharger
+        prompt: prompt.substring(0, 100) + '...'
       });
 
       const response = await fetch('/api/claude', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-          'x-api-key': this.config.apiKey, // Utilisation de x-api-key pour compatibilité
-          'anthropic-version': '2024-02-01'
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          model: model, // Utilisation du modèle passé en paramètre
-          max_tokens: 1000,
+          model: model,
           messages: [{ role: 'user', content: prompt }]
         })
       });
 
       if (!response.ok) {
         const errorBody = await response.text();
-        console.error('Claude API error:', {
+        console.error('Claude API error via proxy:', {
           status: response.status,
-          statusText: response.statusText,
-          headers: response.headers,
           body: errorBody
         });
         throw new Error(`API error: ${response.status} - ${errorBody}`);
@@ -84,26 +77,22 @@ class AIServiceManager {
       const data = await response.json();
       return data;
     } catch (error) {
-      console.error('Claude API proxy error:', {
+      console.error('Claude API request error:', {
         error,
-        config: {
-          ...this.config,
-          apiKey: '[REDACTED]' // Ne pas loguer la clé API
-        }
+        model
       });
       throw error;
     }
   }
 
   public async processRequest(service: string, operation: string, options?: AIRequest['options']): Promise<AIResponse> {
-    // Log debug du début de la requête
     console.log('Processing request:', {
       service,
       operation: operation.substring(0, 100) + '...',
       options
     });
 
-    // Vérifier le cache si activé
+    // Vérification du cache
     if (options?.cache) {
       const cacheKey = `${service}-${operation}-${JSON.stringify(options)}`;
       const cachedResult = this.cache.get(cacheKey);
@@ -123,7 +112,7 @@ class AIServiceManager {
     try {
       const startTime = Date.now();
 
-      // Sélection du modèle avec un fallback
+      // Sélection du modèle
       const model = options?.complexity === 'simple' 
         ? this.config.haiku 
         : this.config.defaultModel;
@@ -135,7 +124,7 @@ class AIServiceManager {
       
       this.updateStats(service, latency, cost);
 
-      // Vérifier le budget
+      // Vérification budget
       const currentStats = this.stats.get(service);
       if (currentStats && currentStats.totalCost >= this.config.warningThreshold) {
         console.warn(`Warning: Service ${service} approaching budget limit`);
@@ -148,7 +137,7 @@ class AIServiceManager {
         model
       };
 
-      // Mettre en cache si activé
+      // Mise en cache si activé
       if (options?.cache) {
         const cacheKey = `${service}-${operation}-${JSON.stringify(options)}`;
         this.cache.set(cacheKey, result);
@@ -170,9 +159,8 @@ class AIServiceManager {
   }
 
   private calculateCost(model: ClaudeModel, tokens: number): number {
-    // Coûts par token (mis à jour selon les tarifs officiels)
     const costs = {
-      'claude-3-sonnet-20241022': 0.00003,
+      'claude-3-sonnet-20240229': 0.00003,
       'claude-3-haiku-20240307': 0.00001
     };
 
