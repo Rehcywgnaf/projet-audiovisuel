@@ -1,156 +1,235 @@
 import React, { useState, useEffect } from 'react';
-import { Card, CardHeader, CardContent } from '@/components/ui/card';
-import { Plus, Trash2, RefreshCw, AlertCircle } from 'lucide-react';
-import { rssProjectService } from '@/services/RSSProjectService';
-
-type RSSSource = {
-  id: number;
-  url: string;
-  type: 'rss' | 'scraping' | 'api';
-  status: 'active' | 'pending' | 'error';
-  lastCheck: Date | null;
-  analysis?: {
-    score: number;
-    category: string;
-    keywords: string[];
-    lastAnalysis: Date;
-  };
-};
+import { Card, CardHeader, CardContent, CardTitle } from '@/components/ui/card';
+import { 
+  Plus, 
+  Trash2, 
+  RefreshCw, 
+  AlertCircle, 
+  CheckCircle2,
+  X 
+} from 'lucide-react';
+import { rssProjectService, RSSSource } from '@/services/RSSProjectService';
+import { veilleService, Opportunity } from '@/services/VeilleService';
+import { LoggingService } from '@/lib/LoggingService';
 
 const RSSManager: React.FC = () => {
   const [sources, setSources] = useState<RSSSource[]>([]);
+  const [opportunities, setOpportunities] = useState<Opportunity[]>([]);
   const [newSource, setNewSource] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Chargement initial des sources
+  const loggingService = LoggingService.getInstance();
+
+  // Charger les sources et opportunités au montage
   useEffect(() => {
-    setSources(rssProjectService.getSources());
+    const loadData = async () => {
+      try {
+        // Charger les sources
+        const currentSources = rssProjectService.getSources();
+        setSources(currentSources);
+
+        // Charger les opportunités
+        const fetchedOpportunities = await veilleService.fetchOpportunities();
+        setOpportunities(fetchedOpportunities);
+      } catch (err) {
+        loggingService.error('Erreur de chargement initial', { error: err });
+        setError('Impossible de charger les sources et opportunités');
+      }
+    };
+
+    loadData();
   }, []);
 
-  const addSource = async (): Promise<void> => {
+  const addSource = async () => {
     if (!newSource) return;
 
+    setIsLoading(true);
+    setError(null);
+
     try {
-      setIsLoading(true);
-      setError(null);
+      const added = await rssProjectService.addSource(newSource);
+      
+      if (added) {
+        // Mettre à jour les sources et les opportunités
+        const updatedSources = rssProjectService.getSources();
+        setSources(updatedSources);
 
-      const newSourceData = await rssProjectService.addSource(newSource);
-      setSources(rssProjectService.getSources());
-      setNewSource('');
+        const fetchedOpportunities = await veilleService.fetchOpportunities();
+        setOpportunities(fetchedOpportunities);
 
-    } catch (error) {
+        setNewSource('');
+      } else {
+        setError('Impossible d\'ajouter la source');
+      }
+    } catch (err) {
+      loggingService.error('Erreur d\'ajout de source', { error: err });
       setError('Erreur lors de l\'ajout de la source');
-      console.error('Erreur:', error);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const removeSource = (id: number): void => {
+  const removeSource = async (sourceId: number) => {
+    // Note : Cette méthode n'est pas implémentée dans le service actuel
+    // À ajouter dans une version future
     try {
-      rssProjectService.removeSource(id);
-      setSources(rssProjectService.getSources());
-    } catch (error) {
-      setError('Erreur lors de la suppression de la source');
-      console.error('Erreur:', error);
+      const updatedSources = sources.filter(source => source.id !== sourceId);
+      setSources(updatedSources);
+    } catch (err) {
+      loggingService.error('Erreur de suppression de source', { error: err });
+      setError('Impossible de supprimer la source');
     }
   };
 
-  const updateSourceAnalysis = async (id: number): Promise<void> => {
+  const updateSourceAnalysis = async (sourceId: number) => {
+    setIsLoading(true);
     try {
-      setIsLoading(true);
-      await rssProjectService.updateAnalysis(id);
-      setSources(rssProjectService.getSources());
-    } catch (error) {
-      setError('Erreur lors de la mise à jour de l\'analyse');
-      console.error('Erreur:', error);
+      await rssProjectService.updateSourceAnalysis(sourceId);
+      const updatedSources = rssProjectService.getSources();
+      setSources(updatedSources);
+    } catch (err) {
+      loggingService.error('Erreur de mise à jour de l\'analyse', { error: err });
+      setError('Impossible de mettre à jour l\'analyse');
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <Card className="w-full max-w-4xl mx-auto">
-      <CardHeader className="flex flex-row items-center justify-between">
-        <div className="space-y-1">
-          <h2 className="text-2xl font-bold">Sources de Veille</h2>
-          {error && (
-            <p className="text-sm text-red-500">{error}</p>
-          )}
-        </div>
-        <div className="flex gap-2">
-          <input
-            type="text"
-            value={newSource}
-            onChange={(e) => setNewSource(e.target.value)}
-            placeholder="URL du flux RSS"
-            className="px-3 py-2 border rounded"
-            disabled={isLoading}
-          />
-          <button 
-            onClick={addSource}
-            disabled={isLoading || !newSource}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-          >
-            {isLoading ? (
-              <RefreshCw className="w-4 h-4 animate-spin" />
-            ) : (
-              <Plus className="w-4 h-4" />
-            )}
-            Ajouter
-          </button>
-        </div>
-      </CardHeader>
+    <div className="space-y-6">
+      <Card className="w-full max-w-4xl mx-auto">
+        <CardHeader className="flex flex-row items-center justify-between">
+          <CardTitle>Sources de Veille RSS</CardTitle>
+          <div className="flex gap-2">
+            <input
+              type="text"
+              value={newSource}
+              onChange={(e) => setNewSource(e.target.value)}
+              placeholder="URL de la source RSS"
+              className="px-3 py-2 border rounded flex-grow"
+              disabled={isLoading}
+            />
+            <button 
+              onClick={addSource}
+              disabled={isLoading || !newSource}
+              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
+            >
+              {isLoading ? (
+                <RefreshCw className="w-4 h-4 animate-spin" />
+              ) : (
+                <Plus className="w-4 h-4" />
+              )}
+              Ajouter
+            </button>
+          </div>
+        </CardHeader>
+        
+        {error && (
+          <div className="px-4 py-2 bg-red-50 text-red-600 flex items-center gap-2">
+            <X className="w-5 h-5" />
+            {error}
+          </div>
+        )}
 
-      <CardContent>
-        <div className="space-y-4">
-          {sources.map(source => (
-            <div key={source.id} className="flex items-center justify-between p-4 border rounded hover:shadow-md transition-all">
-              <div className="flex items-center gap-4">
-                <div className="flex items-center gap-2">
+        <CardContent>
+          <div className="space-y-4">
+            {sources.map(source => (
+              <div 
+                key={source.id} 
+                className="flex items-center justify-between p-4 border rounded hover:shadow-md transition-all"
+              >
+                <div className="flex items-center gap-4">
+                  {/* Statut de la source */}
                   {source.status === 'active' ? (
-                    <RefreshCw 
-                      className="w-5 h-5 text-green-500 cursor-pointer hover:text-green-600" 
-                      onClick={() => updateSourceAnalysis(source.id)}
-                    />
+                    <CheckCircle2 className="w-5 h-5 text-green-500" />
                   ) : source.status === 'error' ? (
                     <AlertCircle className="w-5 h-5 text-red-500" />
                   ) : (
                     <AlertCircle className="w-5 h-5 text-yellow-500" />
                   )}
-                  <span className={`px-2 py-1 text-xs rounded ${source.type === 'rss' ? 'bg-blue-100 text-blue-800' : source.type === 'api' ? 'bg-purple-100 text-purple-800' : 'bg-gray-100 text-gray-800'}`}>
-                    {source.type}
-                  </span>
+
+                  {/* Informations de la source */}
+                  <div>
+                    <p className="font-medium">{source.url}</p>
+                    <p className="text-sm text-gray-500">
+                      Type: {source.type} | 
+                      Dernière analyse: {source.analysis?.lastAnalysis.toLocaleString() || 'Jamais'}
+                    </p>
+                  </div>
                 </div>
-                <span className="text-sm flex-1">{source.url}</span>
-                {source.analysis && (
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs px-2 py-1 rounded bg-green-100 text-green-800">
-                      Score: {source.analysis.score}
-                    </span>
-                    <span className="text-xs px-2 py-1 rounded bg-blue-100 text-blue-800">
-                      {source.analysis.category}
+
+                {/* Actions */}
+                <div className="flex items-center gap-2">
+                  {source.status === 'active' && (
+                    <button
+                      onClick={() => updateSourceAnalysis(source.id)}
+                      className="p-2 hover:bg-blue-50 rounded"
+                      title="Mettre à jour l'analyse"
+                    >
+                      <RefreshCw className="w-4 h-4 text-blue-500" />
+                    </button>
+                  )}
+                  <button
+                    onClick={() => removeSource(source.id)}
+                    className="p-2 hover:bg-red-50 rounded"
+                    title="Supprimer la source"
+                  >
+                    <Trash2 className="w-4 h-4 text-red-500" />
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Section Opportunités */}
+      <Card className="w-full max-w-4xl mx-auto">
+        <CardHeader>
+          <CardTitle>Opportunités Détectées</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {opportunities.length === 0 ? (
+              <p className="text-gray-500 text-center">Aucune opportunité détectée</p>
+            ) : (
+              opportunities.map(opportunity => (
+                <div 
+                  key={opportunity.id} 
+                  className="p-4 border rounded hover:shadow-md transition-all"
+                >
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <h3 className="font-medium">{opportunity.title}</h3>
+                      <p className="text-sm text-gray-500">
+                        Type: {opportunity.type} | 
+                        Budget: {opportunity.budget} | 
+                        Deadline: {opportunity.deadline}
+                      </p>
+                    </div>
+                    <span 
+                      className={`px-2 py-1 rounded text-xs ${
+                        opportunity.match > 80 ? 'bg-green-100 text-green-800' :
+                        opportunity.match > 50 ? 'bg-yellow-100 text-yellow-800' :
+                        'bg-red-100 text-red-800'
+                      }`}
+                    >
+                      Pertinence: {opportunity.match}%
                     </span>
                   </div>
-                )}
-              </div>
-              <div className="flex items-center gap-4">
-                <span className="text-sm text-gray-500">
-                  {source.lastCheck ? `Dernière vérification: ${source.lastCheck.toLocaleString()}` : 'En attente'}
-                </span>
-                <button 
-                  onClick={() => removeSource(source.id)}
-                  className="p-2 text-red-500 hover:bg-red-50 rounded transition-colors"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
-      </CardContent>
-    </Card>
+                  {opportunity.description && (
+                    <p className="text-sm text-gray-600 mt-2 line-clamp-2">
+                      {opportunity.description}
+                    </p>
+                  )}
+                </div>
+              ))
+            )}
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   );
 };
 
