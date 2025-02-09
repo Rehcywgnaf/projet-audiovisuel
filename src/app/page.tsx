@@ -3,7 +3,7 @@
 import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card } from '@/components/ui/card';
-import Dashboard from '@/components/Dashboard';
+import GlobalDashboard from '@/components/dashboard/global/Dashboard';
 import DriveAuthPage from './drive/auth/page';
 import DriveIntegrationPage from './drive/integration/page';
 import { useDrive } from './drive/provider/page';
@@ -21,7 +21,7 @@ function DashboardContent() {
       
       <TabsContent value="overview" className="space-y-4">
         {isAuthenticated ? (
-          <Dashboard />
+          <GlobalDashboard />
         ) : (
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             <DriveAuthPage />
