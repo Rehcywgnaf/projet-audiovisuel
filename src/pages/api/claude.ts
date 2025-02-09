@@ -2,13 +2,13 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 
 // Configuration par défaut pour les différentes versions de l'API
 const API_VERSIONS = {
-  STABLE: '2023-06-01',
-  BETA: '2024-01-01'
+  STABLE: '2024-01-31',
+  BETA: '2024-02-01'
 };
 
 // Configuration minimale requise pour un appel API
 const MINIMAL_REQUEST = {
-  model: 'claude-3-sonnet',
+  model: 'claude-3-sonnet-20240229',
   max_tokens: 1000,
   messages: [{ role: 'user', content: 'Test' }]
 };
@@ -65,7 +65,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     // Construction du corps de la requête avec les paramètres requis
     const requestBody = {
-      model: 'claude-3-sonnet',
+      model: 'claude-3-sonnet-20240229',
       max_tokens: 1000,
       messages: req.body.messages,
       system: 'Tu es Claude, un assistant créé par Anthropic. Tu communiques toujours en français.'
