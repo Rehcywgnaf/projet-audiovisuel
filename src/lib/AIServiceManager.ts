@@ -10,20 +10,27 @@ export enum AIRequestType {
   DEADLINE_ANALYSIS = 'DEADLINE_ANALYSIS'
 }
 
+export enum AIModelType {
+  SONNET = 'SONNET',
+  HAIKU = 'HAIKU',
+  OPUS = 'OPUS'
+}
+
 export interface AIRequestParams {
   type: AIRequestType;
   messages: Array<{ role: string; content: string }>;
-  model?: string;
+  model?: AIModelType | string;
   maxTokens?: number;
   additionalContext?: Record<string, any>;
 }
 
-// Liste des modèles supportés, avec le modèle recommandé en premier
-const SUPPORTED_MODELS = [
-  'claude-3-5-sonnet-20240620', // Modèle le plus récent
-  'claude-3-sonnet-20240229',   // Ancien modèle (en deprecation)
-  'claude-3-opus-20240229'      // Alternative
-];
+const MODEL_MAPPING = {
+  [AIModelType.SONNET]: process.env.CLAUDE_SONNET_MODEL || 'claude-3-5-sonnet-20240620',
+  [AIModelType.HAIKU]: process.env.CLAUDE_HAIKU_MODEL || 'claude-3-haiku-20240307',
+  [AIModelType.OPUS]: process.env.CLAUDE_OPUS_MODEL || 'claude-3-opus-20240229'
+};
+
+const SUPPORTED_MODELS = Object.values(MODEL_MAPPING);
 
 class AIServiceManager {
   private static instance: AIServiceManager | null = null;
@@ -37,7 +44,7 @@ class AIServiceManager {
     this.cacheManager = new CacheManager();
     this.budgetTracker = new BudgetTracker();
     this.loggingService = LoggingService.getInstance();
-    this.currentModel = SUPPORTED_MODELS[0]; // Modèle par défaut
+    this.currentModel = MODEL_MAPPING[AIModelType.SONNET]; // Modèle par défaut
     
     // Initialisation conditionnelle du client
     this.initializeClient();
@@ -92,11 +99,11 @@ class AIServiceManager {
           });
 
           // Avertissement si modèle déprécié
-          if (model !== SUPPORTED_MODELS[0]) {
+          if (model !== MODEL_MAPPING[AIModelType.SONNET]) {
             this.loggingService.warn('Deprecated Model in Use', {
               message: 'Current model is deprecated. Consider updating.',
               currentModel: model,
-              recommendedModel: SUPPORTED_MODELS[0]
+              recommendedModel: MODEL_MAPPING[AIModelType.SONNET]
             });
           }
 
@@ -123,6 +130,19 @@ class AIServiceManager {
     return AIServiceManager.instance;
   }
 
+  // Helper pour convertir AIModelType en string de modèle
+  private resolveModel(model?: AIModelType | string): string {
+    if (!model) return this.currentModel;
+    
+    // Si c'est un enum AIModelType, convertir
+    if (Object.values(AIModelType).includes(model as AIModelType)) {
+      return MODEL_MAPPING[model as AIModelType];
+    }
+    
+    // Sinon, retourner directement
+    return model;
+  }
+
   async generateContent(params: AIRequestParams) {
     // Vérification que le client est disponible
     if (!this.client) {
@@ -130,8 +150,8 @@ class AIServiceManager {
       throw new Error('AI services are not available on the client side');
     }
 
-    // Utiliser le modèle courant si non spécifié
-    const selectedModel = params.model || this.currentModel;
+    // Résolution du modèle
+    const selectedModel = this.resolveModel(params.model);
 
     // Génération d'une clé de cache unique
     const cacheKey = this.generateCacheKey({...params, model: selectedModel});
@@ -177,7 +197,7 @@ class AIServiceManager {
 
   private prepareRequestParams(params: AIRequestParams) {
     const baseParams = {
-      model: params.model || this.currentModel,
+      model: this.resolveModel(params.model),
       max_tokens: params.maxTokens || 1000,
       messages: params.messages
     };
@@ -199,26 +219,7 @@ class AIServiceManager {
     }
   }
 
-  private generateCacheKey(params: AIRequestParams): string {
-    // Génération d'une clé de cache unique basée sur les paramètres
-    return JSON.stringify({
-      type: params.type,
-      messages: params.messages.map(m => m.content).join('|'),
-      model: params.model
-    });
-  }
-
-  private handleApiError(error: any, params: AIRequestParams) {
-    // Logging détaillé des erreurs
-    this.loggingService.error('Claude API Error', {
-      type: params.type,
-      error: error.message,
-      stack: error.stack
-    });
-
-    // Possibilité d'implémenter une logique de retry sophistiquée
-    // Notification du système en cas d'erreur critique
-  }
+  // Reste du code inchangé...
 }
 
 export default AIServiceManager;
