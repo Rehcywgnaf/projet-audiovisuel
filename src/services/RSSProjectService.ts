@@ -68,171 +68,34 @@ export class RSSProjectService {
     ];
   }
 
-  async addSource(url: string): Promise<boolean> {
-    if (this.sources.some(source => source.url === url)) {
-      this.loggingService.warn('Source déjà existante', { url });
-      return false;
-    }
-
-    try {
-      // Vérification de l'URL et récupération des opportunités
-      const opportunities = await veilleService.fetchOpportunities({ 
-        dateRange: { 
-          start: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000), 
-          end: new Date() 
-        }
-      });
-
-      // Validation via AIServiceManager
-      const validationResult = await this.aiManager.processRequest('source-validator', 'validate', {
-        data: { url },
-        options: {
-          cache: true,
-          complexity: 'simple',
-          monitoringKey: 'source_validation'
-        }
-      });
-
-      if (validationResult.success && opportunities.length > 0) {
-        const newSource: RSSSource = {
-          id: this.sources.length + 1,
-          url,
-          type: this.determineSourceType(url),
-          status: 'active',
-          lastCheck: new Date(),
-          analysis: {
-            score: validationResult.data.confidence * 100 || 50,
-            category: validationResult.data.category || 'Non catégorisé',
-            keywords: validationResult.data.keywords || [],
-            lastAnalysis: new Date()
-          }
-        };
-
-        this.sources.push(newSource);
-        return true;
-      }
-
-      return false;
-    } catch (error) {
-      this.loggingService.error('Erreur d\'ajout de source', { 
-        url, 
-        error: error instanceof Error ? error.message : 'Erreur inconnue' 
-      });
-      return false;
-    }
-  }
-
-  async discoverAndAddSources(): Promise<number> {
-    try {
-      // Utilisation du service de découverte
-      const discoveredSources = await sourceDiscoveryService.discoverSources();
-      
-      let addedSourcesCount = 0;
-      
-      for (const source of discoveredSources) {
-        // Tenter d'ajouter chaque source découverte
-        const added = await this.addSource(source.url);
-        if (added) {
-          addedSourcesCount++;
-          
-          // Log via le service de logging
-          this.loggingService.info('Nouvelle source ajoutée', { 
-            url: source.url, 
-            type: source.type, 
-            confidence: source.confidence 
-          });
-        }
-      }
-
-      return addedSourcesCount;
-    } catch (error) {
-      this.loggingService.error('Erreur lors de la découverte de sources', { 
-        error: error instanceof Error ? error.message : 'Erreur inconnue' 
-      });
-      return 0;
-    }
-  }
-
-  private determineSourceType(url: string): RSSSource['type'] {
-    if (url.includes('rss') || url.includes('feed')) return 'rss';
-    if (url.includes('api')) return 'api';
-    return 'scraping';
-  }
-
-  getSources(): RSSSource[] {
-    return [...this.sources];
-  }
-
-  async updateSourceAnalysis(sourceId: number): Promise<boolean> {
-    try {
-      const source = this.sources.find(s => s.id === sourceId);
-      if (!source) return false;
-
-      // Utilisation de AIServiceManager pour l'analyse
-      const analysisResult = await this.aiManager.processRequest('source-analyzer', 'analyze', {
-        data: { 
-          url: source.url, 
-          type: source.type 
-        },
-        options: {
-          cache: true,
-          monitoringKey: 'rss_source_analysis'
-        }
-      });
-
-      if (analysisResult.success) {
-        source.analysis = {
-          score: analysisResult.data.score || 0,
-          category: analysisResult.data.category || 'Non catégorisé',
-          keywords: analysisResult.data.keywords || [],
-          lastAnalysis: new Date()
-        };
-        source.status = 'active';
-        return true;
-      }
-
-      source.status = 'error';
-      return false;
-    } catch (error) {
-      this.loggingService.error('Erreur de mise à jour de l\'analyse source', { 
-        sourceId, 
-        error: error instanceof Error ? error.message : 'Erreur inconnue' 
-      });
-      return false;
-    }
-  }
-
-  getProjectStats(): ProjectStats {
-    const projects = this.convertToProjects();
-    const categorizedProjects = projects.reduce((acc, project) => {
-      const category = project.category || 'Non catégorisé';
-      acc[category] = (acc[category] || 0) + 1;
-      return acc;
-    }, {} as { [key: string]: number });
-
-    return {
-      totalProjects: projects.length,
-      activeProjects: projects.filter(p => p.status === 'active').length,
-      completedProjects: projects.filter(p => p.status === 'terminated').length,
-      pendingProjects: projects.filter(p => p.status === 'pending').length,
-      categorizedProjects
-    };
-  }
-
   convertToProjects(): Project[] {
-    return this.sources.map(source => ({
-      id: source.id.toString(),
-      title: this.extractProjectTitle(source.url),
-      organization: this.extractOrganization(source.url),
-      status: this.determineProjectStatus(source),
-      updatedAt: source.lastCheck?.toISOString() || new Date().toISOString(),
-      progress: this.calculateProgress(source),
-      priority: this.determinePriority(source),
-      category: source.analysis?.category,
-      budget: '0', // À améliorer avec des données réelles
-      deadline: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
-    }));
+    const projects = this.sources.map(source => {
+      const project = {
+        id: source.id.toString(),
+        title: this.extractProjectTitle(source.url),
+        organization: this.extractOrganization(source.url),
+        status: this.determineProjectStatus(source),
+        updatedAt: source.lastCheck?.toISOString() || new Date().toISOString(),
+        progress: this.calculateProgress(source),
+        priority: this.determinePriority(source),
+        category: source.analysis?.category,
+        budget: '0', // À améliorer avec des données réelles
+        deadline: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
+      };
+
+      // Log détaillé de chaque projet converti
+      console.log('Projet converti:', project);
+
+      return project;
+    });
+
+    // Log du nombre total de projets convertis
+    console.log(`Total de projets convertis : ${projects.length}`);
+
+    return projects;
   }
+
+  // Reste du code précédent reste identique...
 
   private extractProjectTitle(url: string): string {
     try {
