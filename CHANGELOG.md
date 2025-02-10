@@ -1,5 +1,28 @@
 # SAPAV - Historique des modifications
 
+## [2.0.14] - 2025-02-10
+
+### Added
+- Système de Découverte Automatique de Sources RSS
+  - SourceDiscoveryService pour la recherche de nouvelles sources AAP/AO
+  - Mécanisme de validation et de scoring des sources
+  - Intégration centralisée avec AIServiceManager
+  - Méthodes de découverte, filtrage et qualification des sources
+  - Cache intelligent des sources découvertes
+
+### Improved
+- Services RSS (RSSService, RSSProjectService)
+  - Amélioration de la robustesse de la collecte de sources
+  - Validation et enrichissement des sources via IA
+  - Mécanisme de gestion et de mise à jour des sources
+  - Optimisation des performances de collecte
+
+### Technical
+- Ajout de méthodes de découverte et d'enrichissement des sources RSS
+- Amélioration de l'intégration avec AIServiceManager
+- Mise à jour de la documentation technique
+- Tests d'intégration pour le nouveau système de découverte de sources
+
 ## [2.0.13] - 2025-02-09
 
 ### Refactoring
