@@ -16,8 +16,9 @@ import ProjectsView from '@/components/views/ProjectsView';
 import RSSView from '@/components/views/RSSView';
 import TeamView from '@/components/views/TeamView';
 import PlanningView from '@/components/views/PlanningView';
+import OpportunitiesView from '@/components/views/OpportunitiesView';
 
-type View = 'projects' | 'rss' | 'teams' | 'planning';
+type View = 'projects' | 'rss' | 'opportunities' | 'teams' | 'planning';
 
 const MainInterface = () => {
   const [currentView, setCurrentView] = useState<View>('projects');
@@ -28,6 +29,8 @@ const MainInterface = () => {
         return <ProjectsView />;
       case 'rss':
         return <RSSView />;
+      case 'opportunities':
+        return <OpportunitiesView />;
       case 'teams':
         return <TeamView />;
       case 'planning':
@@ -62,6 +65,14 @@ const MainInterface = () => {
           >
             <Rss className="mr-2 h-5 w-5" />
             Veille
+          </Button>
+          <Button 
+            variant={currentView === 'opportunities' ? 'default' : 'ghost'} 
+            className="w-full justify-start"
+            onClick={() => setCurrentView('opportunities')}
+          >
+            <Rss className="mr-2 h-5 w-5" />
+            Opportunités
           </Button>
           <Button 
             variant={currentView === 'teams' ? 'default' : 'ghost'} 
