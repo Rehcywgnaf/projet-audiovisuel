@@ -9,7 +9,6 @@ import {
   Calendar,
   Search
 } from 'lucide-react';
-import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import {
@@ -26,6 +25,30 @@ import PlanningView from '@/components/views/PlanningView';
 import { cn } from "@/lib/utils";
 
 type View = 'projects' | 'rss' | 'teams' | 'planning';
+
+const NavButton = ({ 
+  selected, 
+  icon: Icon, 
+  children, 
+  onClick 
+}: { 
+  selected: boolean; 
+  icon: any; 
+  children: React.ReactNode; 
+  onClick: () => void;
+}) => (
+  <Button 
+    variant={selected ? "default" : "ghost"} 
+    className={cn(
+      "w-full justify-start gap-2",
+      selected && "bg-primary text-primary-foreground hover:bg-primary/90"
+    )}
+    onClick={onClick}
+  >
+    <Icon className="h-5 w-5" />
+    {children}
+  </Button>
+);
 
 const MainInterface = () => {
   const [currentView, setCurrentView] = useState<View>('projects');
@@ -45,30 +68,6 @@ const MainInterface = () => {
         return <ProjectsView />;
     }
   };
-
-  const NavButton = ({ 
-    selected, 
-    icon: Icon, 
-    children, 
-    onClick 
-  }: { 
-    selected: boolean; 
-    icon: any; 
-    children: React.ReactNode; 
-    onClick: () => void;
-  }) => (
-    <Button 
-      variant={selected ? "default" : "ghost"} 
-      className={cn(
-        "w-full justify-start gap-2",
-        selected && "bg-primary text-primary-foreground hover:bg-primary/90"
-      )}
-      onClick={onClick}
-    >
-      <Icon className="h-5 w-5" />
-      {children}
-    </Button>
-  );
 
   const Navigation = () => (
     <nav className="space-y-2">
