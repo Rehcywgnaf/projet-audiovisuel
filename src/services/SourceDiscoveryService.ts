@@ -1,178 +1,217 @@
 import axios from 'axios';
 import * as cheerio from 'cheerio';
-import { URL } from 'url';
-import { LoggingService } from '@/lib/LoggingService';
-import AIServiceManager from '@/lib/AIServiceManager';
+import { AIServiceManager } from '../services/ai-service-manager';
+import { Logger } from '../utils/logger';
 
-export interface DiscoveredSource {
+interface SourceCandidate {
   url: string;
-  type: 'rss' | 'api' | 'scraping';
-  confidence: number;
-  categories: string[];
-  lastChecked: Date;
+  type?: 'aap' | 'ao' | 'general';
+  confidence?: number;
+  analysisDetails?: {
+    titleSelector?: string;
+    descriptionSelector?: string;
+    deadlineSelector?: string;
+    budgetSelector?: string;
+  };
 }
 
-export class SourceDiscoveryService {
-  private loggingService: LoggingService;
+class SourceDiscoveryService {
   private aiServiceManager: AIServiceManager;
-
-  // Sources de recherche initiales
-  private seedSources = [
-    'https://www.cnc.fr',
-    'https://www.culture.gouv.fr',
-    'https://www.institutfrancais.com',
-    'https://www.arte.tv',
-    'https://www.francemarches.com',
-    'https://www.marchespublics.gouv.fr'
+  private logger: Logger;
+  private sourceCandidates: SourceCandidate[] = [
+    { 
+      url: 'https://www.cnc.fr/professionnels/aides-et-financements',
+      type: 'aap',
+      confidence: 0.9
+    }
   ];
 
-  // Mots-clés pour la recherche de sources AAP/AO
-  private aapKeywords = [
-    'appel à projet', 
-    'appel à candidature', 
-    'financement', 
-    'audiovisuel', 
-    'cinéma', 
-    'production', 
-    'subvention'
-  ];
-
-  constructor() {
-    this.loggingService = LoggingService.getInstance();
-    this.aiServiceManager = AIServiceManager.getInstance();
+  constructor(aiServiceManager: AIServiceManager) {
+    this.aiServiceManager = aiServiceManager;
+    this.logger = new Logger('SourceDiscoveryService');
   }
 
-  async discoverSources(keywords: string[] = this.aapKeywords): Promise<DiscoveredSource[]> {
-    const discoveredSources: DiscoveredSource[] = [];
+  async discoverSources(): Promise<SourceCandidate[]> {
+    const discoveryMethods = [
+      this.discoverFromSearchEngines(),
+      this.discoverFromKnownDirectories(),
+      this.monitorIndustryWebsites()
+    ];
 
-    for (const seedSource of this.seedSources) {
+    const newSources = await Promise.all(discoveryMethods);
+    
+    const validSources = newSources
+      .flat()
+      .filter(source => source !== null && this.isSourceValid(source));
+
+    this.sourceCandidates.push(...validSources);
+    return validSources;
+  }
+
+  private async discoverFromSearchEngines(): Promise<SourceCandidate[]> {
+    const searchQueries = [
+      'appels à projets audiovisuels',
+      'financements cinéma',
+      'subventions production audiovisuelle'
+    ];
+
+    const sources: SourceCandidate[] = [];
+    
+    for (const query of searchQueries) {
       try {
-        const sourceCandidates = await this.extractPotentialSources(seedSource, keywords);
-        
-        // Validation de chaque source candidate
-        for (const candidate of sourceCandidates) {
-          const validationResult = await this.validateSource(candidate);
-          if (validationResult) {
-            discoveredSources.push(validationResult);
-          }
-        }
+        const searchResults = await this.aiServiceManager.searchAndAnalyzeSources(query);
+        sources.push(...searchResults);
       } catch (error) {
-        this.loggingService.error('Erreur de découverte de sources', { 
-          seedSource, 
-          error: error instanceof Error ? error.message : 'Erreur inconnue' 
-        });
+        this.logger.error(`Search discovery error for query: ${query}`, error);
       }
     }
 
-    return this.filterAndRankSources(discoveredSources);
+    return sources;
   }
 
-  private async extractPotentialSources(baseUrl: string, keywords: string[]): Promise<string[]> {
+  private async discoverFromKnownDirectories(): Promise<SourceCandidate[]> {
+    const directories = [
+      'https://www.cnc.fr',
+      'https://www.institutfrancais.com',
+      'https://www.culture.gouv.fr'
+    ];
+
+    const sources: SourceCandidate[] = [];
+    
+    for (const directory of directories) {
+      try {
+        const pageLinks = await this.extractRelevantLinks(directory);
+        const analyzedSources = await Promise.all(
+          pageLinks.map(link => this.analyzeUserSubmittedSource(link))
+        );
+        sources.push(...analyzedSources.filter(source => source !== null));
+      } catch (error) {
+        this.logger.error(`Error discovering sources from ${directory}`, error);
+      }
+    }
+
+    return sources;
+  }
+
+  private async monitorIndustryWebsites(): Promise<SourceCandidate[]> {
+    const industryWebsites = [
+      'https://www.scam.fr',
+      'https://www.sacd.fr',
+      'https://www.angoa.com'
+    ];
+
+    const sources: SourceCandidate[] = [];
+    
+    for (const website of industryWebsites) {
+      try {
+        const newSources = await this.extractNewOpportunitySources(website);
+        sources.push(...newSources);
+      } catch (error) {
+        this.logger.error(`Error monitoring ${website}`, error);
+      }
+    }
+
+    return sources;
+  }
+
+  async analyzeUserSubmittedSource(url: string): Promise<SourceCandidate | null> {
     try {
-      const response = await axios.get(baseUrl, {
+      const response = await axios.get(url, {
         headers: {
-          'User-Agent': 'SAPAV Source Discovery Bot'
+          'User-Agent': 'SAPAV/1.0 (Source Discovery Bot)',
+          'Accept-Language': 'fr-FR,fr;q=0.9'
         }
       });
 
       const $ = cheerio.load(response.data);
-      const potentialSources: string[] = [];
+      
+      const potentialSelectors = this.detectPotentialSelectors($);
 
-      // Recherche de liens potentiels
-      $('a').each((_, element) => {
-        const href = $(element).attr('href');
-        if (href) {
-          const fullUrl = this.normalizeUrl(href, baseUrl);
-          if (this.isRelevantUrl(fullUrl, keywords)) {
-            potentialSources.push(fullUrl);
-          }
+      const aiAnalysis = await this.aiServiceManager.analyzeSourcePotential({
+        url,
+        pageContent: response.data,
+        detectedSelectors: potentialSelectors
+      });
+
+      const sourceCandidate: SourceCandidate = {
+        url,
+        type: aiAnalysis.type || 'general',
+        confidence: aiAnalysis.confidence,
+        analysisDetails: {
+          titleSelector: potentialSelectors.titleSelector,
+          descriptionSelector: potentialSelectors.descriptionSelector,
+          deadlineSelector: potentialSelectors.deadlineSelector,
+          budgetSelector: potentialSelectors.budgetSelector
         }
-      });
+      };
 
-      return [...new Set(potentialSources)]; // Éliminer les doublons
-    } catch (error) {
-      this.loggingService.error('Erreur d\'extraction de sources', { 
-        baseUrl, 
-        error: error instanceof Error ? error.message : 'Erreur inconnue' 
-      });
-      return [];
-    }
-  }
-
-  private normalizeUrl(url: string, baseUrl: string): string {
-    try {
-      // Convertir les URL relatives en absolues
-      const fullUrl = new URL(url, baseUrl).toString();
-      return fullUrl;
-    } catch {
-      return url;
-    }
-  }
-
-  private isRelevantUrl(url: string, keywords: string[]): boolean {
-    // Filtres pour éliminer les URLs irrelevantes
-    const irrelevantPatterns = [
-      /\.(jpg|jpeg|png|gif|pdf|css|js)$/i,
-      /facebook\.com/,
-      /twitter\.com/,
-      /instagram\.com/
-    ];
-
-    if (irrelevantPatterns.some(pattern => pattern.test(url))) {
-      return false;
-    }
-
-    // Vérification par mots-clés
-    const lowercaseUrl = url.toLowerCase();
-    return keywords.some(keyword => 
-      lowercaseUrl.includes(keyword.toLowerCase())
-    );
-  }
-
-  private async validateSource(url: string): Promise<DiscoveredSource | null> {
-    try {
-      // Utilisation d'AIServiceManager pour analyser la source
-      const analysisResponse = await this.aiServiceManager.processRequest('source-validator', 'validate', {
-        data: { url },
-        options: {
-          cache: true,
-          complexity: 'simple',
-          monitoringKey: 'source_discovery'
-        }
-      });
-
-      if (analysisResponse.success) {
-        return {
-          url,
-          type: this.determineSourceType(url),
-          confidence: analysisResponse.data.confidence || 0.5,
-          categories: analysisResponse.data.categories || [],
-          lastChecked: new Date()
-        };
+      if (this.isSourceValid(sourceCandidate)) {
+        this.sourceCandidates.push(sourceCandidate);
+        return sourceCandidate;
       }
 
       return null;
     } catch (error) {
-      this.loggingService.error('Erreur de validation de source', { 
-        url, 
-        error: error instanceof Error ? error.message : 'Erreur inconnue' 
-      });
+      this.logger.error(`Source analysis error for ${url}`, error);
       return null;
     }
   }
 
-  private determineSourceType(url: string): DiscoveredSource['type'] {
-    if (url.includes('rss') || url.includes('feed')) return 'rss';
-    if (url.includes('api')) return 'api';
-    return 'scraping';
+  private detectPotentialSelectors($: cheerio.Root) {
+    return {
+      titleSelector: $('h1, h2, .title, .project-title').first().selector(),
+      descriptionSelector: $('.description, .content, .project-details').first().selector(),
+      deadlineSelector: $('*[class*="deadline"], *[id*="deadline"]').first().selector(),
+      budgetSelector: $('*[class*="budget"], *[id*="budget"]').first().selector()
+    };
   }
 
-  private filterAndRankSources(sources: DiscoveredSource[]): DiscoveredSource[] {
-    return sources
-      .filter(source => source.confidence > 0.5) // Seuil de confiance
-      .sort((a, b) => b.confidence - a.confidence) // Trier par confiance
-      .slice(0, 20); // Limiter à 20 sources
+  private async extractRelevantLinks(url: string): Promise<string[]> {
+    try {
+      const response = await axios.get(url);
+      const $ = cheerio.load(response.data);
+      
+      return $('a')
+        .map((_, link) => $(link).attr('href'))
+        .get()
+        .filter(href => 
+          href && 
+          href.startsWith('http') && 
+          (href.includes('appel') || href.includes('projet') || href.includes('financement'))
+        )
+        .slice(0, 10);
+    } catch (error) {
+      this.logger.error(`Error extracting links from ${url}`, error);
+      return [];
+    }
+  }
+
+  private async extractNewOpportunitySources(url: string): Promise<SourceCandidate[]> {
+    try {
+      const links = await this.extractRelevantLinks(url);
+      const sources = await Promise.all(
+        links.map(link => this.analyzeUserSubmittedSource(link))
+      );
+      return sources.filter(source => source !== null);
+    } catch (error) {
+      this.logger.error(`Error extracting opportunity sources from ${url}`, error);
+      return [];
+    }
+  }
+
+  private isSourceValid(source: SourceCandidate): boolean {
+    return source.confidence > 0.5 && 
+           source.analysisDetails?.titleSelector !== undefined;
+  }
+
+  getSources(): SourceCandidate[] {
+    return this.sourceCandidates;
+  }
+
+  removeSource(url: string): void {
+    this.sourceCandidates = this.sourceCandidates.filter(src => src.url !== url);
   }
 }
 
-export const sourceDiscoveryService = new SourceDiscoveryService();
+export default SourceDiscoveryService;
+export { SourceCandidate };
