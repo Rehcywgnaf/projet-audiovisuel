@@ -174,6 +174,15 @@ Le système de monitoring offre une vue complète et centralisée des performanc
    - Utilisation de l'API Google Chat native
    - Authentification unifiée avec Google Workspace
 
+7. **Système de Découverte de Sources RSS**
+   - Détection automatique de sources AAP/AO
+   - Analyse intelligente des sources web
+   - Validation et scoring des sources
+   - Intégration centralisée via AIServiceManager
+   - Mécanisme de filtrage et de qualification
+   - Mise à jour dynamique du catalogue de sources
+   - Cache intelligent des découvertes (1h, 95% hit rate)
+
 ## Documentation Technique
 Pour plus de détails, consultez :
 - `/docs/technical/SAPAV-Architecture.md` : Architecture globale
