@@ -4,12 +4,12 @@ import { projectService } from '@/services/ProjectService';
 export interface Project {
   id: string;
   title: string;
+  organization: string;
   status: 'active' | 'completed' | 'pending';
-  lastUpdate: Date;
-  lastUpdateRelative: string;
-  type: 'AAP' | 'AO';
-  team?: string;
+  updatedAt: string;
   progress: number;
+  budget: number;
+  deadline: string;
 }
 
 interface ProjectsData {
@@ -28,17 +28,17 @@ export const useProjects = () => {
     const fetchProjects = async () => {
       try {
         setIsLoading(true);
-        const data = await projectService.getProjects();
+        const projectsData = await projectService.getProjects();
         const stats = await projectService.getProjectStats();
         
-        // Traitement des données
+        // Traitement des données pour correspondre à l'interface ProjectsData
         const processedData: ProjectsData = {
-          active: data.filter(p => p.status === 'active'),
-          completed: data.filter(p => p.status === 'completed'),
-          recent: data.sort((a, b) => 
-            new Date(b.lastUpdate).getTime() - new Date(a.lastUpdate).getTime()
-          ).slice(0, 5),
-          newThisMonth: stats.newThisMonth || 0
+          active: projectsData.filter(p => p.status === 'active'),
+          completed: projectsData.filter(p => p.status === 'completed'),
+          recent: projectsData
+            .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
+            .slice(0, 5),
+          newThisMonth: stats.activeProjects || 0
         };
 
         setProjects(processedData);
