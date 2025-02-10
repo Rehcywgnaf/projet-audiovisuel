@@ -68,6 +68,11 @@ export class RSSProjectService {
     ];
   }
 
+  // Nouvelle méthode pour récupérer les sources
+  public getSources(): RSSSource[] {
+    return [...this.sources];
+  }
+
   convertToProjects(): Project[] {
     const projects = this.sources.map(source => {
       const project = {
@@ -95,8 +100,24 @@ export class RSSProjectService {
     return projects;
   }
 
-  // Reste du code précédent reste identique...
+  // Méthode de statistiques des projets
+  public getProjectStats(): ProjectStats {
+    const categorizedProjects = this.sources.reduce((acc, source) => {
+      const category = source.analysis?.category || 'Non catégorisé';
+      acc[category] = (acc[category] || 0) + 1;
+      return acc;
+    }, {} as { [key: string]: number });
 
+    return {
+      totalProjects: this.sources.length,
+      activeProjects: this.sources.filter(source => source.status === 'active').length,
+      completedProjects: this.sources.filter(source => source.status === 'error').length,
+      pendingProjects: this.sources.filter(source => source.status === 'pending').length,
+      categorizedProjects
+    };
+  }
+
+  // ... Reste des méthodes privées inchangées
   private extractProjectTitle(url: string): string {
     try {
       const hostname = new URL(url).hostname;
