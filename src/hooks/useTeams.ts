@@ -1,12 +1,5 @@
 import { useState, useEffect } from 'react';
-import { teamService } from '@/services/TeamService';
-
-export interface TeamMember {
-  id: string;
-  name: string;
-  role: string;
-  availability: number;
-}
+import TeamService, { TeamMember } from '@/services/TeamService';
 
 export interface Team {
   id: string;
@@ -33,15 +26,38 @@ export const useTeams = () => {
     const fetchTeams = async () => {
       try {
         setIsLoading(true);
-        const data = await teamService.getTeams();
-        const stats = await teamService.getTeamStats();
-        
-        // Traitement des données
+        const teamService = TeamService.getInstance(); // Utilisation du singleton
+        const members = await teamService.getTeamMembers();
+
+        // Organiser les membres en équipes
+        const teamsByProject = members.reduce((acc, member) => {
+          member.currentProjects.forEach(projectName => {
+            if (!acc[projectName]) {
+              acc[projectName] = {
+                id: projectName,
+                name: projectName,
+                members: [],
+                activeProjects: 1,
+                occupancy: 0,
+                status: 'active' as const
+              };
+            }
+            acc[projectName].members.push(member);
+            acc[projectName].occupancy = acc[projectName].members.reduce(
+              (sum, m) => sum + (100 - m.availability),
+              0
+            ) / acc[projectName].members.length;
+          });
+          return acc;
+        }, {} as Record<string, Team>);
+
+        // Transforme l'objet en tableau et calcule les statistiques
+        const allTeams = Object.values(teamsByProject);
         const processedData: TeamsData = {
-          active: data.filter(t => t.status === 'active'),
-          inactive: data.filter(t => t.status === 'inactive'),
-          activeMembers: stats.activeMembers || 0,
-          totalMembers: stats.totalMembers || 0
+          active: allTeams.filter(t => t.occupancy > 0),
+          inactive: allTeams.filter(t => t.occupancy === 0),
+          activeMembers: members.filter(m => m.currentProjects.length > 0).length,
+          totalMembers: members.length
         };
 
         setTeams(processedData);
