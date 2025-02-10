@@ -45,12 +45,28 @@ export class VeilleService {
       const apiOpportunities = await this.fetchAPIOpportunities(filters);
       const scrapingOpportunities = await this.fetchScrapingOpportunities(filters);
 
+      // Log du nombre d'opportunités trouvées
+      console.log('Opportunités RSS:', rssOpportunities.length);
+      console.log('Opportunités API:', apiOpportunities.length);
+      console.log('Opportunités Scraping:', scrapingOpportunities.length);
+
       // Combinaison des opportunités
       const allOpportunities = [
         ...rssOpportunities, 
         ...apiOpportunities, 
         ...scrapingOpportunities
       ];
+
+      // Logging des détails des opportunités
+      allOpportunities.forEach((opp, index) => {
+        console.log(`Opportunité ${index + 1}:`, {
+          title: opp.title,
+          type: opp.type,
+          budget: opp.budget,
+          deadline: opp.deadline,
+          source: opp.source
+        });
+      });
 
       // Enrichissement IA via AIServiceManager
       return await this.enrichOpportunitiesWithAI(allOpportunities);
