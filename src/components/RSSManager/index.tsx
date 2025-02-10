@@ -15,6 +15,7 @@ import { LoggingService } from '@/lib/LoggingService';
 const RSSManager: React.FC = () => {
   const [sources, setSources] = useState<RSSSource[]>([]);
   const [opportunities, setOpportunities] = useState<Opportunity[]>([]);
+  const [projects, setProjects] = useState<any[]>([]);
   const [newSource, setNewSource] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
@@ -25,14 +26,37 @@ const RSSManager: React.FC = () => {
   useEffect(() => {
     const loadData = async () => {
       try {
+        console.log('Début du chargement des données');
+        
         // Charger les sources
         const currentSources = rssProjectService.getSources();
+        console.log('Sources RSS chargées:', currentSources.length);
         setSources(currentSources);
 
         // Charger les opportunités
         const fetchedOpportunities = await veilleService.fetchOpportunities();
+        console.log('Opportunités récupérées:', fetchedOpportunities.length);
         setOpportunities(fetchedOpportunities);
+
+        // Convertir en projets
+        const convertedProjects = rssProjectService.convertToProjects();
+        console.log('Projets convertis:', convertedProjects.length);
+        setProjects(convertedProjects);
+
+        // Log détaillé des projets
+        convertedProjects.forEach((project, index) => {
+          console.log(`Projet ${index + 1}:`, {
+            id: project.id,
+            title: project.title,
+            organization: project.organization,
+            status: project.status,
+            progress: project.progress,
+            priority: project.priority
+          });
+        });
+
       } catch (err) {
+        console.error('Erreur de chargement initial', err);
         loggingService.error('Erreur de chargement initial', { error: err });
         setError('Impossible de charger les sources et opportunités');
       }
@@ -58,27 +82,33 @@ const RSSManager: React.FC = () => {
         const fetchedOpportunities = await veilleService.fetchOpportunities();
         setOpportunities(fetchedOpportunities);
 
+        const convertedProjects = rssProjectService.convertToProjects();
+        setProjects(convertedProjects);
+
+        console.log(`Source ajoutée : ${newSource}`);
         setNewSource('');
       } else {
         setError('Impossible d\'ajouter la source');
+        console.error(`Échec de l'ajout de la source : ${newSource}`);
       }
     } catch (err) {
       loggingService.error('Erreur d\'ajout de source', { error: err });
       setError('Erreur lors de l\'ajout de la source');
+      console.error('Erreur lors de l\'ajout de la source', err);
     } finally {
       setIsLoading(false);
     }
   };
 
   const removeSource = async (sourceId: number) => {
-    // Note : Cette méthode n'est pas implémentée dans le service actuel
-    // À ajouter dans une version future
     try {
       const updatedSources = sources.filter(source => source.id !== sourceId);
       setSources(updatedSources);
+      console.log(`Source supprimée : ${sourceId}`);
     } catch (err) {
       loggingService.error('Erreur de suppression de source', { error: err });
       setError('Impossible de supprimer la source');
+      console.error('Erreur de suppression de source', err);
     }
   };
 
@@ -88,9 +118,11 @@ const RSSManager: React.FC = () => {
       await rssProjectService.updateSourceAnalysis(sourceId);
       const updatedSources = rssProjectService.getSources();
       setSources(updatedSources);
+      console.log(`Analyse mise à jour pour la source : ${sourceId}`);
     } catch (err) {
       loggingService.error('Erreur de mise à jour de l\'analyse', { error: err });
       setError('Impossible de mettre à jour l\'analyse');
+      console.error('Erreur de mise à jour de l\'analyse', err);
     } finally {
       setIsLoading(false);
     }
@@ -223,6 +255,47 @@ const RSSManager: React.FC = () => {
                       {opportunity.description}
                     </p>
                   )}
+                </div>
+              ))
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Section Projets */}
+      <Card className="w-full max-w-4xl mx-auto">
+        <CardHeader>
+          <CardTitle>Projets Convertis</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {projects.length === 0 ? (
+              <p className="text-gray-500 text-center">Aucun projet converti</p>
+            ) : (
+              projects.map(project => (
+                <div 
+                  key={project.id} 
+                  className="p-4 border rounded hover:shadow-md transition-all"
+                >
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <h3 className="font-medium">{project.title}</h3>
+                      <p className="text-sm text-gray-500">
+                        Organisation: {project.organization} | 
+                        Statut: {project.status} | 
+                        Progression: {project.progress}%
+                      </p>
+                    </div>
+                    <span 
+                      className={`px-2 py-1 rounded text-xs ${
+                        project.priority === 'high' ? 'bg-red-100 text-red-800' :
+                        project.priority === 'medium' ? 'bg-yellow-100 text-yellow-800' :
+                        'bg-green-100 text-green-800'
+                      }`}
+                    >
+                      Priorité: {project.priority}
+                    </span>
+                  </div>
                 </div>
               ))
             )}
