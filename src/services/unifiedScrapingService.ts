@@ -4,7 +4,11 @@ import Parser from 'rss-parser';
 import { Logger } from '../utils/logger';
 import { validateURL, sanitizeText } from '../utils/dataValidation';
 
-const CORS_PROXY = 'https://cors-anywhere.herokuapp.com/';
+const CORS_PROXIES = [
+  'https://cors-anywhere.herokuapp.com/',
+  'https://api.allorigins.win/raw?url=',
+  'https://cors-proxy.htmldriven.com/?url='
+];
 
 interface ScrapingSource {
   url: string;
@@ -57,14 +61,20 @@ class UnifiedScrapingService {
   }
 
   // Méthode pour parser les flux RSS
-  public async parseRSSFeed(feedUrl: string): Promise<any[]> {
+  public async parseRSSFeed(feedUrl: string, proxyIndex = 0): Promise<any[]> {
     if (!validateURL(feedUrl)) {
       this.logger.error(`URL invalide : ${feedUrl}`);
       return [];
     }
 
+    // Si on a essayé tous les proxys, arrêter
+    if (proxyIndex >= CORS_PROXIES.length) {
+      this.logger.error(`Impossible de récupérer ${feedUrl} après ${CORS_PROXIES.length} tentatives`);
+      return [];
+    }
+
     try {
-      const corsEnabledUrl = `${CORS_PROXY}${feedUrl}`;
+      const corsEnabledUrl = `${CORS_PROXIES[proxyIndex]}${encodeURIComponent(feedUrl)}`;
       const feed = await this.rssParser.parseURL(corsEnabledUrl);
       
       return feed.items
@@ -78,15 +88,26 @@ class UnifiedScrapingService {
         .filter(item => item.title && item.description);
     } catch (error) {
       this.logger.error(`Erreur de parsing RSS pour ${feedUrl}`, error);
-      return [];
+      // Essayer le proxy suivant
+      return this.parseRSSFeed(feedUrl, proxyIndex + 1);
     }
   }
 
   // Méthode pour scraper des sources HTML
-  public async scrapeOpportunities(url: string, customSelectors?: Partial<ScrapingSource['selector']>): Promise<any[]> {
+  public async scrapeOpportunities(
+    url: string, 
+    customSelectors?: Partial<ScrapingSource['selector']>,
+    proxyIndex = 0
+  ): Promise<any[]> {
     const source = this.sources.find(s => s.url === url);
     if (!source) {
       this.logger.error(`Source non configurée : ${url}`);
+      return [];
+    }
+
+    // Si on a essayé tous les proxys, arrêter
+    if (proxyIndex >= CORS_PROXIES.length) {
+      this.logger.error(`Impossible de scraper ${url} après ${CORS_PROXIES.length} tentatives`);
       return [];
     }
 
@@ -96,14 +117,16 @@ class UnifiedScrapingService {
     };
 
     try {
-      const corsEnabledUrl = `${CORS_PROXY}${url}`;
+      const corsEnabledUrl = `${CORS_PROXIES[proxyIndex]}${encodeURIComponent(url)}`;
+      
       const response = await axios.get(corsEnabledUrl, {
         params: {
           limit: 50,
           offset: 0
         },
         headers: {
-          'X-Requested-With': 'XMLHttpRequest'
+          'X-Requested-With': 'XMLHttpRequest',
+          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
         }
       });
 
@@ -139,7 +162,8 @@ class UnifiedScrapingService {
       return opportunities;
     } catch (error) {
       this.logger.error(`Erreur de scraping pour ${url}`, error);
-      return [];
+      // Essayer le proxy suivant
+      return this.scrapeOpportunities(url, customSelectors, proxyIndex + 1);
     }
   }
 
