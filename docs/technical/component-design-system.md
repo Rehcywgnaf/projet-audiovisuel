@@ -49,6 +49,23 @@
 - Couleurs dynamiques
 - Accessibilité
 
+### 2.4 Composants shadcn/ui
+- Types de composants :
+  * HoverCard pour informations détaillées
+  * Tooltip pour aide contextuelle
+  * ScrollArea pour listes longues
+  * Card pour conteneurs
+  * Sheet pour interfaces mobiles
+- Integration :
+  * Thème cohérent
+  * Classes Tailwind natives
+  * Props standardisées
+  * Accessibilité ARIA
+- Performance :
+  * Chargement optimisé
+  * SSR compatible
+  * Bundle size minimisé
+
 ## 3. Composants Moléculaires
 
 ### 3.1 Cartes
