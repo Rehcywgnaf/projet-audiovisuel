@@ -3,17 +3,28 @@ import { validateURL, extractDate, extractBudget } from '../utils/dataValidation
 
 const API_TIMEOUT = 10000; // 10 secondes
 const MAX_RETRY = 2;
-const CORS_PROXY = 'https://cors-anywhere.herokuapp.com/';
+
+const CORS_PROXIES = [
+  'https://cors-anywhere.herokuapp.com/',
+  'https://api.allorigins.win/raw?url=',
+  'https://cors-proxy.htmldriven.com/?url='
+];
 
 export const apiService = {
-  async fetchOpportunities(endpoint, filters = {}, retryCount = 0) {
+  async fetchOpportunities(endpoint, filters = {}, retryCount = 0, proxyIndex = 0) {
     if (!validateURL(endpoint)) {
       console.error(`URL d'API invalide : ${endpoint}`);
       return [];
     }
 
+    // Si on a essayé tous les proxys, arrêter
+    if (proxyIndex >= CORS_PROXIES.length) {
+      console.error(`Impossible de récupérer ${endpoint} après ${CORS_PROXIES.length} tentatives`);
+      return [];
+    }
+
     try {
-      const corsEnabledUrl = `${CORS_PROXY}${endpoint}`;
+      const corsEnabledUrl = `${CORS_PROXIES[proxyIndex]}${encodeURIComponent(endpoint)}`;
       
       const response = await axios.get(corsEnabledUrl, { 
         params: {
@@ -33,9 +44,15 @@ export const apiService = {
 
     } catch (error) {
       // Stratégie de retry
+      console.warn(`Tentative ${retryCount + 1} échouée pour ${endpoint} via ${CORS_PROXIES[proxyIndex]}. Réessai...`);
+      
       if (retryCount < MAX_RETRY) {
-        console.warn(`Tentative ${retryCount + 1} échouée pour ${endpoint}. Réessai...`);
-        return this.fetchOpportunities(endpoint, filters, retryCount + 1);
+        // Essayer le même proxy une fois
+        if (retryCount === 0) {
+          return this.fetchOpportunities(endpoint, filters, retryCount + 1, proxyIndex);
+        }
+        // Puis passer au proxy suivant
+        return this.fetchOpportunities(endpoint, filters, 0, proxyIndex + 1);
       }
 
       console.error(`Erreur fatale de récupération API pour ${endpoint}:`, error);
