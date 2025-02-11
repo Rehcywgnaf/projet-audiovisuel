@@ -21,51 +21,27 @@ interface ScrapingSource {
 class UnifiedScrapingService {
   private sources: ScrapingSource[] = [
     {
-      url: 'https://www.francemarches.com/appels-offre/audiovisuel',
-      type: 'ao',
+      url: 'https://www.cnc.fr/professionnels/appels-a-projets',
+      type: 'aap',
       mode: 'html',
-      keywords: ['audiovisuel', 'production audiovisuelle'],
+      keywords: ['audiovisuel', 'production', 'cinéma'],
       selector: {
-        opportunityContainer: '.marche-ligne',
-        title: '.marche-titre',
-        description: '.marche-description',
-        deadline: '.marche-date'
+        opportunityContainer: '.project-item',
+        title: '.project-title',
+        description: '.project-description',
+        deadline: '.project-deadline'
       }
     },
     {
-      url: 'https://www.francemarches.com/appels-offre/production-audiovisuelle',
-      type: 'ao',
+      url: 'https://www.institutfrancais.com/fr/appels-a-projets',
+      type: 'aap',
       mode: 'html',
-      keywords: ['audiovisuel', 'production audiovisuelle'],
+      keywords: ['audiovisuel', 'international', 'culture'],
       selector: {
-        opportunityContainer: '.marche-ligne',
-        title: '.marche-titre',
-        description: '.marche-description',
-        deadline: '.marche-date'
-      }
-    },
-    {
-      url: 'https://www.j360.info/appels-d-offres/recherche/audiovisuel/',
-      type: 'ao',
-      mode: 'html',
-      keywords: ['audiovisuel', 'production audiovisuelle'],
-      selector: {
-        opportunityContainer: '.tender-item',
-        title: '.tender-titre',
-        description: '.tender-description',
-        deadline: '.tender-date'
-      }
-    },
-    {
-      url: 'https://www.e-marchespublics.com/appel-offre/audiovisuel',
-      type: 'ao',
-      mode: 'html',
-      keywords: ['audiovisuel', 'production audiovisuelle'],
-      selector: {
-        opportunityContainer: '.marche-row',
-        title: '.marche-titre',
-        description: '.marche-description',
-        deadline: '.marche-date'
+        opportunityContainer: '.appel-projet',
+        title: '.titre-projet',
+        description: '.description-projet',
+        deadline: '.date-limite'
       }
     }
   ];
@@ -117,20 +93,14 @@ class UnifiedScrapingService {
     };
 
     try {
-      const config = {
-        timeout: 10000,
-        // Suppression des en-têtes personnalisés
+      // Configuration proxy ou alternative pour contourner CORS
+      const proxyUrl = `https://cors-anywhere.herokuapp.com/${url}`;
+      
+      const response = await axios.get(proxyUrl, {
         headers: {
-          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8'
+          'X-Requested-With': 'XMLHttpRequest'
         }
-      };
-
-      // Pour les environnements navigateur, ajuster la configuration
-      if (typeof window !== 'undefined') {
-        delete config.headers;
-      }
-
-      const response = await axios.get(url, config);
+      });
 
       const $ = cheerio.load(response.data);
       const opportunities: any[] = [];
