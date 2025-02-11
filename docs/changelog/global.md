@@ -1,5 +1,35 @@
 # SAPAV - Historique des modifications
 
+## [2.0.15] - 2025-02-10
+
+### UI & Components
+- Intégration complète des composants shadcn/ui
+  - Ajout HoverCard pour les tooltips enrichis
+  - Ajout Tooltip pour l'aide contextuelle
+  - Ajout ScrollArea pour optimiser les listes scrollables
+- Refonte majeure de l'interface utilisateur
+  - Refactorisation PlanningView avec meilleure UX
+  - Amélioration TeamView avec composants optimisés
+  - Modernisation RSSView avec HoverCard pour explication des scores
+  - Révision ProjectsView avec nouveaux indicateurs visuels
+  - Refonte MainInterface pour une meilleure navigation
+
+### Services
+- Extension des capacités de veille
+  - Nouvelle méthode getOpportunities dans VeilleService
+  - Service de scraping intelligent pour collecte de données
+  - Service d'enrichissement des opportunités
+- Amélioration des interactions utilisateur
+  - Support des tooltips pour aide contextuelle
+  - Navigation dynamique entre les vues
+  - Meilleure gestion des états de chargement
+
+### Technical
+- Migration complète vers shadcn/ui pour cohérence visuelle
+- Optimisation des performances de rendu
+- Amélioration accessibilité avec ARIA rôles
+- Support mobile amélioré avec responsive design
+
 [2.0.13] - 2025-02-09
 Refactoring
 
