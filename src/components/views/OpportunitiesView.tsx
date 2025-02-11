@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { 
@@ -8,20 +8,36 @@ import {
 } from 'lucide-react';
 import { useRSS } from '@/hooks/useRSS';
 
+interface Opportunity {
+  id: string;
+  title: string;
+  type: string;
+  publishedAt: string;
+  link: string;
+  analysis?: {
+    keywords: string[];
+    category: string;
+    score: number;
+    aiSuggestions?: string;
+  };
+}
+
 const OpportunitiesView: React.FC = () => {
   const { rssData, isLoading, error } = useRSS();
   const [activeFilter, setActiveFilter] = useState<'all' | 'aap' | 'ao'>('all');
-  const [selectedOpportunity, setSelectedOpportunity] = useState<any>(null);
+  const [selectedOpportunity, setSelectedOpportunity] = useState<Opportunity | null>(null);
 
   if (isLoading) return <div>Chargement...</div>;
   if (error) return <div>Erreur : {error}</div>;
   if (!rssData) return null;
 
-  const filteredOpportunities = rssData.recent.filter(opp => 
-    activeFilter === 'all' || opp.type.toLowerCase() === activeFilter
-  );
+  const filteredOpportunities = useMemo(() => {
+    return rssData.recent.filter(opp => 
+      activeFilter === 'all' || opp.type.toLowerCase() === activeFilter
+    );
+  }, [rssData.recent, activeFilter]);
 
-  const renderOpportunityDetails = (opp: any) => {
+  const renderOpportunityDetails = (opp: Opportunity) => {
     if (!opp) return null;
 
     return (
