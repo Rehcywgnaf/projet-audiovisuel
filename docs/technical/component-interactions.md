@@ -80,6 +80,22 @@ graph LR
 - Optimisation des requêtes
 - Alertes système
 
+### 2.5 shadcn/ui Components ↔ Core Components
+#### Flux de Données
+```mermaid
+graph LR
+    shadcn[shadcn Components] -->|UI States| Core[Core Components]
+    Core -->|Data Updates| shadcn
+    shadcn -->|User Interactions| Events[Event System]
+    Events -->|State Changes| Core
+```
+
+#### Détails des Interactions
+- Gestion centralisée des états UI
+- Propagation cohérente des événements
+- Synchronisation des thèmes
+- Communication inter-composants optimisée
+
 ## 3. Mécanismes d'Interaction Avancés
 
 ### 3.1 Système de Cache Intelligent
