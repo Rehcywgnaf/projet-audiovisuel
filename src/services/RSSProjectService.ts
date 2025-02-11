@@ -39,19 +39,20 @@ export class RSSProjectService {
 
   private initializeSources(): RSSSource[] {
     return [
-      { 
-        id: 1, 
-        url: 'https://cnc.fr/feed', 
-        type: 'rss', 
-        status: 'active', 
-        lastCheck: new Date(),
-        analysis: {
-          score: 85,
-          category: 'Audiovisuel',
-          keywords: ['financement', 'cinéma', 'production'],
-          lastAnalysis: new Date()
-        }
-      },
+      // Commenté car le flux semble inaccessible
+      // { 
+      //   id: 1, 
+      //   url: 'https://cnc.fr/feed', 
+      //   type: 'rss', 
+      //   status: 'active', 
+      //   lastCheck: new Date(),
+      //   analysis: {
+      //     score: 85,
+      //     category: 'Audiovisuel',
+      //     keywords: ['financement', 'cinéma', 'production'],
+      //     lastAnalysis: new Date()
+      //   }
+      // },
       { 
         id: 2, 
         url: 'https://www.francemarches.com/appels-offres-audiovisuel', 
