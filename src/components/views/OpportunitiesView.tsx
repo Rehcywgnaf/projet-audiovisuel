@@ -8,24 +8,10 @@ import {
 } from 'lucide-react';
 import { useRSS } from '@/hooks/useRSS';
 
-interface Opportunity {
-  id: string;
-  title: string;
-  type: string;
-  publishedAt: string;
-  link: string;
-  analysis?: {
-    keywords: string[];
-    category: string;
-    score: number;
-    aiSuggestions?: string;
-  };
-}
-
 const OpportunitiesView: React.FC = () => {
   const { rssData, isLoading, error } = useRSS();
   const [activeFilter, setActiveFilter] = useState<'all' | 'aap' | 'ao'>('all');
-  const [selectedOpportunity, setSelectedOpportunity] = useState<Opportunity | null>(null);
+  const [selectedOpportunity, setSelectedOpportunity] = useState<any>(null);
 
   if (isLoading) return <div>Chargement...</div>;
   if (error) return <div>Erreur : {error}</div>;
@@ -37,7 +23,7 @@ const OpportunitiesView: React.FC = () => {
     );
   }, [rssData.recent, activeFilter]);
 
-  const renderOpportunityDetails = (opp: Opportunity) => {
+  const renderOpportunityDetails = (opp: any) => {
     if (!opp) return null;
 
     return (
