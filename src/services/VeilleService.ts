@@ -1,7 +1,6 @@
 import AIServiceManager from '@/lib/AIServiceManager';
-import { scrapingService } from './scrapingService';
+import { unifiedScrapingService } from './unifiedScrapingService';
 import { apiService } from './apiService';
-import { rssProjectService } from './RSSProjectService';
 import { LoggingService } from '@/lib/LoggingService';
 
 export interface Opportunity {
@@ -86,7 +85,7 @@ export class VeilleService {
       ];
 
       const opportunitiesPromises = rssFeeds.map(async (feed) => {
-        const feedData = await scrapingService.parseRSSFeed(feed);
+        const feedData = await unifiedScrapingService.parseRSSFeed(feed);
         return feedData.map(item => ({
           id: Date.now() + Math.random(),
           type: this.determineOpportunityType(item.title),
@@ -136,26 +135,17 @@ export class VeilleService {
 
   private async fetchScrapingOpportunities(filters?: FilterCriteria): Promise<Opportunity[]> {
     try {
-      const scrapingSources = [
-        'https://www.francemarches.com/appels-offres-audiovisuel',
-        'https://ellesfontlaculture.culture.gouv.fr'
-      ];
-
-      const opportunitiesPromises = scrapingSources.map(async (source) => {
-        const scrapedData = await scrapingService.scrapeOpportunities(source);
-        return scrapedData.map(item => ({
-          id: Date.now() + Math.random(),
-          type: this.determineOpportunityType(item.title),
-          title: item.title,
-          budget: item.budget,
-          deadline: item.deadline,
-          match: 0,
-          description: item.description,
-          source: source
-        }));
-      });
-
-      return (await Promise.all(opportunitiesPromises)).flat();
+      const opportunities = await unifiedScrapingService.scrapeAllSources();
+      return opportunities.map(item => ({
+        id: Date.now() + Math.random(),
+        type: this.determineOpportunityType(item.title),
+        title: item.title,
+        budget: this.extractBudget(item.description),
+        deadline: this.extractDeadline(item.description),
+        match: 0,
+        description: item.description,
+        source: item.source
+      }));
     } catch (error) {
       this.loggingService.error('Erreur de scraping', { error });
       return [];
@@ -205,7 +195,7 @@ export class VeilleService {
 
   private extractBudget(description?: string): string {
     if (!description) return 'Non spécifié';
-    const budgetMatch = description.match(/(\d+(?:\s*\d{3})*)?\s*(?:€|euros)/i);
+    const budgetMatch = description.match(/(\d+(?:\s*\d{3})*)?(?:\s*€|euros)/i);
     return budgetMatch ? `${budgetMatch[1]} €` : 'Non spécifié';
   }
 
