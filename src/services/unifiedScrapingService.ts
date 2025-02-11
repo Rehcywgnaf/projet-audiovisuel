@@ -4,6 +4,8 @@ import Parser from 'rss-parser';
 import { Logger } from '../utils/logger';
 import { validateURL, sanitizeText } from '../utils/dataValidation';
 
+const CORS_PROXY = 'https://cors-anywhere.herokuapp.com/';
+
 interface ScrapingSource {
   url: string;
   type: 'aap' | 'ao' | 'general';
@@ -21,7 +23,7 @@ interface ScrapingSource {
 class UnifiedScrapingService {
   private sources: ScrapingSource[] = [
     {
-      url: 'https://www.francemarches.com/appels-offre/audiovisuel',
+      url: 'https://www.e-marchespublics.com/api/calls',
       type: 'ao',
       mode: 'html',
       keywords: ['audiovisuel', 'production audiovisuelle'],
@@ -33,39 +35,15 @@ class UnifiedScrapingService {
       }
     },
     {
-      url: 'https://www.francemarches.com/appels-offre/production-audiovisuelle',
-      type: 'ao',
-      mode: 'html',
-      keywords: ['audiovisuel', 'production audiovisuelle'],
-      selector: {
-        opportunityContainer: '.marche-ligne',
-        title: '.marche-titre',
-        description: '.marche-description',
-        deadline: '.marche-date'
-      }
-    },
-    {
-      url: 'https://www.j360.info/appels-d-offres/recherche/audiovisuel/',
+      url: 'https://www.marchesonline.com/api/opportunities',
       type: 'ao',
       mode: 'html',
       keywords: ['audiovisuel', 'production audiovisuelle'],
       selector: {
         opportunityContainer: '.tender-item',
-        title: '.tender-titre',
+        title: '.tender-title',
         description: '.tender-description',
         deadline: '.tender-date'
-      }
-    },
-    {
-      url: 'https://www.e-marchespublics.com/appel-offre/audiovisuel',
-      type: 'ao',
-      mode: 'html',
-      keywords: ['audiovisuel', 'production audiovisuelle'],
-      selector: {
-        opportunityContainer: '.marche-row',
-        title: '.marche-titre',
-        description: '.marche-description',
-        deadline: '.marche-date'
       }
     }
   ];
@@ -86,7 +64,8 @@ class UnifiedScrapingService {
     }
 
     try {
-      const feed = await this.rssParser.parseURL(feedUrl);
+      const corsEnabledUrl = `${CORS_PROXY}${feedUrl}`;
+      const feed = await this.rssParser.parseURL(corsEnabledUrl);
       
       return feed.items
         .map(item => ({
@@ -117,20 +96,16 @@ class UnifiedScrapingService {
     };
 
     try {
-      const config = {
-        timeout: 10000,
-        // Suppression des en-têtes personnalisés
+      const corsEnabledUrl = `${CORS_PROXY}${url}`;
+      const response = await axios.get(corsEnabledUrl, {
+        params: {
+          limit: 50,
+          offset: 0
+        },
         headers: {
-          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8'
+          'X-Requested-With': 'XMLHttpRequest'
         }
-      };
-
-      // Pour les environnements navigateur, ajuster la configuration
-      if (typeof window !== 'undefined') {
-        delete config.headers;
-      }
-
-      const response = await axios.get(url, config);
+      });
 
       const $ = cheerio.load(response.data);
       const opportunities: any[] = [];
