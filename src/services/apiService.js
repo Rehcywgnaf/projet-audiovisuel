@@ -12,14 +12,20 @@ export const apiService = {
     }
 
     try {
-      const response = await axios.get(endpoint, { 
+      const config = { 
         params: this._prepareRequestParams(filters),
         timeout: API_TIMEOUT,
-        headers: {
-          'Accept': 'application/json',
-          'User-Agent': 'SAPAV API Crawler'
-        }
-      });
+        // Suppression de l'en-tête User-Agent personnalisé
+      };
+
+      // Si le contexte est un navigateur, supprime les en-têtes
+      if (typeof window !== 'undefined') {
+        config.headers = {
+          'Accept': 'application/json'
+        };
+      }
+
+      const response = await axios.get(endpoint, config);
 
       // Normalisation et validation des données
       return this._processAPIResponse(response.data, endpoint, filters);
