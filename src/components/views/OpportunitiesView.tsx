@@ -16,10 +16,9 @@ const OpportunitiesView: React.FC = () => {
   if (isLoading) return <div>Chargement...</div>;
   if (error) return <div>Erreur : {error}</div>;
   
-  // Vérification que rssData.recent est bien défini avant d'appliquer le filtre
   const filteredOpportunities = useMemo(() => {
-    if (!rssData || !rssData.recent) return [];
-    return rssData.recent.filter(opp => 
+    const opportunities = rssData?.recent ?? [];
+    return opportunities.filter(opp => 
       activeFilter === 'all' || opp.type.toLowerCase() === activeFilter
     );
   }, [rssData, activeFilter]);
@@ -35,11 +34,11 @@ const OpportunitiesView: React.FC = () => {
               <h2 className="text-xl font-bold">{opp.title}</h2>
               <div className="flex items-center gap-2 mt-2">
                 <span className={`px-2 py-1 rounded-full text-xs ${
-                  opp.type === 'AAP' 
+                  opp.type === 'aap' 
                     ? 'bg-blue-100 text-blue-800' 
                     : 'bg-purple-100 text-purple-800'
                 }`}>
-                  {opp.type}
+                  {opp.type.toUpperCase()}
                 </span>
                 <span className="text-sm text-gray-500">
                   Publié le {new Date(opp.publishedAt).toLocaleDateString()}
@@ -102,11 +101,11 @@ const OpportunitiesView: React.FC = () => {
                     <h3 className="font-medium">{opp.title}</h3>
                     <div className="flex items-center gap-2 mt-1">
                       <span className={`px-2 py-1 rounded-full text-xs ${
-                        opp.type === 'AAP' 
+                        opp.type === 'aap' 
                           ? 'bg-blue-100 text-blue-800' 
                           : 'bg-purple-100 text-purple-800'
                       }`}>
-                        {opp.type}
+                        {opp.type.toUpperCase()}
                       </span>
                       <span className="text-xs text-gray-500">
                         <Calendar className="h-3 w-3 inline-block mr-1" />
