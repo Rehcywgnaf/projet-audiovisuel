@@ -1,7 +1,8 @@
 import AIServiceManager from '@/lib/AIServiceManager';
-import { unifiedScrapingService } from './unifiedScrapingService';
+import { rssProjectService } from './RSSProjectService';
 import { apiService } from './apiService';
 import { LoggingService } from '@/lib/LoggingService';
+import { Project } from '@/components/EnhancedProjectList';
 
 export interface Opportunity {
   id: number;
@@ -39,20 +40,27 @@ export class VeilleService {
 
   async fetchOpportunities(filters?: FilterCriteria): Promise<Opportunity[]> {
     try {
-      const rssOpportunities = await this.fetchRSSOpportunities(filters);
       const apiOpportunities = await this.fetchAPIOpportunities(filters);
-      const scrapingOpportunities = await this.fetchScrapingOpportunities(filters);
+      const projects = await rssProjectService.convertToProjects();
 
-      console.log('Opportunités RSS:', rssOpportunities.length);
-      console.log('Opportunités API:', apiOpportunities.length);
-      console.log('Opportunités Scraping:', scrapingOpportunities.length);
+      const opportunitiesFromProjects: Opportunity[] = projects.map(project => ({
+        id: Number(project.id),
+        type: this.determineOpportunityType(project.title),
+        title: project.title,
+        budget: project.budget,
+        deadline: project.deadline,
+        match: this.calculateMatchFromProject(project),
+        description: project.title, // Utiliser le titre comme description par défaut
+        source: project.organization,
+        category: project.category
+      }));
 
       const allOpportunities = [
-        ...rssOpportunities, 
-        ...apiOpportunities, 
-        ...scrapingOpportunities
+        ...apiOpportunities,
+        ...opportunitiesFromProjects
       ];
 
+      console.log('Opportunités:', allOpportunities.length);
       allOpportunities.forEach((opp, index) => {
         console.log(`Opportunité ${index + 1}:`, {
           title: opp.title,
@@ -73,36 +81,8 @@ export class VeilleService {
   }
 
   // Nouvelle méthode ajoutée
-  getOpportunities(filtres?: FilterCriteria): Promise<Opportunity[]> {
+  async getOpportunities(filtres?: FilterCriteria): Promise<Opportunity[]> {
     return this.fetchOpportunities(filtres);
-  }
-
-  private async fetchRSSOpportunities(filters?: FilterCriteria): Promise<Opportunity[]> {
-    try {
-      const rssFeeds = [
-        'https://cnc.fr/feed',
-        'https://www.cap-metiers.pro/rss'
-      ];
-
-      const opportunitiesPromises = rssFeeds.map(async (feed) => {
-        const feedData = await unifiedScrapingService.parseRSSFeed(feed);
-        return feedData.map(item => ({
-          id: Date.now() + Math.random(),
-          type: this.determineOpportunityType(item.title),
-          title: item.title,
-          budget: this.extractBudget(item.description),
-          deadline: this.extractDeadline(item.description),
-          match: 0,
-          description: item.description,
-          source: feed
-        }));
-      });
-
-      return (await Promise.all(opportunitiesPromises)).flat();
-    } catch (error) {
-      this.loggingService.error('Erreur de récupération RSS', { error });
-      return [];
-    }
   }
 
   private async fetchAPIOpportunities(filters?: FilterCriteria): Promise<Opportunity[]> {
@@ -133,25 +113,6 @@ export class VeilleService {
     }
   }
 
-  private async fetchScrapingOpportunities(filters?: FilterCriteria): Promise<Opportunity[]> {
-    try {
-      const opportunities = await unifiedScrapingService.scrapeAllSources();
-      return opportunities.map(item => ({
-        id: Date.now() + Math.random(),
-        type: this.determineOpportunityType(item.title),
-        title: item.title,
-        budget: this.extractBudget(item.description),
-        deadline: this.extractDeadline(item.description),
-        match: 0,
-        description: item.description,
-        source: item.source
-      }));
-    } catch (error) {
-      this.loggingService.error('Erreur de scraping', { error });
-      return [];
-    }
-  }
-
   private async enrichOpportunitiesWithAI(opportunities: Opportunity[]): Promise<Opportunity[]> {
     try {
       const enrichedOpportunities = await Promise.all(
@@ -169,7 +130,7 @@ export class VeilleService {
             return {
               ...opportunity,
               match: enrichmentResponse.data.match || this.matchScore(opportunity),
-              category: enrichmentResponse.data.category,
+              category: enrichmentResponse.data.category || opportunity.category,
               requirements: enrichmentResponse.data.requirements
             };
           }
@@ -193,16 +154,12 @@ export class VeilleService {
     return aapKeywords.some(keyword => lowercaseTitle.includes(keyword)) ? 'AAP' : 'AO';
   }
 
-  private extractBudget(description?: string): string {
-    if (!description) return 'Non spécifié';
-    const budgetMatch = description.match(/(\d+(?:\s*\d{3})*)?(?:\s*€|euros)/i);
-    return budgetMatch ? `${budgetMatch[1]} €` : 'Non spécifié';
-  }
-
-  private extractDeadline(description?: string): string {
-    if (!description) return 'Non spécifié';
-    const dateMatch = description.match(/(\d{1,2}\/\d{1,2}\/\d{4})/);
-    return dateMatch ? dateMatch[1] : 'Non spécifié';
+  private calculateMatchFromProject(project: Project): number {
+    switch(project.priority) {
+      case 'high': return 80;
+      case 'medium': return 50;
+      default: return 20;
+    }
   }
 
   private matchScore(opportunity: Opportunity): number {
