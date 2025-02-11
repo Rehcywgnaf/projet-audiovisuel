@@ -144,3 +144,23 @@
 - Fallback UI states
 - Retry mechanisms
 - Comprehensive logging
+
+## 12. shadcn/ui Integration
+
+### 12.1 Core Components
+- HoverCard: Tooltips enrichis et explications détaillées
+- Tooltip: Aide contextuelle légère
+- ScrollArea: Gestion optimisée du défilement
+- Navigation dynamique et responsive
+
+### 12.2 Style Guidelines
+- Utilisation des classes Tailwind natives uniquement
+- Respect des conventions shadcn
+- Thème cohérent avec la charte existante
+- Support mobile optimisé
+
+### 12.3 Performance
+- Temps de chargement < 100ms
+- Optimisation des animations
+- Gestion efficace des états
+- Chargement progressif
