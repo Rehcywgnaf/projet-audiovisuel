@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/sheet";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import ProjectsView from '@/components/views/ProjectsView';
-import RSSView from '@/components/views/RSSView';
+import OpportunitiesView from '@/components/views/OpportunitiesView';
 import TeamView from '@/components/views/TeamView';
 import PlanningView from '@/components/views/PlanningView';
 import { cn } from "@/lib/utils";
@@ -51,7 +51,7 @@ const NavButton = ({
 );
 
 const MainInterface = () => {
-  const [currentView, setCurrentView] = useState<View>('projects');
+  const [currentView, setCurrentView] = useState<View>('rss');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const renderView = () => {
@@ -59,7 +59,7 @@ const MainInterface = () => {
       case 'projects':
         return <ProjectsView />;
       case 'rss':
-        return <RSSView />;
+        return <OpportunitiesView />;
       case 'teams':
         return <TeamView />;
       case 'planning':
