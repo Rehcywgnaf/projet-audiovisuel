@@ -15,13 +15,14 @@ const OpportunitiesView: React.FC = () => {
 
   if (isLoading) return <div>Chargement...</div>;
   if (error) return <div>Erreur : {error}</div>;
-  if (!rssData) return null;
-
+  
+  // Vérification que rssData.recent est bien défini avant d'appliquer le filtre
   const filteredOpportunities = useMemo(() => {
+    if (!rssData || !rssData.recent) return [];
     return rssData.recent.filter(opp => 
       activeFilter === 'all' || opp.type.toLowerCase() === activeFilter
     );
-  }, [rssData.recent, activeFilter]);
+  }, [rssData, activeFilter]);
 
   const renderOpportunityDetails = (opp: any) => {
     if (!opp) return null;
@@ -53,53 +54,6 @@ const OpportunitiesView: React.FC = () => {
               <ExternalLink className="h-4 w-4 mr-2" /> Voir l'original
             </Button>
           </div>
-
-          {opp.analysis && (
-            <div className="space-y-4">
-              <div>
-                <h3 className="font-semibold mb-2">Analyse</h3>
-                <div className="flex flex-wrap gap-2">
-                  {opp.analysis.keywords.map((keyword: string, idx: number) => (
-                    <span 
-                      key={idx} 
-                      className="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded-full"
-                    >
-                      {keyword}
-                    </span>
-                  ))}
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <h4 className="text-sm font-medium text-gray-600">Catégorie</h4>
-                  <p>{opp.analysis.category}</p>
-                </div>
-                <div>
-                  <h4 className="text-sm font-medium text-gray-600">Score de Pertinence</h4>
-                  <p>{opp.analysis.score}/100</p>
-                </div>
-              </div>
-
-              {opp.analysis.aiSuggestions && (
-                <div className="bg-blue-50 p-3 rounded-lg">
-                  <h4 className="text-sm font-medium mb-2">Suggestions IA</h4>
-                  <p className="text-sm text-blue-800">{opp.analysis.aiSuggestions}</p>
-                </div>
-              )}
-            </div>
-          )}
-
-          <div className="flex justify-between items-center border-t pt-4">
-            <div className="flex items-center gap-4">
-              <Button variant="ghost" size="sm">
-                <ThumbsUp className="h-4 w-4 mr-2" /> Utile
-              </Button>
-              <Button variant="ghost" size="sm">
-                <ThumbsDown className="h-4 w-4 mr-2" /> Pas Utile
-              </Button>
-            </div>
-          </div>
         </CardContent>
       </Card>
     );
@@ -126,17 +80,6 @@ const OpportunitiesView: React.FC = () => {
             onClick={() => setActiveFilter('ao')}
           >
             AO
-          </Button>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button variant="ghost" size="icon">
-            <Filter className="h-5 w-5" />
-          </Button>
-          <Button variant="ghost" size="icon">
-            <Bell className="h-5 w-5" />
-          </Button>
-          <Button variant="ghost" size="icon">
-            <Settings className="h-5 w-5" />
           </Button>
         </div>
       </div>
