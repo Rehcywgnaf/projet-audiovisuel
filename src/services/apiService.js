@@ -3,6 +3,7 @@ import { validateURL, extractDate, extractBudget } from '../utils/dataValidation
 
 const API_TIMEOUT = 10000; // 10 secondes
 const MAX_RETRY = 2;
+const CORS_PROXY = 'https://cors-anywhere.herokuapp.com/';
 
 export const apiService = {
   async fetchOpportunities(endpoint, filters = {}, retryCount = 0) {
@@ -12,20 +13,20 @@ export const apiService = {
     }
 
     try {
-      const config = { 
-        params: this._prepareRequestParams(filters),
+      const corsEnabledUrl = `${CORS_PROXY}${endpoint}`;
+      
+      const response = await axios.get(corsEnabledUrl, { 
+        params: {
+          ...this._prepareRequestParams(filters),
+          limit: 50,
+          offset: 0
+        },
         timeout: API_TIMEOUT,
-        // Suppression de l'en-tête User-Agent personnalisé
-      };
-
-      // Si le contexte est un navigateur, supprime les en-têtes
-      if (typeof window !== 'undefined') {
-        config.headers = {
+        headers: {
+          'X-Requested-With': 'XMLHttpRequest',
           'Accept': 'application/json'
-        };
-      }
-
-      const response = await axios.get(endpoint, config);
+        }
+      });
 
       // Normalisation et validation des données
       return this._processAPIResponse(response.data, endpoint, filters);
@@ -48,9 +49,7 @@ export const apiService = {
       minBudget: filters.minBudget,
       maxBudget: filters.maxBudget,
       startDate: filters.dateRange?.start,
-      endDate: filters.dateRange?.end,
-      limit: filters.limit || 50, // Limiter par défaut à 50 entrées
-      offset: filters.offset || 0
+      endDate: filters.dateRange?.end
     };
   },
 
