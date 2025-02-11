@@ -117,13 +117,20 @@ class UnifiedScrapingService {
     };
 
     try {
-      const response = await axios.get(url, {
+      const config = {
+        timeout: 10000,
+        // Suppression des en-têtes personnalisés
         headers: {
-          'User-Agent': 'SAPAV/1.0 (Project Tracking Bot)',
-          'Accept-Language': 'fr-FR,fr;q=0.9'
-        },
-        timeout: 10000
-      });
+          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8'
+        }
+      };
+
+      // Pour les environnements navigateur, ajuster la configuration
+      if (typeof window !== 'undefined') {
+        delete config.headers;
+      }
+
+      const response = await axios.get(url, config);
 
       const $ = cheerio.load(response.data);
       const opportunities: any[] = [];
