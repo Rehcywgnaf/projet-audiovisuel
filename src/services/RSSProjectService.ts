@@ -1,7 +1,7 @@
 import { Project } from '@/components/EnhancedProjectList';
 import AIServiceManager from '@/lib/AIServiceManager';
 import { LoggingService } from '@/lib/LoggingService';
-import { veilleService, Opportunity } from './VeilleService';
+import { unifiedScrapingService } from './unifiedScrapingService';
 import { sourceDiscoveryService, DiscoveredSource } from './SourceDiscoveryService';
 
 export type RSSSource = {
@@ -68,31 +68,56 @@ export class RSSProjectService {
     ];
   }
 
-  // Nouvelle méthode pour récupérer les sources
+  // Nouvelle méthode pour récupérer les sources avec leurs opportunités
+  public async getSourcesWithOpportunities(): Promise<{ source: RSSSource, opportunities: any[] }[]> {
+    const sourcesWithOpportunities = await Promise.all(
+      this.sources.map(async (source) => {
+        let opportunities: any[] = [];
+        
+        try {
+          if (source.type === 'rss') {
+            opportunities = await unifiedScrapingService.parseRSSFeed(source.url);
+          } else if (source.type === 'scraping') {
+            opportunities = await unifiedScrapingService.scrapeOpportunities(source.url);
+          }
+        } catch (error) {
+          this.loggingService.error(`Erreur de récupération pour ${source.url}`, { error });
+        }
+
+        return { source, opportunities };
+      })
+    );
+
+    return sourcesWithOpportunities;
+  }
+
+  // Méthode pour récupérer les sources
   public getSources(): RSSSource[] {
     return [...this.sources];
   }
 
-  convertToProjects(): Project[] {
-    const projects = this.sources.map(source => {
-      const project = {
-        id: source.id.toString(),
-        title: this.extractProjectTitle(source.url),
-        organization: this.extractOrganization(source.url),
-        status: this.determineProjectStatus(source),
-        updatedAt: source.lastCheck?.toISOString() || new Date().toISOString(),
-        progress: this.calculateProgress(source),
-        priority: this.determinePriority(source),
-        category: source.analysis?.category,
-        budget: '0', // À améliorer avec des données réelles
-        deadline: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
-      };
+  // Conversion des opportunités en projets
+  async convertToProjects(): Promise<Project[]> {
+    const sourcesWithOpportunities = await this.getSourcesWithOpportunities();
+    
+    const projects = sourcesWithOpportunities.flatMap(({ source, opportunities }) => 
+      opportunities.map(opportunity => {
+        const project: Project = {
+          id: `${source.id}-${opportunity.title.slice(0, 10).replace(/\s+/g, '-')}`,
+          title: opportunity.title,
+          organization: this.extractOrganization(source.url),
+          status: this.determineProjectStatus(source),
+          updatedAt: new Date().toISOString(),
+          progress: this.calculateProgress(source),
+          priority: this.determinePriority(source),
+          category: source.analysis?.category || 'Non catégorisé',
+          budget: opportunity.budget || '0',
+          deadline: opportunity.deadline || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
+        };
 
-      // Log détaillé de chaque projet converti
-      console.log('Projet converti:', project);
-
-      return project;
-    });
+        return project;
+      })
+    );
 
     // Log du nombre total de projets convertis
     console.log(`Total de projets convertis : ${projects.length}`);
@@ -101,24 +126,25 @@ export class RSSProjectService {
   }
 
   // Méthode de statistiques des projets
-  public getProjectStats(): ProjectStats {
-    const categorizedProjects = this.sources.reduce((acc, source) => {
-      const category = source.analysis?.category || 'Non catégorisé';
+  public async getProjectStats(): Promise<ProjectStats> {
+    const projects = await this.convertToProjects();
+    
+    const categorizedProjects = projects.reduce((acc, project) => {
+      const category = project.category;
       acc[category] = (acc[category] || 0) + 1;
       return acc;
     }, {} as { [key: string]: number });
 
     return {
-      totalProjects: this.sources.length,
-      activeProjects: this.sources.filter(source => source.status === 'active').length,
-      completedProjects: this.sources.filter(source => source.status === 'error').length,
-      pendingProjects: this.sources.filter(source => source.status === 'pending').length,
+      totalProjects: projects.length,
+      activeProjects: projects.filter(project => project.status === 'active').length,
+      completedProjects: projects.filter(project => project.status === 'terminated').length,
+      pendingProjects: projects.filter(project => project.status === 'pending').length,
       categorizedProjects
     };
   }
 
-  // ... Reste des méthodes privées inchangées
-  private extractProjectTitle(url: string): string {
+  private extractOrganization(url: string): string {
     try {
       const hostname = new URL(url).hostname;
       return hostname.replace('www.', '').split('.')[0]
@@ -127,12 +153,8 @@ export class RSSProjectService {
         .map(word => word.charAt(0).toUpperCase() + word.slice(1))
         .join(' ');
     } catch {
-      return 'Projet sans titre';
+      return 'Organisation Inconnue';
     }
-  }
-
-  private extractOrganization(url: string): string {
-    return this.extractProjectTitle(url);
   }
 
   private determineProjectStatus(source: RSSSource): Project['status'] {
