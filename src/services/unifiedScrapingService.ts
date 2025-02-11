@@ -79,7 +79,7 @@ class UnifiedScrapingService {
   }
 
   // Méthode pour parser les flux RSS
-  private async parseRSSFeed(feedUrl: string): Promise<any[]> {
+  public async parseRSSFeed(feedUrl: string): Promise<any[]> {
     if (!validateURL(feedUrl)) {
       this.logger.error(`URL invalide : ${feedUrl}`);
       return [];
@@ -104,9 +104,20 @@ class UnifiedScrapingService {
   }
 
   // Méthode pour scraper des sources HTML
-  private async scrapeHTMLSource(source: ScrapingSource): Promise<any[]> {
+  public async scrapeOpportunities(url: string, customSelectors?: Partial<ScrapingSource['selector']>): Promise<any[]> {
+    const source = this.sources.find(s => s.url === url);
+    if (!source) {
+      this.logger.error(`Source non configurée : ${url}`);
+      return [];
+    }
+
+    const mergedSelectors = {
+      ...source.selector,
+      ...customSelectors
+    };
+
     try {
-      const response = await axios.get(source.url, {
+      const response = await axios.get(url, {
         headers: {
           'User-Agent': 'SAPAV/1.0 (Project Tracking Bot)',
           'Accept-Language': 'fr-FR,fr;q=0.9'
@@ -117,12 +128,12 @@ class UnifiedScrapingService {
       const $ = cheerio.load(response.data);
       const opportunities: any[] = [];
 
-      const container = source.selector.opportunityContainer || source.selector.title;
+      const container = mergedSelectors.opportunityContainer || mergedSelectors.title;
       $(container).each((index, element) => {
-        const title = sanitizeText($(element).find(source.selector.title).text());
-        const description = sanitizeText($(element).find(source.selector.description).text());
-        const deadline = source.selector.deadline 
-          ? sanitizeText($(element).find(source.selector.deadline).text()) 
+        const title = sanitizeText($(element).find(mergedSelectors.title).text());
+        const description = sanitizeText($(element).find(mergedSelectors.description).text());
+        const deadline = mergedSelectors.deadline 
+          ? sanitizeText($(element).find(mergedSelectors.deadline).text()) 
           : null;
 
         // Validation par mots-clés si présents
@@ -134,11 +145,10 @@ class UnifiedScrapingService {
 
         if (matchesKeywords && title && description) {
           opportunities.push({
-            source: source.url,
-            type: source.type,
             title,
             description,
             deadline,
+            source: url,
             scrapedAt: new Date().toISOString()
           });
         }
@@ -146,13 +156,18 @@ class UnifiedScrapingService {
 
       return opportunities;
     } catch (error) {
-      this.logger.error(`Scraping error for ${source.url}`, error);
+      this.logger.error(`Erreur de scraping pour ${url}`, error);
       return [];
     }
   }
 
+  // Méthode pour ajouter dynamiquement de nouvelles sources
+  public addSource(source: ScrapingSource) {
+    this.sources.push(source);
+  }
+
   // Méthode principale pour scraper toutes les sources
-  async scrapeAllSources(): Promise<any[]> {
+  public async scrapeAllSources(): Promise<any[]> {
     const allOpportunities: any[] = [];
 
     for (const source of this.sources) {
@@ -161,64 +176,15 @@ class UnifiedScrapingService {
       if (source.mode === 'rss') {
         sourceOpportunities = await this.parseRSSFeed(source.url);
       } else {
-        sourceOpportunities = await this.scrapeHTMLSource(source);
+        sourceOpportunities = await this.scrapeOpportunities(source.url);
       }
 
       allOpportunities.push(...sourceOpportunities);
     }
 
-    return this.validateOpportunities(allOpportunities);
-  }
-
-  // Méthode pour ajouter dynamiquement de nouvelles sources
-  addSource(source: ScrapingSource) {
-    this.sources.push(source);
-  }
-
-  // Validation avancée des opportunités
-  validateOpportunities(opportunities: any[]): any[] {
-    return opportunities.filter(opp => {
-      // Validation du titre et description
-      const hasContent = opp.title && opp.description;
-      
-      // Validation de la date limite si présente
-      const hasValidDeadline = !opp.deadline || this.isValidDeadline(opp.deadline);
-      
-      // Filtrage des doublons potentiels
-      const isUnique = opportunities.filter(
-        other => other.title === opp.title && other.description === opp.description
-      ).length === 1;
-
-      return hasContent && hasValidDeadline && isUnique;
-    });
-  }
-
-  // Méthode de validation des dates
-  private isValidDeadline(deadline: string): boolean {
-    try {
-      // Tentative de parsing de différents formats de dates
-      const dateFormats = [
-        () => new Date(deadline),
-        () => {
-          const parts = deadline.split('/');
-          return parts.length === 3 
-            ? new Date(parseInt(parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0])) 
-            : new Date(NaN);
-        }
-      ];
-
-      for (const parseDate of dateFormats) {
-        const parsedDate = parseDate();
-        if (!isNaN(parsedDate.getTime()) && parsedDate > new Date()) {
-          return true;
-        }
-      }
-
-      return false;
-    } catch {
-      return false;
-    }
+    return allOpportunities;
   }
 }
 
+export const unifiedScrapingService = new UnifiedScrapingService();
 export default UnifiedScrapingService;
