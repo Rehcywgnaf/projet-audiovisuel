@@ -73,6 +73,26 @@ Le projet suit une architecture modulaire standardisée sous /src :
         ├── metrics/                  # Gestion des métriques
         └── types/                    # Types et interfaces
 
+### Architecture UI
+La nouvelle interface utilisateur utilise shadcn/ui avec une organisation modulaire :
+
+#### 1. Composants Core (`/ui/core`)
+- HoverCard pour infobulles enrichies  
+- Tooltip pour aide contextuelle
+- ScrollArea pour optimisation du défilement
+- Support complet des thèmes
+
+#### 2. Vues Principales (`/views`)
+- PlanningView : Vue planning interactive
+- TeamView : Suivi d'équipe optimisé 
+- RSSView : Analyse des opportunités
+- ProjectView : Gestion de projets
+
+#### 3. MainInterface (`/core`)
+- Navigation dynamique entre vues
+- Gestion d'état optimisée  
+- Support responsive mobile
+- Chargement optimisé
 
 ### Composants Principaux
 1. **Système RSS-IA** [Doc](/docs/project/architecture/core.md#rss-ia)
@@ -182,6 +202,20 @@ Le système de monitoring offre une vue complète et centralisée des performanc
    - Mécanisme de filtrage et de qualification
    - Mise à jour dynamique du catalogue de sources
    - Cache intelligent des découvertes (1h, 95% hit rate)
+
+8. **Interface Utilisateur Modernisée**
+   - Interface utilisateur complètement refondue avec shadcn/ui
+   - Composants d'aide contextuelle (HoverCard, Tooltip)
+   - Gestion optimisée des listes longues (ScrollArea)
+   - Navigation dynamique entre les vues
+   - Support mobile amélioré
+   - Interface de suivi des équipes améliorée
+   - Tableau de bord projets optimisé
+   - Vue planning interactive
+   - Dashboard RSS enrichi avec explication des scores
+   - Tests unitaires complets (>90% coverage)
+   - Documentation technique détaillée
+   - Thème et styles unifiés
 
 ## Documentation Technique
 Pour plus de détails, consultez :
@@ -348,16 +382,21 @@ Documentation complète :
   - Génération IA (20 req/min)
   - Cache (100 entrées/30s)
   - Lecture (200 req/min)
+- Tests UI/UX
+  - Composants shadcn/ui testés
+  - Tests des interactions utilisateur
+  - Tests de navigation
+  - Tests d'accessibilité
+  - Coverage : 90%
 
 ### Frontend
 -### Frontend
-- Dashboard amélioré avec shadcn/ui :
-  - StatsCard pour visualisation des métriques
-  - Système de navigation par onglets
-  - Gestion des états améliorée
-  - Composants UI réutilisables
-  - Tests unitaires exhaustifs
-  - Documentation technique complète
+- Dashboard principal (React/Tailwind/shadcn)
+  - Composants modulaires avec shadcn/ui
+  - Interface unifiée et cohérente
+  - Support complet mobile
+  - Performance optimisée (<100ms par vue)
+  - Tests unitaires complets
 - Modules RSS & Alertes
 - Interface Google Drive
 - Système de suivi des équipes
