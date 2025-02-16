@@ -1,8 +1,126 @@
-...
+import { AliveEquipment, AliveCategory } from '../../../types/equipment/providers/alive';
 
-// Ajout à aliveEquipment[] :
+export const aliveCategories: AliveCategory[] = [
+  {
+    id: 'cameras-grands-capteurs',
+    name: 'Caméras Grands Capteurs',
+    path: ['Caméras Grands Capteurs'],
+    displayOrder: 1,
+    specifications: [
+      'sensor',
+      'resolution',
+      'mount',
+      'dynamicRange',
+      'recordingMedia'
+    ]
+  },
+  {
+    id: 'dslr',
+    name: 'DSLR',
+    path: ['DSLR'],
+    displayOrder: 2,
+    specifications: [
+      'sensor',
+      'resolution',
+      'mount',
+      'iso'
+    ]
+  },
+  {
+    id: 'cameras-embarquees',
+    name: 'Caméras Embarquées',
+    path: ['Caméras Embarquées'],
+    displayOrder: 3,
+    specifications: [
+      'type',
+      'resolution',
+      'stabilization'
+    ]
+  },
+  {
+    id: 'optiques',
+    name: 'Optiques',
+    displayOrder: 4,
+    path: ['Optiques'],
+    specifications: [
+      'mount',
+      'focalLength',
+      'maxAperture',
+      'coverage'
+    ]
+  }
+];
 
-  // DSLR
+export const aliveEquipment: AliveEquipment[] = [
+  // SECTION: CAMÉRAS GRANDS CAPTEURS
+  {
+    id: 'alexamini',
+    aliveReference: 'ALEXAMINI',
+    name: 'Caméra ALEXA Mini 4K/2K/HD ARRI',
+    category: 'cameras-grands-capteurs',
+    description: 'Caméra ALEXA Mini 4K/2K/HD',
+    unitType: 'camera',
+    rentalUnit: 'day',
+    specifications: {
+      brand: 'ARRI',
+      model: 'ALEXA Mini',
+      sensorSize: '35 mm format ARRI ALEV III CMOS',
+      resolution: '4K UHD',
+      dynamicRange: '14+ stops'
+    },
+    pricing: {
+      'standard': {
+        dayRate: 950.00,
+        minimumDays: 1
+      }
+    },
+    availability: {
+      'standard': {
+        isAvailable: true
+      }
+    },
+    provider: {
+      id: 'ALIVE',
+      name: 'ALIVE',
+      location: 'Lille'
+    },
+    includedItems: ['Body', 'Media 480GB', 'Batteries x4', 'Chargeur']
+  },
+  {
+    id: 'red-epic-w',
+    aliveReference: 'RED',
+    name: 'Caméra EPIC-W capteur HELIUM 8K Super35 RED',
+    category: 'cameras-grands-capteurs',
+    description: 'Caméra RED EPIC-W HELIUM 8K',
+    unitType: 'camera',
+    rentalUnit: 'day',
+    specifications: {
+      brand: 'RED',
+      model: 'EPIC-W HELIUM',
+      sensorSize: 'Super 35mm',
+      resolution: '8K 2.4:1 à plus de 75 fps',
+      dynamicRange: '16.5+ stops'
+    },
+    pricing: {
+      'standard': {
+        dayRate: 750.00,
+        minimumDays: 1
+      }
+    },
+    availability: {
+      'standard': {
+        isAvailable: true
+      }
+    },
+    provider: {
+      id: 'ALIVE',
+      name: 'ALIVE',
+      location: 'Lille'
+    }
+  },
+  // [Reste des caméras grands capteurs...]
+
+  // SECTION: DSLR
   {
     id: '5dmarkiv',
     aliveReference: '5DMARKIV',
@@ -31,52 +149,20 @@
       location: 'Lille'
     }
   },
+  // [Reste des DSLR...]
+
+  // SECTION: CAMÉRAS EMBARQUÉES
   {
-    id: 'ut5dmarkiv',
-    aliveReference: 'UT5DMARKIII',
-    name: 'Unité réflexe num. 5D MARK IV Canon',
-    category: 'dslr',
-    unitType: 'camera',
-    rentalUnit: 'day',
-    description: 'Livrée avec chargeur/3 batteries + 1 carte CF 32gb + trépied + sac de transport',
-    specifications: {
-      brand: 'CANON',
-      model: '5D MARK IV'
-    },
-    pricing: {
-      'standard': {
-        dayRate: 175.00,
-        minimumDays: 1
-      }
-    },
-    availability: {
-      'standard': {
-        isAvailable: true
-      }
-    },
-    provider: {
-      id: 'ALIVE',
-      name: 'ALIVE',
-      location: 'Lille'
-    },
-    includedItems: [
-      'Chargeur',
-      '3 batteries',
-      'Carte CF 32gb',
-      'Trépied',
-      'Sac de transport'
-    ]
-  },
-  {
-    id: '5dmarkiii',
-    aliveReference: '5DMARKIII',
-    name: 'Reflexe numerique 5D MARK III CANON',
-    category: 'dslr',
+    id: 'osmox5',
+    aliveReference: 'OSMOX5',
+    name: 'STAB. GIROSCOPIQUE DJI OSMO X5',
+    category: 'cameras-embarquees',
     unitType: 'camera',
     rentalUnit: 'day',
     specifications: {
-      brand: 'CANON',
-      model: '5D MARK III'
+      brand: 'DJI',
+      model: 'OSMO X5',
+      type: 'Stabilisateur giroscopique'
     },
     pricing: {
       'standard': {
@@ -96,56 +182,22 @@
     }
   },
   {
-    id: 'ut5dmarkiii',
-    aliveReference: 'UT5DMARKIII',
-    name: 'Unité réflexe num. 5D MARK III Canon',
-    category: 'dslr',
-    unitType: 'camera',
+    id: 'djiosmo12',
+    aliveReference: 'DJiOSMO12',
+    name: 'Optique OLYMPUS 12mm f/2.0 micro 4/3 pour OSMO',
+    category: 'cameras-embarquees',
+    subCategory: 'accessories',
+    unitType: 'lens',
     rentalUnit: 'day',
-    description: 'Livrée avec chargeur/3 batteries + 1 carte CF 32gb + trépied + sac de transport',
     specifications: {
-      brand: 'CANON',
-      model: '5D MARK III'
+      brand: 'OLYMPUS',
+      focalLength: '12mm',
+      maxAperture: 'f/2.0',
+      mount: 'micro 4/3'
     },
     pricing: {
       'standard': {
-        dayRate: 150.00,
-        minimumDays: 1
-      }
-    },
-    availability: {
-      'standard': {
-        isAvailable: true
-      }
-    },
-    provider: {
-      id: 'ALIVE',
-      name: 'ALIVE',
-      location: 'Lille'
-    },
-    includedItems: [
-      'Chargeur',
-      '3 batteries',
-      'Carte CF 32gb',
-      'Trépied',
-      'Sac de transport'
-    ]
-  },
-  {
-    id: 'alpha7sii',
-    aliveReference: 'ALPHA7SII',
-    name: 'Boitier Nu Hybride Alpha 7S II MPX 4K SONY',
-    category: 'dslr',
-    unitType: 'camera',
-    rentalUnit: 'day',
-    specifications: {
-      brand: 'SONY',
-      model: 'Alpha 7S II',
-      resolution: '4K'
-    },
-    pricing: {
-      'standard': {
-        dayRate: 140.00,
+        dayRate: 20.00,
         minimumDays: 1
       }
     },
@@ -161,57 +213,22 @@
     }
   },
   {
-    id: 'utalpha7sii',
-    aliveReference: 'UTALPHA7SII',
-    name: 'Unité Alpha 7S II 4K SONY',
-    category: 'dslr',
-    unitType: 'camera',
+    id: 'djiosmo15',
+    aliveReference: 'DJiOSMO15',
+    name: 'Optique OLYMPUS 15mm f/2.0 micro 4/3 pour OSMO',
+    category: 'cameras-embarquees',
+    subCategory: 'accessories',
+    unitType: 'lens',
     rentalUnit: 'day',
-    description: 'Livrée avec chargeur/3 batteries + 1 carte SDXC 64gb + trépied + sac de transport',
     specifications: {
-      brand: 'SONY',
-      model: 'Alpha 7S II',
-      resolution: '4K'
+      brand: 'OLYMPUS',
+      focalLength: '15mm',
+      maxAperture: 'f/2.0',
+      mount: 'micro 4/3'
     },
     pricing: {
       'standard': {
-        dayRate: 185.00,
-        minimumDays: 1
-      }
-    },
-    availability: {
-      'standard': {
-        isAvailable: true
-      }
-    },
-    provider: {
-      id: 'ALIVE',
-      name: 'ALIVE',
-      location: 'Lille'
-    },
-    includedItems: [
-      'Chargeur',
-      '3 batteries',
-      'Carte SDXC 64gb',
-      'Trépied', 
-      'Sac de transport'
-    ]
-  },
-  {
-    id: 'gh4',
-    aliveReference: 'GH4',
-    name: 'Reflexe num. 4K LUMIX DMC-GH4 PANASONIC',
-    category: 'dslr',
-    unitType: 'camera',
-    rentalUnit: 'day',
-    specifications: {
-      brand: 'PANASONIC',
-      model: 'LUMIX DMC-GH4',
-      resolution: '4K'
-    },
-    pricing: {
-      'standard': {
-        dayRate: 100.00,
+        dayRate: 20.00,
         minimumDays: 1
       }
     },
@@ -225,41 +242,25 @@
       name: 'ALIVE',
       location: 'Lille'
     }
-  },
-  {
-    id: 'utgh4',
-    aliveReference: 'UTGH4',
-    name: 'Unité Reflex num. 4K LUMIX GH4 PANASONIC',
-    category: 'dslr',
-    unitType: 'camera',
-    rentalUnit: 'day',
-    description: 'Livrée avec chargeur/3 batteries + 1 carte SD 32gb 280mb/s+ trépied + sac de transport',
-    specifications: {
-      brand: 'PANASONIC',
-      model: 'LUMIX DMC-GH4',
-      resolution: '4K'
-    },
-    pricing: {
-      'standard': {
-        dayRate: 160.00,
-        minimumDays: 1
-      }
-    },
-    availability: {
-      'standard': {
-        isAvailable: true
-      }
-    },
-    provider: {
-      id: 'ALIVE',
-      name: 'ALIVE',
-      location: 'Lille'
-    },
-    includedItems: [
-      'Chargeur',
-      '3 batteries',
-      'Carte SD 32gb 280mb/s',
-      'Trépied',
-      'Sac de transport'
-    ]
   }
+  // Plus d'équipements à venir...
+];
+
+export const aliveRentalCoefficients = {
+  days: {
+    1: 1,
+    2: 1.5,
+    3: 2,
+    4: 2.5,
+    5: 3,
+    6: 3.5,
+    7: 4,
+    8: 4.5,
+    9: 4.7,
+    10: 5,
+    11: 5.2,
+    12: 5.5,
+    13: 5.7,
+    14: 6
+  }
+};
